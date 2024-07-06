@@ -16,6 +16,18 @@ class Chemistry(commands.Cog):
         self.bot = bot
         self._last_member = None
 
+    @commands.command(description='Usage !smiles <SMILES>')
+    async def smiles(self, ctx: commands.Context, smiles: str) -> None:
+        try:
+            mol = Chem.MolFromSmiles(smiles)
+            img = Draw.MolToImage(mol)
+            with io.BytesIO() as image_binary:
+                img.save(image_binary, 'PNG')
+                image_binary.seek(0)
+                await ctx.send(file=discord.File(fp=image_binary, filename='molecule.png'))
+        except Exception as e:
+            await Chemistry.warn(self, ctx, e)
+
     @commands.command(description='The chemistry command. Compare molecules, fetch molecules.')
     async def c(self, ctx: commands.Context, *args) -> None:
         compounds = pcp.get_compounds(args[0], 'name')
@@ -63,7 +75,7 @@ class Chemistry(commands.Cog):
         output_buffer = io.BytesIO()
         new_image.save(output_buffer, format='PNG')
         output_buffer.seek(0)
-        file = discord.File(fp=output_buffer, filename=f'CobbBrandonGraham.png')
+        file = discord.File(fp=output_buffer, filename=f'Molecule.png')
         await ctx.send(file=file)
 
 async def setup(bot):
