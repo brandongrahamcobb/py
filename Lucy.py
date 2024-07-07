@@ -58,4 +58,7 @@ if not os.path.isfile('config.json'):
 
 
 if __name__ == '__main__':
-    subprocess.run([venv_python, script_path], check=True)
+    if system == 'Linux':
+        subprocess.run([venv_python, script_path], check=True)
+    else:
+        subprocess.run([sys.executable, script_path], check=True)
