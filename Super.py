@@ -1,13 +1,8 @@
 # Super.py
 
-from collections import Counter
 from discord.ext import commands
-from PIL import Image, ImageDraw
 
 import discord
-import io
-import os
-import requests
 
 class Super(commands.Cog):
     def __init__(self, bot):
@@ -16,8 +11,6 @@ class Super(commands.Cog):
 
     @commands.command(description='')
     async def color(self, ctx: commands.Context, *args):
-        if ctx.guild.id == 1163815737790578759:
-             return
         r = int(args[0])
         g = int(args[1])
         b = int(args[2])
