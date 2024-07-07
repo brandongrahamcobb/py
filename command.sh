@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="$SCRIPT_DIR/venv"
 
 # Required packages
-REQUIRED_PACKAGES=("discord.py" "rdkit" "requests" "pillow" "pubchempy" "python-dotenv")
+REQUIRED_PACKAGES=("discord.py" "rdkit" "requests" "pillow" "pubchempy" "pyyaml")
 
 # Check if virtual environment exists, if not create it
 if [ ! -d "$VENV_DIR" ]; then

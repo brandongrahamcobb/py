@@ -4,14 +4,14 @@ import asyncio
 import logging
 import logging.handlers
 import os
+import yaml
 
 from typing import List, Optional
 
 import discord
-import dotenv
 from discord.ext import commands
 
-class Client(commands.Bot):
+class Main(commands.Bot):
     def __init__(
         self,
         *args,
@@ -31,6 +31,29 @@ class Client(commands.Bot):
             self.tree.copy_global_to(guild = guild)
             await self.tree.sync(guild = guild)
 
+    def load_token():
+        config_file = 'config.yaml'
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as file:
+                config = yaml.safe_load(file)
+                return config.get('token')
+        return None
+
+    def save_token(token):
+        config = {'token': token}
+        with open('config.yaml', 'w') as file:
+            yaml.safe_dump(config, file)
+
+    async def validate_token(token):
+        intents = discord.Intents.default()
+        bot = commands.Bot(command_prefix='!', intents=intents)
+        try:
+            await bot.login(token)
+            await bot.close()
+            return True
+        except discord.LoginFailure:
+            return False
+
 async def main():
     logger = logging.getLogger('discord')
     logger.setLevel(logging.INFO)
@@ -49,13 +72,21 @@ async def main():
     exts = ['Chemistry', 'Listener', 'Super']
     intents = discord.Intents.all()
     intents.message_content = True
-    async with Client(
+    async with Main(
         commands.when_mentioned_or('!'),
         initial_extensions = exts,
         intents = intents,
     ) as bot:
-        dotenv.load_dotenv()
-        await bot.start(os.getenv("DISCORD_TOKEN"))
+        TOKEN = Main.load_token()
+        if not TOKEN or not await Main.validate_token(TOKEN):
+            while True:
+                TOKEN = input("Enter your Discord bot token: ").strip()
+                if await Main.validate_token(TOKEN):
+                    Main.save_token(TOKEN)
+                break
+            else:
+                print("Invalid token. Please try again.")
+        await bot.start(TOKEN)
 
 asyncio.run(main())
 
