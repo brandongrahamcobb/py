@@ -4,7 +4,8 @@ import asyncio
 import logging
 import logging.handlers
 import os
-import yaml
+import json
+import requests
 
 from typing import List, Optional
 
@@ -31,28 +32,35 @@ class Main(commands.Bot):
             self.tree.copy_global_to(guild = guild)
             await self.tree.sync(guild = guild)
 
-    def load_token():
-        config_file = 'config.yaml'
-        if os.path.exists(config_file):
-            with open(config_file, 'r') as file:
-                config = yaml.safe_load(file)
-                return config.get('token')
+    def verify_discord_token(token):
+        headers = {
+           'Authorization': f'Bot {token}'
+        }
+        url = 'https://discord.com/api/v9/users/@me'
+
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()  # Raise an exception for 4xx or 5xx errors
+            data = response.json()
+            return data
+        except requests.exceptions.HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+            return None
+        except Exception as err:
+            print(f"Error occurred: {err}")
+            return None
+
+    def read_token_from_file(filename):
+        if os.path.exists(filename):
+            with open(filename, 'r') as f:
+                data = json.load(f)
+                return data.get('token', None)
         return None
 
-    def save_token(token):
-        config = {'token': token}
-        with open('config.yaml', 'w') as file:
-            yaml.safe_dump(config, file)
-
-    async def validate_token(token):
-        intents = discord.Intents.default()
-        bot = commands.Bot(command_prefix='!', intents=intents)
-        try:
-            await bot.login(token)
-            await bot.close()
-            return True
-        except discord.LoginFailure:
-            return False
+    def write_token_to_file(filename, token):
+        data = {'token': token}
+        with open(filename, 'w') as f:
+            json.dump(data, f)
 
 async def main():
     logger = logging.getLogger('discord')
@@ -77,16 +85,13 @@ async def main():
         initial_extensions = exts,
         intents = intents,
     ) as bot:
-        TOKEN = Main.load_token()
-        if not TOKEN or not await Main.validate_token(TOKEN):
-            while True:
-                TOKEN = input("Enter your Discord bot token: ").strip()
-                if await Main.validate_token(TOKEN):
-                    Main.save_token(TOKEN)
-                break
-            else:
-                print("Invalid token. Please try again.")
-        await bot.start(TOKEN)
+        token_filename = 'config.json'
+        token = Main.read_token_from_file(token_filename)
+        while token is None or len(token) == 0 or Main.verify_discord_token(token) is None:
+            token = input("Enter your Discord bot token: ").strip()
+            Main.write_token_to_file(token_filename, token)
+            print(f"Token saved to {token_filename}")
+        await bot.start(token)
 
 asyncio.run(main())
 
