@@ -36,7 +36,7 @@ async def main():
     logger.setLevel(logging.INFO)
 
     handler = logging.handlers.RotatingFileHandler(
-       filename='discord.log',
+       filename='../log/discord.log',
        encoding='utf-8',
        maxBytes=32 * 1024 * 1024,
        backupCount=5,

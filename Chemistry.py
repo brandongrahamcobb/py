@@ -16,18 +16,6 @@ class Chemistry(commands.Cog):
         self.bot = bot
         self._last_member = None
 
-    @commands.command(description='Usage !smiles <SMILES>')
-    async def smiles(self, ctx: commands.Context, smiles: str) -> None:
-        try:
-            mol = Chem.MolFromSmiles(smiles)
-            img = Draw.MolToImage(mol)
-            with io.BytesIO() as image_binary:
-                img.save(image_binary, 'PNG')
-                image_binary.seek(0)
-                await ctx.send(file=discord.File(fp=image_binary, filename='molecule.png'))
-        except Exception as e:
-            await Chemistry.warn(self, ctx, e)
-
     @commands.command(description='The chemistry command. Compare molecules, fetch molecules.')
     async def c(self, ctx: commands.Context, *args) -> None:
         compounds = pcp.get_compounds(args[0], 'name')
@@ -68,7 +56,6 @@ class Chemistry(commands.Cog):
         draw.text(((width + (width - draw.textlength(label_2, font=font)) / 2) + 4, 14), label_2, fill="gray", font=font)
         draw.text(((width - draw.textlength(label_1, font=font)) / 2, 10), label_1, fill="white", font=font)
         draw.text((width + (width - draw.textlength(label_2, font=font)) / 2, 10), label_2, fill="white", font=font)
-
         text = f"Tanimoto Similarity: {similarity:.2f}"
         draw.text((((new_image.width - draw.textlength(text, font=font)) / 2) + 4, height - 56), text, fill="gray", font=font)
         draw.text(((new_image.width - draw.textlength(text, font=font)) / 2, height - 60), text, fill="white", font=font)

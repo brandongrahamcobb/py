@@ -17,7 +17,7 @@ class Super(commands.Cog):
     @commands.command(description='')
     async def color(self, ctx: commands.Context, *args):
         if ctx.guild.id == 1163815737790578759:
-             retunr
+             return
         r = int(args[0])
         g = int(args[1])
         b = int(args[2])
