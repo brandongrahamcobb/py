@@ -14,7 +14,7 @@ requirements = [
     'discord.py',
     'rdkit',
     'pillow',
-    'pyyaml',
+    'pubchempy'.
     'requests'
 ]
 
