@@ -32,7 +32,7 @@ class Main(commands.Bot):
             await self.tree.sync(guild = guild)
 
 async def main():
-    logger = logging.getLogger('discord')
+    logger = logging.getLogger('../log/discord')
     logger.setLevel(logging.INFO)
     handler = logging.handlers.RotatingFileHandler(
        filename='../log/discord.log',
