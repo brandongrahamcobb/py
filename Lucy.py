@@ -1,5 +1,5 @@
 # File: Lucy.py
-# Description: The purpose of this file is to serve as an entry-point for Lucy, the discord.py bot. The program has a first run function and a default run function.
+# Description: The purpose of this file is to serve as an entry-point for Lucy, the discord.py bot. The program functions differently based on which files are present and if the program is run on Windows or Linux
 # Author: spawd
 # Author: Lily
 # Date: July 6, 2024
@@ -21,7 +21,6 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 '''
-
 
 import json
 import os
@@ -50,15 +49,12 @@ file_py_7 = os.path.join(dir_py, 'Super.py')
 system = 'Linux' if os.name != 'nt' else 'Windows'
 py = os.path.join(dir_venv, 'bin', 'python') if system == 'Linux' else sys.executable
 
-
-def on_ready():
+if __name__ == '__main__':
     print(f'System: {system}')
     print(f'Location: {dir}')
     print(f'Python Location: {sys.executable}')
     print(f'Python Version: {sys.version}')
-
-def configuration():
-    token = input('Enter your bot token.')
+    print(f'Configuring....')
     if not os.path.isdir(dir_json):
         os.mkdir(dir_json)
     if not os.path.isdir(dir_py):
@@ -71,28 +67,24 @@ def configuration():
         os.mkdir(dir_log)
     if not os.path.isdir(dir_txt):
         os.mkdir(dir_txt)
-    if system == 'Linux':
-        if not os.path.isdir(dir_venv):
+    if not os.path.isdir(dir_venv):
+        if system == 'Linux':
             venv.create(dir_venv, with_pip=True)
-        subprocess.run([py, '-m', 'venv', 'activate'], check=True)
-    subprocess.run([py, '-m', 'pip', 'install'] + requirements, check=True)
-    if os.path.isfile(file_json):
-        os.remove(file_json)
-    with open(file_json, 'w') as f:
-        json.dump({
-            'token': token,
-            'prefix': "!",
-            'os': system
-        }, f, indent=4)
+            subprocess.run([py, '-m', 'venv', 'activate'], check=True)
+    if not os.path.isfile(file_json):
+        token = input('Enter your bot token.')
+        with open(file_json, 'w') as f:
+            json.dump({
+                'token': token,
+                'prefix': "!",
+                'os': system
+            }, f, indent=4)
+        print('Successful bot token.')
     print('Done configuring...')
+    print('Updating packages...')
+    subprocess.run([py, '-m', 'pip', 'install'] + requirements, check=True)
+    print('Done updating...')
     with open(file_json, 'r') as f:
         data = json.load(f)
         token = data['token']
     subprocess.run(py + ' ' + file_py_4 + ' ' + token, check=True, shell=True)
-
-if __name__ == '__main__':
-    try:
-        on_ready()
-        configuration()
-    except Exception as e:
-        None
