@@ -36,7 +36,7 @@ dir_json = os.path.join(dir, 'json')
 dir_log = os.path.join(dir, 'log')
 dir_py = os.path.join(dir, 'py')
 dir_txt = os.path.join(dir, 'txt')
-dir_venv = os.path.join(dir, 'venv')
+dir_venv = os.path.join(dir, 'activate')
 file_json = os.path.join(dir_json, 'config.json')
 file_py_0 = os.path.join(dir, 'Main.py')
 file_py_1 = os.path.join(dir, 'Chemistry.py')
@@ -67,10 +67,7 @@ if __name__ == '__main__':
         os.mkdir(dir_log)
     if not os.path.isdir(dir_txt):
         os.mkdir(dir_txt)
-    if not os.path.isdir(dir_venv):
-        if system == 'Linux':
-            venv.create(dir_venv, with_pip=True)
-            subprocess.run([py, '-m', 'venv', 'activate'], check=True)
+    subprocess.run([sys.executable, '-m', 'venv', 'activate'], check=True)
     if not os.path.isfile(file_json):
         token = input('Enter your bot token.')
         with open(file_json, 'w') as f:
