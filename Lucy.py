@@ -1,5 +1,5 @@
 # File: Lucy.py
-# Description: The purpose of this file is to serve as an entry-point for Lucy, the discord.py bot. The program functions differently based on which files are present and if the program is run on Windows or Linux
+# Description: The purpose of this file is to serve as an entry-point for Lucy, the discord.py bot. The program functions differently based on which files are present and if the program is run on Windows or Linux.
 # Author: spawd
 # Author: Lily
 # Date: July 6, 2024
@@ -67,7 +67,6 @@ if __name__ == '__main__':
         os.mkdir(dir_log)
     if not os.path.isdir(dir_txt):
         os.mkdir(dir_txt)
-    subprocess.run([sys.executable, '-m', 'venv', 'activate'], check=True)
     if not os.path.isfile(file_json):
         token = input('Enter your bot token.')
         with open(file_json, 'w') as f:
@@ -79,6 +78,7 @@ if __name__ == '__main__':
         print('Successful bot token.')
     print('Done configuring...')
     print('Updating packages...')
+    subprocess.run([sys.executable, '-m', 'venv', 'activate'], check=True)
     subprocess.run([py, '-m', 'pip', 'install'] + requirements, check=True)
     print('Done updating...')
     with open(file_json, 'r') as f:
