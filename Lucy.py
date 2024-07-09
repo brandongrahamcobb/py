@@ -1,91 +1,98 @@
-import subprocess
-import venv
+# File: Lucy.py
+# Description: The purpose of this file is to serve as an entry-point for Lucy, the discord.py bot. The program has a first run function and a default run function.
+# Author: spawd
+# Author: Lily
+# Date: July 6, 2024
+# Usage: python Lucy.py
+# Notes: <Any additional notes or information about the file>
+# Dependencies: Chemistry.py Listener.py Main.py Super.py
+'''
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+'''
+
+
 import json
-import sys
 import os
 import requests
+import subprocess
+import sys
+import venv
 
-location = os.path.dirname(os.path.abspath(__file__))
 requirements = ["discord.py", "pubchempy", "rdkit", "pillow", "requests"]
-script_path = os.path.join(location, 'Main.py')
-super_path = os.path.join(location, '..')
+
+dir = os.path.dirname(os.path.abspath(__file__))
+dir_json = os.path.join(dir, 'json')
+dir_log = os.path.join(dir, 'log')
+dir_py = os.path.join(dir, 'py')
+dir_txt = os.path.join(dir, 'txt')
+dir_venv = os.path.join(dir, 'venv')
+file_json = os.path.join(dir_json, 'config.json')
+file_py_0 = os.path.join(dir, 'Main.py')
+file_py_1 = os.path.join(dir, 'Chemistry.py')
+file_py_2 = os.path.join(dir, 'Listener.py')
+file_py_3 = os.path.join(dir, 'Super.py')
+file_py_4 = os.path.join(dir_py, 'Main.py')
+file_py_5 = os.path.join(dir_py, 'Chemistry.py')
+file_py_6 = os.path.join(dir_py, 'Listener.py')
+file_py_7 = os.path.join(dir_py, 'Super.py')
 system = 'Linux' if os.name != 'nt' else 'Windows'
-venv_path = os.path.join(location, 'venv')
-venv_python = os.path.join(venv_path, 'bin', 'python') if system == 'Linux' else None
-
-print(f'System: {system}')
-print(f'Location: {location}')
-print(f'Python Location: {sys.executable}')
-print(f'Python Version: {sys.version}')
+py = os.path.join(dir_venv, 'bin', 'python') if system == 'Linux' else sys.executable
 
 
-def clear():
-    if system == 'Windows': os.system('cls')
-    elif system == 'Linux': os.system('clear')
+def on_ready():
+    print(f'System: {system}')
+    print(f'Location: {dir}')
+    print(f'Python Location: {sys.executable}')
+    print(f'Python Version: {sys.version}')
 
-def verify_discord_token(token):
-    headers = {
-       'Authorization': f'Bot {token}'
-    }
-    url = 'https://discord.com/api/v9/users/@me'
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Raise an exception for 4xx or 5xx errors
-        data = response.json()
-        return data
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP error occurred: {err}")
-        return None
-    except Exception as err:
-        print(f"Error occurred: {err}")
-        return None
-
-q = input('Is this initial setup? (y/n)')
-if q == 'y':
-    try:
-        if system == 'Linux':
-            if not os.path.exists(venv_path):
-                q = input('Do you want to create a venv? (y/n): ')
-                if q.lower() == 'y':
-                    print('Creating virtual environment...')
-                    venv.create(venv_path, with_pip=True)
-                    print('Virtual environment created successfully.')
-            print('Activating virtual environment...')
-            subprocess.run([venv_python, '-m', 'venv', 'activate'], check=True)
-            print('Installing dependencies...')
-            subprocess.run([venv_python, '-m', 'pip', 'install'] + requirements, check=True)
-        else:
-            print('Installing dependencies...')
-            subprocess.run([sys.executable, '-m', 'pip', 'install'] + requirements, check=True)
-        print('Creating json folder...')
-        os.mkdir(os.path.join(super_path, 'json'))
-        print('Creating log folder...')
-        os.mkdir(os.path.join(super_path, 'log'))
-        print('Creating txt folder...')
-        os.mkdir(os.path.join(super_path, 'txt'))
-        print('Creating config.json...')
-        while True:
-            token = input('Enter your bot token: ')
-            if verify_discord_token(token):
-                break
-            print('Please enter a valid token.')
-        print('Saving config...')
-        with open('../json/config.json', 'w') as f:
-            json.dump({
-                'token': token,
-                'prefix': "!",
-                'os': system
-            }, f, indent=4)
-        f.close()
-        print('Done configuring...')
-    except Exception as e:
-        None
+def configuration():
+    token = input('Enter your bot token.')
+    if not os.path.isdir(dir_json):
+        os.mkdir(dir_json)
+    if not os.path.isdir(dir_py):
+        os.mkdir(dir_py)
+        os.replace(file_py_0, file_py_4)
+        os.replace(file_py_1, file_py_5)
+        os.replace(file_py_2, file_py_6)
+        os.replace(file_py_3, file_py_7)
+    if not os.path.isdir(dir_log):
+        os.mkdir(dir_log)
+    if not os.path.isdir(dir_txt):
+        os.mkdir(dir_txt)
+    if system == 'Linux':
+        if not os.path.isdir(dir_venv):
+            venv.create(dir_venv, with_pip=True)
+        subprocess.run([py, '-m', 'venv', 'activate'], check=True)
+    subprocess.run([py, '-m', 'pip', 'install'] + requirements, check=True)
+    if os.path.isfile(file_json):
+        os.remove(file_json)
+    with open(file_json, 'w') as f:
+        json.dump({
+            'token': token,
+            'prefix': "!",
+            'os': system
+        }, f, indent=4)
+    print('Done configuring...')
+    with open(file_json, 'r') as f:
+        data = json.load(f)
+        token = data['token']
+    subprocess.run(py + ' ' + file_py_4 + ' ' + token, check=True, shell=True)
 
 if __name__ == '__main__':
     try:
-        if system == 'Linux':
-            subprocess.run([venv_python, script_path], check=True)
-        else:
-            subprocess.run([sys.executable, script_path], check=True)
+        on_ready()
+        configuration()
     except Exception as e:
         None
