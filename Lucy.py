@@ -1,12 +1,6 @@
-# File: Lucy.py
-# Description: The purpose of this file is to serve as an entry-point for Lucy, the discord.py bot. The program functions differently based on which files are present and if the program is run on Windows or Linux.
-# Author: spawd
-# Author: Lily
-# Date: July 6, 2024
-# Usage: python Lucy.py
-# Notes: <Any additional notes or information about the file>
-# Dependencies: Chemistry.py Listener.py Main.py Super.py
 '''
+    @License
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
