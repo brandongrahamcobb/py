@@ -59,4 +59,4 @@ if __name__ == '__main__':
     with open(file_json, 'r') as f:
         data = json.load(f)
         token = data['token']
-    subprocess.run(py + ' ' + file_py + ' ' + token, check=True)
+    subprocess.run([py, file_py, token], check=True)
