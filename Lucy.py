@@ -21,25 +21,17 @@ import os
 import requests
 import subprocess
 import sys
-import venv
 
 requirements = ["discord.py", "pubchempy", "rdkit", "pillow", "requests"]
 
 dir = os.path.dirname(os.path.abspath(__file__))
-dir_json = os.path.join(dir, 'json')
-dir_log = os.path.join(dir, 'log')
-dir_py = os.path.join(dir, 'py')
-dir_txt = os.path.join(dir, 'txt')
-dir_venv = os.path.join(dir, 'activate')
+updir = os.path.join(dir, '..')
+dir_json = os.path.join(updir, 'json')
+dir_log = os.path.join(updir, 'log')
+dir_txt = os.path.join(updir, 'txt')
+dir_venv = os.path.join(updir, 'activate')
 file_json = os.path.join(dir_json, 'config.json')
-file_py_0 = os.path.join(dir, 'Main.py')
-file_py_1 = os.path.join(dir, 'Chemistry.py')
-file_py_2 = os.path.join(dir, 'Listener.py')
-file_py_3 = os.path.join(dir, 'Super.py')
-file_py_4 = os.path.join(dir_py, 'Main.py')
-file_py_5 = os.path.join(dir_py, 'Chemistry.py')
-file_py_6 = os.path.join(dir_py, 'Listener.py')
-file_py_7 = os.path.join(dir_py, 'Super.py')
+file_py = os.path.join(dir, 'Main.py')
 system = 'Linux' if os.name != 'nt' else 'Windows'
 py = os.path.join(dir_venv, 'bin', 'python') if system == 'Linux' else sys.executable
 
@@ -48,20 +40,11 @@ if __name__ == '__main__':
     print(f'Location: {dir}')
     print(f'Python Location: {sys.executable}')
     print(f'Python Version: {sys.version}')
-    print(f'Configuring....')
-    if not os.path.isdir(dir_json):
+    if not os.path.isdir(dir_json) and not os.path.isdir(dir_log) and not os.path.isdir(dir_txt) and not os.path.isdir(dir_venv):
+        print(f'Configuring....')
         os.mkdir(dir_json)
-    if not os.path.isdir(dir_py):
-        os.mkdir(dir_py)
-        os.replace(file_py_0, file_py_4)
-        os.replace(file_py_1, file_py_5)
-        os.replace(file_py_2, file_py_6)
-        os.replace(file_py_3, file_py_7)
-    if not os.path.isdir(dir_log):
         os.mkdir(dir_log)
-    if not os.path.isdir(dir_txt):
         os.mkdir(dir_txt)
-    if not os.path.isfile(file_json):
         token = input('Enter your bot token.')
         with open(file_json, 'w') as f:
             json.dump({
@@ -69,13 +52,11 @@ if __name__ == '__main__':
                 'prefix': "!",
                 'os': system
             }, f, indent=4)
-        print('Successful bot token.')
-    print('Done configuring...')
+        subprocess.run([sys.executable, '-m', 'venv', dir_venv], check=True)
     print('Updating packages...')
-    subprocess.run([sys.executable, '-m', 'venv', 'activate'], check=True)
     subprocess.run([py, '-m', 'pip', 'install'] + requirements, check=True)
     print('Done updating...')
     with open(file_json, 'r') as f:
         data = json.load(f)
         token = data['token']
-    subprocess.run(py + ' ' + file_py_4 + ' ' + token, check=True, shell=True)
+    subprocess.run(py + ' ' + file_py + ' ' + token, check=True, shell=True)
