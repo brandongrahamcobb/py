@@ -1,5 +1,5 @@
 
-# cogs/draw.py
+# cogs/chemistry.py
 
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont
