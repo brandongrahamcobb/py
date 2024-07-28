@@ -217,5 +217,15 @@ class Main(commands.Cog):
         file = discord.File(fp=output_buffer, filename=f'Molecule.png')
         await ctx.send(file=file)
 
+    @commands.command()
+    async def smiles(self, ctx, *, chemical_name: str):
+        compounds = pcp.get_compounds(chemical_name, 'name')
+        if not compounds:
+            await ctx.send(f"No compound found for the name '{chemical_name}'")
+            return
+        compound = compounds[0]
+        canonical_smiles = compound.canonical_smiles
+        await ctx.send(f"The canonical SMILES for '{chemical_name}' is: {canonical_smiles}")
+
 async def setup(bot):
     await bot.add_cog(Main(bot))
