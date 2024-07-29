@@ -11,9 +11,11 @@ from rdkit.DataStructs import FingerprintSimilarity, TanimotoSimilarity
 from typing import Literal, Optional
 
 import discord
+import emoji as emoji_lib
 import io
 import os
 import pubchempy as pcp
+import unicodedata
 
 class Main(commands.Cog):
 
@@ -155,6 +157,10 @@ class Main(commands.Cog):
         await ctx.author.add_roles(newrole)
         await ctx.send(f'I successfully changed your role color to {r}, {g}, {b}')
 
+    @commands.command()
+    async def penji(self, ctx: commands.Context, *args) -> None:
+        await ctx.send('Sign into https://cutt.ly/mccpenjikiosk-cc')
+
     @commands.command(description='Compare molecules, fetch molecules.')
     async def draw(self, ctx: commands.Context, *args) -> None:
         if len(args) == 1:
@@ -218,7 +224,7 @@ class Main(commands.Cog):
         await ctx.send(file=file)
 
     @commands.command()
-    async def smiles(self, ctx, *, chemical_name: str):
+    async def smiles(self, ctx: commands.Context, *, chemical_name: str):
         compounds = pcp.get_compounds(chemical_name, 'name')
         if not compounds:
             await ctx.send(f"No compound found for the name '{chemical_name}'")
@@ -226,6 +232,26 @@ class Main(commands.Cog):
         compound = compounds[0]
         canonical_smiles = compound.canonical_smiles
         await ctx.send(f"The canonical SMILES for '{chemical_name}' is: {canonical_smiles}")
+
+    @commands.command()
+    async def emoji(self, ctx: commands.Context, emoji_character: str = None):
+         if emoji_character is None:
+             await ctx.send('Please provide a Unicode emoji character.')
+             return
+         unicode_name = emoji_lib.demojize(emoji_character)
+         if unicode_name.startswith(':') and unicode_name.endswith(':'):
+             unicode_name = unicode_name[1:-1]
+             code_points = ' '.join(f'U+{ord(c):04X}' for c in emoji_character)
+             description = unicodedata.name(emoji_character, 'No description available')
+             unicode_info = (
+                 f'**Unicode Emoji Character:** {emoji_character}\n'
+                 f'**Unicode Emoji Name:** {unicode_name}\n'
+                 f'**Code Points:** {code_points}\n'
+                 f'**Description:** {description}'
+             )
+             await ctx.send(unicode_info)
+         else:
+             await ctx.send('Unicode emoji not found. Make sure it is a valid Unicode emoji character.')
 
 async def setup(bot):
     await bot.add_cog(Main(bot))

@@ -40,7 +40,7 @@ async def main():
         updir = os.path.join(dir, '..')
         dir_venv = os.path.join(updir, 'activate')
         subprocess.run([sys.executable, '-m', 'venv', dir_venv], check=True)
-        requirements = ["asyncpraw", "discord.py", "pubchempy", "rdkit", "pillow", "requests"]
+        requirements = ["asyncpraw", "discord.py", "emoji", "pubchempy", "rdkit", "pillow", "requests"]
         system = 'Linux' if os.name != 'nt' else 'Windows'
         py = os.path.join(dir_venv, 'bin', 'python') if system == 'Linux' else sys.executable
         subprocess.run([py, '-m', 'pip', 'install'] + requirements, check=True)
