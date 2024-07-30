@@ -157,10 +157,6 @@ class Main(commands.Cog):
         await ctx.author.add_roles(newrole)
         await ctx.send(f'I successfully changed your role color to {r}, {g}, {b}')
 
-    @commands.command()
-    async def penji(self, ctx: commands.Context, *args) -> None:
-        await ctx.send('Sign into https://cutt.ly/mccpenjikiosk-cc')
-
     @commands.command(description='Compare molecules, fetch molecules.')
     async def draw(self, ctx: commands.Context, *args) -> None:
         if len(args) == 1:
@@ -224,6 +220,105 @@ class Main(commands.Cog):
         await ctx.send(file=file)
 
     @commands.command()
+    async def emoji(self, ctx: commands.Context, emoji_character: str = None):
+        if emoji_character is None:
+            await ctx.send('Please provide a Unicode emoji character.')
+            return
+        unicode_name = emoji_lib.demojize(emoji_character)
+        if unicode_name.startswith(':') and unicode_name.endswith(':'):
+            unicode_name = unicode_name[1:-1]
+            code_points = ' '.join(f'U+{ord(c):04X}' for c in emoji_character)
+            description = unicodedata.name(emoji_character, 'No description available')
+            unicode_info = (
+                f'**Unicode Emoji Character:** {emoji_character}\n'
+                f'**Unicode Emoji Name:** {unicode_name}\n'
+                f'**Code Points:** {code_points}\n'
+                f'**Description:** {description}'
+            )
+            await ctx.send(unicode_info)
+        else:
+            await ctx.send('Unicode emoji not found. Make sure it is a valid Unicode emoji character.')
+
+    @commands.command()
+    async def help(self, ctx: commands.Context):
+        help_message = (
+            "**Bot Commands**\n\n"
+            "**!purge**: Deletes up to 100 non-pinned messages from the channel. Only the bot owner can use this command.\n"
+            "**Usage**: `!purge`\n\n"
+            "**!mol**: Generates and displays a 2D image of a molecule from a given SMILES string.\n"
+            "**Usage**: `!mol <SMILES>`\n\n"
+            "**!compare**: Compares two molecules based on their SMILES strings and displays their Tanimoto similarity along with their 2D images.\n"
+            "**Usage**: `!compare <SMILES1> <SMILES2>`\n\n"
+            "**!emoji**: Provides information about a given Unicode emoji character, including its Unicode name, code points, and description.\n"
+            "**Usage**: `!emoji <emoji_character>`\n"
+        )
+        await ctx.send(help_message)
+
+    @commands.command()
+    async def mol(self, ctx: commands.Context, smiles: str):
+        mol = Chem.MolFromSmiles(smiles)
+        AllChem.Compute2DCoords(mol)
+        img = Draw.MolToImage(mol)
+        with io.BytesIO() as image_binary:
+            img.save(image_binary, 'PNG')
+            image_binary.seek(0)
+            await ctx.send(file=discord.File(fp=image_binary, filename='molecule.png'))
+
+    @commands.command()
+    async def penji(self, ctx: commands.Context, *args) -> None:
+        await ctx.send('Sign into https://cutt.ly/mccpenjikiosk-cc')
+
+    @commands.command()
+    async def power(self, ctx: commands.Context, *args):
+        mol = Chem.MolFromSmiles(args[0])
+        refmol = Chem.MolFromSmiles(args[2])
+        d2d = Draw.MolDraw2DCairo(512, 512)
+        d2d2 = Draw.MolDraw2DCairo(512, 512)
+        fp1 = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
+        fp2 = AllChem.GetMorganFingerprintAsBitVect(refmol, 2, nBits=2048)
+        similarity = TanimotoSimilarity(fp1, fp2)
+        fig, maxweight = SimilarityMaps.GetSimilarityMapForFingerprint(refmol, mol, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType='bv', nBits=8192), draw2d=d2d)
+        d2d.FinishDrawing()
+        buf = io.BytesIO(d2d.GetDrawingText())
+        image1 = Image.open(buf)
+        image1 = image1.convert("RGBA")
+        fig, maxweight = SimilarityMaps.GetSimilarityMapForFingerprint(mol, refmol, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType='bv', nBits=8192), draw2d=d2d2)
+        d2d2.FinishDrawing()
+        buf = io.BytesIO(d2d2.GetDrawingText())
+        image2 = Image.open(buf)
+        image2 = image2.convert("RGBA")
+        width, height = image2.size
+        new_image = Image.new('RGBA', (width + width, height), (0, 0, 0, 0))
+        new_image.paste(image1, (0, 0), image1)
+        new_image.paste(image2, (width, 0), image2)
+        original = new_image
+        transparent_version = original.copy()
+        alpha = transparent_version.split()[3]
+        alpha = alpha.point(lambda p: min(p, 128))
+        transparent_version.putalpha(alpha)
+        combined = Image.new("RGBA", original.size)
+        combined.paste(transparent_version, (10, 10), mask=transparent_version)
+        combined.paste(original, (0, 0))
+        draw = ImageDraw.Draw(combined)
+        for x in range(combined.width):
+            for y in range(combined.height):
+                pixel = combined.getpixel((x, y))
+                if sum(pixel) >= 1020:
+                    draw.point((x, y), fill=(0, 0, 0, 0))
+        font = ImageFont.load_default(40)
+        text = args[1]
+        draw.text(((width - draw.textlength(text, font=font)) / 2, 10), text, fill="black", font=font)
+        text = args[3]
+        draw.text((width + (width - draw.textlength(text, font=font)) / 2, 10), text, fill="black", font=font)
+        text = f"Tanimoto Similarity: {similarity:.5f}"
+        draw.text(((combined.width - draw.textlength(text, font=font)) / 2, height - 60), text, fill="black", font=font)
+        output_buffer = io.BytesIO()
+        combined.save(output_buffer, format='PNG')
+        output_buffer.seek(0)
+        file = discord.File(fp=output_buffer, filename=f'Molecule.png')
+        await ctx.send(file=file)
+
+    @commands.command()
     async def smiles(self, ctx: commands.Context, *, chemical_name: str):
         compounds = pcp.get_compounds(chemical_name, 'name')
         if not compounds:
@@ -232,26 +327,6 @@ class Main(commands.Cog):
         compound = compounds[0]
         canonical_smiles = compound.canonical_smiles
         await ctx.send(f"The canonical SMILES for '{chemical_name}' is: {canonical_smiles}")
-
-    @commands.command()
-    async def emoji(self, ctx: commands.Context, emoji_character: str = None):
-         if emoji_character is None:
-             await ctx.send('Please provide a Unicode emoji character.')
-             return
-         unicode_name = emoji_lib.demojize(emoji_character)
-         if unicode_name.startswith(':') and unicode_name.endswith(':'):
-             unicode_name = unicode_name[1:-1]
-             code_points = ' '.join(f'U+{ord(c):04X}' for c in emoji_character)
-             description = unicodedata.name(emoji_character, 'No description available')
-             unicode_info = (
-                 f'**Unicode Emoji Character:** {emoji_character}\n'
-                 f'**Unicode Emoji Name:** {unicode_name}\n'
-                 f'**Code Points:** {code_points}\n'
-                 f'**Description:** {description}'
-             )
-             await ctx.send(unicode_info)
-         else:
-             await ctx.send('Unicode emoji not found. Make sure it is a valid Unicode emoji character.')
 
 async def setup(bot):
     await bot.add_cog(Main(bot))
