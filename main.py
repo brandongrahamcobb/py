@@ -135,8 +135,8 @@ class Main(commands.Cog):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
-
     @commands.command(description='')
+    @commands.is_owner()
     async def colorize(self, ctx: commands.Context, *args):
         r = int(args[0])
         g = int(args[1])
@@ -240,17 +240,19 @@ class Main(commands.Cog):
             await ctx.send('Unicode emoji not found. Make sure it is a valid Unicode emoji character.')
 
     @commands.command()
-    async def help(self, ctx: commands.Context):
+    async def how(self, ctx: commands.Context):
         help_message = (
             "**Bot Commands**\n\n"
-            "**!purge**: Deletes up to 100 non-pinned messages from the channel. Only the bot owner can use this command.\n"
-            "**Usage**: `!purge`\n\n"
-            "**!mol**: Generates and displays a 2D image of a molecule from a given SMILES string.\n"
-            "**Usage**: `!mol <SMILES>`\n\n"
-            "**!compare**: Compares two molecules based on their SMILES strings and displays their Tanimoto similarity along with their 2D images.\n"
-            "**Usage**: `!compare <SMILES1> <SMILES2>`\n\n"
+            "**!colorize**: Change your nickname color. Only the bot owner can use this command.\n"
+            "**Usage**: `!colorize <R> <G> <B>`\n\n"
+            "**!draw**: Draws a molecule by name or compares two molecules displaying a Tanimoto similarity along with their 2D images.\n"
+            "**Usage**: `!draw <MOLECULE> or !draw <MOLECULE> <REFERENCEMOLECULE>`\n\n"
             "**!emoji**: Provides information about a given Unicode emoji character, including its Unicode name, code points, and description.\n"
             "**Usage**: `!emoji <emoji_character>`\n"
+            "**!power**: Compares two molecules based on their SMILES strings and displays their Tanimoto similarity along with their 2D images.\n"
+            "**Usage**: `!power <SMILES1> <TITLE1> <SMILES2> <TITLE2>`\n\n"
+            "**!purge**: Deletes up to 100 non-pinned messages from the channel. Only the bot owner can use this command.\n"
+            "**Usage**: `!purge`\n\n"
         )
         await ctx.send(help_message)
 
