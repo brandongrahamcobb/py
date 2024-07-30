@@ -245,26 +245,20 @@ class Main(commands.Cog):
             "**Bot Commands**\n\n"
             "**!colorize**: Change your nickname color. Only the bot owner can use this command.\n"
             "**Usage**: `!colorize <R> <G> <B>`\n\n"
-            "**!draw**: Draws a molecule by name or compares two molecules displaying a Tanimoto similarity along with their 2D images.\n"
-            "**Usage**: `!draw <MOLECULE> or !draw <MOLECULE> <REFERENCEMOLECULE>`\n\n"
+            "**!draw**: Draws a molecule by SMILES or compares two molecules displaying a Tanimoto similarity along with their 2D images.\n"
+            "**Usage**: `!draw <SMILES> or !draw <MOLECULE> <REFERENCEMOLECULE>`\n\n"
             "**!emoji**: Provides information about a given Unicode emoji character, including its Unicode name, code points, and description.\n"
-            "**Usage**: `!emoji <emoji_character>`\n"
+            "**Usage**: `!emoji <emoji_character>`\n\n"
+            "**!penji**: Connects you to the MCC tutoring service.\n"
+            "**Usage**: `!penji`\n\n"
             "**!power**: Compares two molecules based on their SMILES strings and displays their Tanimoto similarity along with their 2D images.\n"
             "**Usage**: `!power <SMILES1> <TITLE1> <SMILES2> <TITLE2>`\n\n"
             "**!purge**: Deletes up to 100 non-pinned messages from the channel. Only the bot owner can use this command.\n"
             "**Usage**: `!purge`\n\n"
+            "**!smiles**: Retrieves the SMILES of any molecule in the PubChem database..\n"
+            "**Usage**: `!smiles <MOLECULE>`"
         )
         await ctx.send(help_message)
-
-    @commands.command()
-    async def mol(self, ctx: commands.Context, smiles: str):
-        mol = Chem.MolFromSmiles(smiles)
-        AllChem.Compute2DCoords(mol)
-        img = Draw.MolToImage(mol)
-        with io.BytesIO() as image_binary:
-            img.save(image_binary, 'PNG')
-            image_binary.seek(0)
-            await ctx.send(file=discord.File(fp=image_binary, filename='molecule.png'))
 
     @commands.command()
     async def penji(self, ctx: commands.Context, *args) -> None:
