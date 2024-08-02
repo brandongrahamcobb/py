@@ -1,4 +1,4 @@
-""" leveling.py
+""" game_cog.py
     Copyright (C) 2024 github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@ import random
 import json
 import os
 
-class Leveling(commands.Cog):
+class GameCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.users = {}
@@ -48,7 +48,7 @@ class Leveling(commands.Cog):
         if os.path.exists("../json/users.json"):
             with open("../json/users.json", "r") as f:
                 self.users = json.load(f)
-
+    
     def save_users(self):
         with open("../json/users.json", "w") as f:
             json.dump(self.users, f, indent=4)
@@ -62,18 +62,12 @@ class Leveling(commands.Cog):
         xp_per_interaction = daily_xp_required / 200
         return xp_per_interaction
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot:
-            return
-
-        user_id = str(message.author.id)
+    def distribute_xp(self, user_id):
         if user_id not in self.users:
             self.users[user_id] = {
                 "xp": 0,
                 "level": 1
             }
-
         current_level = self.users[user_id]["level"]
         xp_per_interaction = self.get_xp_per_interaction(current_level)
         xp_gain = random.uniform(0.8 * xp_per_interaction, 1.2 * xp_per_interaction)
@@ -81,23 +75,39 @@ class Leveling(commands.Cog):
 
         if self.users[user_id]["xp"] >= self.get_xp_for_level(current_level + 1):
             self.users[user_id]["level"] += 1
-            await message.channel.send(f"Congratulations {message.author.mention}, you reached level {self.users[user_id]['level']}!")
 
         self.save_users()
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+
+        self.distribute_xp(str(message.author.id))
+
+        if self.users[str(message.author.id)]["xp"] >= self.get_xp_for_level(self.users[str(message.author.id)]["level"] + 1):
+            await message.channel.send(f"Congratulations {message.author.mention}, you reached level {self.users[str(message.author.id)]['level']}!")
 
     @commands.command()
     async def level(self, ctx, member: discord.Member = None):
         member = member or ctx.author
         user_id = str(member.id)
+        self.distribute_xp(user_id)  # Distribute XP before displaying level and XP
+
         if user_id in self.users:
             level = self.users[user_id]["level"]
             xp = self.users[user_id]["xp"]
-            await ctx.send(f"{member.mention} is at level {level} with {xp} XP.")
+            xp_needed_for_next_level = self.get_xp_for_level(level + 1) - xp
+            await ctx.send(f"{member.mention} is at level {level} with {xp:.2f} XP.\n"
+                           f"You need {xp_needed_for_next_level:.2f} XP to reach level {level + 1}.")
         else:
             await ctx.send(f"{member.mention} has not interacted with the bot yet.")
 
     @commands.command()
     async def leaderboard(self, ctx):
+        # Distribute XP to the user invoking the command
+        self.distribute_xp(str(ctx.author.id))
+
         # Sort users by level, then by XP
         sorted_users = sorted(self.users.items(), key=lambda item: (item[1]["level"], item[1]["xp"]), reverse=True)
         
@@ -113,4 +123,4 @@ class Leveling(commands.Cog):
         await ctx.send(leaderboard_message)
 
 async def setup(bot):
-    await bot.add_cog(Leveling(bot))
+    await bot.add_cog(GameCog(bot))

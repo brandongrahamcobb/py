@@ -14,11 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
 import os
 import subprocess
 import sys
 import json
+import shutil
+
+base_dir = os.path.abspath(os.path.dirname(__file__))
+py_dir = os.path.join(base_dir, 'py')
 
 def is_root():
     return os.geteuid() == 0  # Check if running as root
@@ -33,23 +36,59 @@ def setup_environment():
     elif system == 'Linux':
         print('Not running as root, skipping system update.')
 
-    venv_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'venv')
+    venv_dir = os.path.join(base_dir, 'venv')
+    
     if not os.path.exists(venv_dir):
         # Create virtual environment
         subprocess.run([sys.executable, '-m', 'venv', venv_dir], check=True)
     
-    requirements = ["asyncpraw", "discord.py", "emoji", "pubchempy", "rdkit", "pillow", "requests"]
-    python_exec = os.path.join(venv_dir, 'bin', 'python') if system == 'Linux' else sys.executable
-    subprocess.run([python_exec, '-m', 'pip', 'install'] + requirements, check=True)
+    requirements = ["discord.py", "emoji", "pubchempy", "rdkit", "pillow", "requests"]
+    python_exec = os.path.join(venv_dir, 'bin', 'python') if system == 'Linux' else os.path.join(venv_dir, 'Scripts', 'python')
+    
+    # Update pip and install requirements
+    subprocess.run([python_exec, '-m', 'pip', 'install', '--upgrade', 'pip'], check=True)
+    subprocess.run([python_exec, '-m', 'pip', 'install', '--upgrade'] + requirements, check=True)
 
-    # Create necessary directories
-    os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'json'), exist_ok=True)
-    os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'log'), exist_ok=True)
-    os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'txt'), exist_ok=True)
+    # Create necessary directories at the base directory level
+    os.makedirs(os.path.join(base_dir, 'json'), exist_ok=True)
+    os.makedirs(os.path.join(base_dir, 'log'), exist_ok=True)
+    os.makedirs(os.path.join(base_dir, 'txt'), exist_ok=True)
+
+    # Move this setup script, main.py, my_cog.py, and game_cog.py to py directory if not already
+    setup_script_path = os.path.join(base_dir, 'setup.py')
+    main_script_path = os.path.join(base_dir, 'main.py')
+    my_cog_script_path = os.path.join(base_dir, 'my_cog.py')
+    game_cog_script_path = os.path.join(base_dir, 'game_cog.py')
+    license_path = os.path.join(base_dir, 'LICENSE')
+    readme_path = os.path.join(base_dir, 'README.md')
+    
+    if not os.path.exists(py_dir):
+        os.makedirs(py_dir)
+
+    if os.path.exists(main_script_path):
+        shutil.move(main_script_path, os.path.join(py_dir, 'main.py'))
+
+    if os.path.exists(my_cog_script_path):
+        shutil.move(my_cog_script_path, os.path.join(py_dir, 'my_cog.py'))
+
+    if os.path.exists(game_cog_script_path):
+        shutil.move(game_cog_script_path, os.path.join(py_dir, 'game_cog.py'))
+
+    if os.path.exists(license_path):
+        shutil.move(license_path, os.path.join(py_dir, 'LICENSE'))
+
+    if os.path.exists(readme_path):
+        shutil.move(readme_path, os.path.join(py_dir, 'README.md'))
+    
+    new_setup_script_path = os.path.join(py_dir, 'setup.py')
+    if os.path.abspath(__file__) != new_setup_script_path:
+        shutil.move(setup_script_path, new_setup_script_path)
+        print("Moved setup script to 'py' directory.")
+        return  # Exit to prevent running the script twice
 
 def set_token():
     """Prompt user to input bot token if not present."""
-    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'json', 'config.json')
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'json', 'config.json')
     
     if not os.path.exists(config_path):
         token = input("Enter your Discord bot token: ")
@@ -90,6 +129,9 @@ def get_version():
     return version
 
 if __name__ == '__main__':
-    setup_environment()
-    set_token()
-    print(f"Setup complete. New version: {get_version()}")
+    if os.path.basename(os.path.dirname(__file__)) == 'py':
+        print("Setup script is inside 'py' directory. Doing nothing.")
+    else:
+        setup_environment()
+        set_token()
+        print(f"Setup complete. New version: {get_version()}")

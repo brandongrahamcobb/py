@@ -101,7 +101,7 @@ async def main():
     config = load_config()
     token = config['token']
     setup_logging()
-    exts = ['my_cog', 'leveling']
+    exts = ['game_cog', 'my_cog']
     intents = discord.Intents.all()
     intents.message_content = True
     async with Lucy(
