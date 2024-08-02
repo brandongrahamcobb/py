@@ -1,90 +1,112 @@
+# Lucy Bot
 
-# Lucy
-
-![ChemBot Logo](path/to/logo.png)
-
-**Lucy** is a Discord bot designed to assist chemists with various tasks, including molecular visualization, chemical property prediction, and much more. By leveraging the power of RDKit and discord.py, Lucy brings advanced chemistry tools directly to your Discord server.
+Lucy is a versatile Discord bot designed for managing molecular structures, interacting with emojis, and more. This README will guide you through setting up and running Lucy, including environment setup.
 
 ## Features
 
-- **Molecular Visualization**: Generate 2D and 3D visualizations of molecules.
-- **Property Prediction**: Calculate molecular properties such as molecular weight, LogP, and more.
-- **Chemical Structure Search**: Search for molecules by structure or substructure.
-- **Reaction Prediction**: Predict chemical reactions based on input molecules.
-- **Database Integration**: Integrate with various chemical databases for extended functionality.
-- **User-Friendly Commands**: Easy-to-use commands with detailed help options.
+- **Colorize Role:** Change your role color with RGB values.
+- **DMPurge:** Purge DM messages with the bot.
+- **Draw:** Draw molecules or compare them graphically using RDKit.
+- **Emoji Info:** Get information about emojis.
+- **Load/Unload Cogs:** Dynamically load and unload bot cogs.
+- **Purge:** Remove non-pinned messages from channels.
+- **Reload:** Reload bot cogs.
+- **SMILES:** Retrieve SMILES codes for chemicals.
+- **Sync:** Synchronize the bot's command tree.
+
+## Requirements
+
+- Python 3.8+
+- `discord.py` library
+- `requests` library
+- `asyncpraw` library
+- `emoji` library
+- `pubchempy` library
+- `rdkit` library
+- `pillow` library
 
 ## Installation
 
-### Prerequisites
+1. **Clone the repository:**
 
-- Python 3.7 or higher
-- RDKit
-- discord.py
-
-### Setup
-
-1. **Clone the repository**
    ```bash
-   git clone https://github.com/brandongrahamcobb/py.git
-   cd py
+   git clone https://github.com/yourusername/lucy-bot.git
+   cd lucy-bot
    ```
 
-2. **Create a virtual environment**
+2. **Run the setup script:**
+
+   The `setup.py` script will handle environment setup, including creating a virtual environment, installing dependencies, and setting the bot token.
+
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   python setup.py
    ```
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+   During setup, you will be prompted to enter your Discord bot token if it is not already present in `config.json`.
 
-4. **Set up your Discord bot token**
-   - Create a `.env` file in the project root directory:
-     ```
-     DISCORD_TOKEN=your_discord_bot_token
-     ```
+3. **Configure the bot:**
 
-5. **Run the bot**
-   ```bash
-   python bot.py
-   ```
+   - The setup script will create and update the `config.json` file in the `json` directory with your bot token.
 
-## Usage
+4. **Create necessary directories:**
 
-Invite Lcy to your server using [this link](https://discord.com/oauth2/authorize?client_id=302202228016414721).
+   The `setup.py` script will automatically create the required directories if they don't exist:
 
-### Commands
+   - `../json/`
+   - `../log/`
+   - `../txt/`
 
-- `!mol <SMILES>`: Generate a 2D visualization of a molecule from its SMILES string.
-- `!props <SMILES>`: Calculate and display properties of a molecule.
-- `!help`: Display the list of available commands.
+## Running the Bot
 
-### Examples
+To run the bot, execute the `main.py` script:
 
-- Generate a 2D visualization of benzene:
-  ```
-  !mol c1ccccc1
-  ```
+```bash
+python main.py
+```
 
-- Calculate properties of ethanol:
-  ```
-  !props CC(O)C
-  ```
+This will start the bot and load the specified cogs.
+
+## Code Explanation
+
+- **Versioning:** The `get_version()` function manages version numbers and updates the version file.
+- **Configuration Loading:** The `load_config()` function loads bot settings from `config.json`.
+- **Logging:** The `setup_logging()` function configures logging to `../log/discord.log`.
+- **Lucy Class:** A custom `commands.Bot` subclass that loads extensions and optionally syncs commands to a specific guild.
+- **Main Function:** Initializes and starts the bot with the configured token and extensions.
+
+## Commands
+
+Here are the commands you can use with the bot:
+
+- **!colorize <R> <G> <B>**: Change your role color with red, green, and blue values.
+- **!dmpurge**: Purge DM messages with the bot (Luc).
+- **!draw <MOLECULE> or !draw <MOLECULE1> <MOLECULE2>**: Draw a molecule or compare two molecules using RDKit.
+- **!emoji <emoji>**: Get information about a given Unicode emoji character.
+- **!load <extension>**: Load a cog.
+- **!purge**: Delete non-pinned messages from the channel.
+- **!reload <extension>**: Reload a cog.
+- **!smiles <chemical>**: Retrieve the SMILES code for a chemical.
+- **!unload <extension>**: Unload a cog.
+- **!sync [~ | * | ^]**: Synchronize the bot's command tree globally or to the current guild.
+
+## Environment Setup
+
+The `setup.py` script performs the following:
+
+- **System Update (Linux):** If running as root on Linux, updates the system using `pacman`.
+- **Virtual Environment:** Creates a virtual environment if it doesn't exist.
+- **Dependencies:** Installs required Python packages into the virtual environment.
+- **Directory Creation:** Ensures necessary directories are created.
+- **Token Setup:** Prompts for a Discord bot token if it is not present in `config.json`.
 
 ## Contributing
 
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
 ## License
 
-Lucy is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the GNU Public License. See the [LICENSE](LICENSE) file for details.
 
-## Acknowledgements
+## Contact
 
-- [RDKit](https://www.rdkit.org/)
-- [discord.py](https://discordpy.readthedocs.io/en/stable/)
-
-![ChemBot Demo](path/to/demo.gif)
+For any questions or issues, please reach out to [brandongrahamcobb@icloud.com](mailto:brandongrahamcobb@icloud.com).
