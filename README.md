@@ -1,3 +1,6 @@
+Here is a comprehensive `README.md` file based on the provided information, including instructions for setting up and running your Discord bot. I have incorporated details from the files and the previous queries.
+
+```markdown
 # Lucy Bot
 
 Lucy is a versatile Discord bot designed for managing molecular structures, interacting with emojis, and more. This README will guide you through setting up and running Lucy, including environment setup.
@@ -27,16 +30,70 @@ Lucy is a versatile Discord bot designed for managing molecular structures, inte
 
 ## Installation
 
-1. **Clone the repository:**
+### Step 1: Create a Discord Application
 
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Click on the "New Application" button.
+
+   ![New Application Button](path_to_your_screenshot1)
+
+3. Enter a name for your application and click "Create".
+
+   ![Create Application](path_to_your_screenshot2)
+
+### Step 2: Create a Bot
+
+1. In your new application's settings, navigate to the "Bot" tab on the left sidebar.
+2. Click on the "Add Bot" button.
+
+   ![Add Bot](path_to_your_screenshot3)
+
+3. Confirm by clicking "Yes, do it!".
+
+   ![Confirm Add Bot](path_to_your_screenshot4)
+
+4. Your bot is now created. You can customize its username and avatar here if you like.
+
+   ![Bot Created](path_to_your_screenshot5)
+
+### Step 3: Get Your Bot's Token
+
+1. Under the Bot tab, you will see a "Token" section. Click "Copy" to copy your bot's token. Keep this token secure and do not share it with anyone.
+
+   ![Copy Bot Token](path_to_your_screenshot6)
+
+### Step 4: Invite Your Bot to a Server
+
+1. Navigate to the "OAuth2" tab on the left sidebar.
+2. Under the "OAuth2 URL Generator" section, select the "bot" scope.
+
+   ![OAuth2 URL Generator](path_to_your_screenshot7)
+
+3. Scroll down to the "Bot Permissions" section and select the permissions your bot will need. For basic functionality, you can start with the following permissions:
+   - Read Messages/View Channels
+   - Send Messages
+   - Manage Messages (for purge commands)
+   - Embed Links
+   - Attach Files
+   - Read Message History
+   - Use External Emojis
+
+   ![Bot Permissions](path_to_your_screenshot8)
+
+4. Copy the generated URL and open it in a new browser tab. Select the server you want to add your bot to and click "Authorize".
+
+   ![Authorize Bot](path_to_your_screenshot9)
+
+### Step 5: Set Up Your Bot Locally
+
+1. Clone the repository containing your bot's code:
+   
    ```bash
-   git clone https://github.com/brandongrahamcobb/py.git
-   cd py
+   git clone https://github.com/yourusername/lucy-bot.git
+   cd lucy-bot
    ```
 
-2. **Run the setup script:**
-
-   The `setup.py` script will handle environment setup, including creating a virtual environment, installing dependencies, and setting the bot token.
+2. Run the setup script:
 
    ```bash
    python setup.py
@@ -44,35 +101,19 @@ Lucy is a versatile Discord bot designed for managing molecular structures, inte
 
    During setup, you will be prompted to enter your Discord bot token if it is not already present in `config.json`.
 
-3. **Configure the bot:**
+### Step 6: Run Your Bot
 
-   - The setup script will create and update the `config.json` file in the `json` directory with your bot token.
+1. To start your bot, run the `main.py` script:
 
-4. **Create necessary directories:**
+   ```bash
+   python main.py
+   ```
 
-   The `setup.py` script will automatically create the required directories if they don't exist:
+### Step 7: Verify Your Bot is Online
 
-   - `../json/`
-   - `../log/`
-   - `../txt/`
+1. Check your Discord server to see if your bot is online and responding to commands.
 
-## Running the Bot
-
-To run the bot, execute the `main.py` script:
-
-```bash
-python main.py
-```
-
-This will start the bot and load the specified cogs.
-
-## Code Explanation
-
-- **Versioning:** The `get_version()` function manages version numbers and updates the version file.
-- **Configuration Loading:** The `load_config()` function loads bot settings from `config.json`.
-- **Logging:** The `setup_logging()` function configures logging to `../log/discord.log`.
-- **Lucy Class:** A custom `commands.Bot` subclass that loads extensions and optionally syncs commands to a specific guild.
-- **Main Function:** Initializes and starts the bot with the configured token and extensions.
+   ![Bot Online](path_to_your_screenshot10)
 
 ## Commands
 
@@ -99,14 +140,11 @@ The `setup.py` script performs the following:
 - **Directory Creation:** Ensures necessary directories are created.
 - **Token Setup:** Prompts for a Discord bot token if it is not present in `config.json`.
 
-## Contributing
+### Setup Script
 
-Contributions are welcome! Please fork the repository and submit a pull request with your changes.
+Here's the setup script (`setup.py`) that handles environment setup and token configuration:
 
-## License
+## Main Script
 
-This project is licensed under the GPL-3.0 license. See the [LICENSE](LICENSE) file for details.
+Here's the main script (`main.py`) for running the bot:
 
-## Contact
-
-For any questions or issues, please reach out to [brandongrahamcobb@icloud.com](mailto:brandongrahamcobb@icloud.com).
