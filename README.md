@@ -1,6 +1,3 @@
-Here is a comprehensive `README.md` file based on the provided information, including instructions for setting up and running your Discord bot. I have incorporated details from the files and the previous queries.
-
-```markdown
 # Lucy Bot
 
 Lucy is a versatile Discord bot designed for managing molecular structures, interacting with emojis, and more. This README will guide you through setting up and running Lucy, including environment setup.
