@@ -96,7 +96,7 @@ class MyCog(commands.Cog):
                      file = discord.File(fp=mol, filename=f'Molecule.png')
                      await ctx.send(file=file)
                 else:
-                     ctx.send('Invalid string. Enter a molecule name or SMILES string.')
+                     await ctx.send('Invalid string. Enter a molecule name or SMILES string.')
         elif len(args) == 2:
             other_compounds = pcp.get_compounds(args[1], 'name')
             if compounds:
@@ -106,8 +106,8 @@ class MyCog(commands.Cog):
             else:
                  label_1 = 'mol'
                  mol = Chem.MolFromSmiles(args[0])
-            if mol:
-                 ctx.send('Invalid string. Enter a molecule name or SMILES string.')
+            if not mol:
+                 await ctx.send('Invalid first string. Enter a molecule name or SMILES string.')
             if other_compounds:
                  other_compound_data = other_compounds[0].to_dict(properties=['isomeric_smiles'])
                  label_2 = other_compounds[0].synonyms[0]
@@ -115,8 +115,8 @@ class MyCog(commands.Cog):
             else:
                  label_2 = 'refmol'
                  refmol = Chem.MolFromSmiles(args[1])
-            if refmol:
-                ctx.send('Invalid string. Enter a molecule name or SMILES string.')
+            if not refmol:
+                await ctx.send('Invalid second string. Enter a molecule name or SMILES string.')
             d2d = Draw.MolDraw2DCairo(512, 512)
             d2d2 = Draw.MolDraw2DCairo(512, 512)
             fp1 = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
