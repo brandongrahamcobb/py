@@ -19,7 +19,6 @@ Lucy is a versatile Discord bot designed for managing molecular structures, inte
 - Python 3.8+
 - `discord.py` library
 - `requests` library
-- `asyncpraw` library
 - `emoji` library
 - `pubchempy` library
 - `rdkit` library
@@ -32,40 +31,43 @@ Lucy is a versatile Discord bot designed for managing molecular structures, inte
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications).
 2. Click on the "New Application" button.
 
-   ![New Application Button](path_to_your_screenshot1)
+   ![New Application Button](images/base.png)
 
 3. Enter a name for your application and click "Create".
 
-   ![Create Application](path_to_your_screenshot2)
+   ![Create Application](images/create.png)
 
 ### Step 2: Create a Bot
 
 1. In your new application's settings, navigate to the "Bot" tab on the left sidebar.
-2. Click on the "Add Bot" button.
+2. Click on the "Reset Token" button.
 
-   ![Add Bot](path_to_your_screenshot3)
+   ![Reset Token](images/reset.png)
 
 3. Confirm by clicking "Yes, do it!".
 
-   ![Confirm Add Bot](path_to_your_screenshot4)
+   ![Confirm Reset Token](images/token.png)
 
 4. Your bot is now created. You can customize its username and avatar here if you like.
 
-   ![Bot Created](path_to_your_screenshot5)
+   ![Bot Created](images/created.png)
 
-### Step 3: Get Your Bot's Token
+### Step 3: Setup Privileged Intents
+
+1. In Bot, there is a "Privileged Intents section". Click enable on the MESSAGE CONTENT INTENT.
+
+   ![Priviledged Intents](images/intents.png)
+
+### Step 4: Get Your Bot's Token
 
 1. Under the Bot tab, you will see a "Token" section. Click "Copy" to copy your bot's token. Keep this token secure and do not share it with anyone.
 
-   ![Copy Bot Token](path_to_your_screenshot6)
+   ![Copy Bot Token](images/token.png)
 
-### Step 4: Invite Your Bot to a Server
+### Step 5: Invite Your Bot to a Server
 
-1. Navigate to the "OAuth2" tab on the left sidebar.
-2. Under the "OAuth2 URL Generator" section, select the "bot" scope.
-
-   ![OAuth2 URL Generator](path_to_your_screenshot7)
-
+1. Navigate to the "Installation" tab on the left sidebar.
+2. Under the "Default Install Settings" section for "Guild Install", select the "bot" scope.
 3. Scroll down to the "Bot Permissions" section and select the permissions your bot will need. For basic functionality, you can start with the following permissions:
    - Read Messages/View Channels
    - Send Messages
@@ -75,19 +77,20 @@ Lucy is a versatile Discord bot designed for managing molecular structures, inte
    - Read Message History
    - Use External Emojis
 
-   ![Bot Permissions](path_to_your_screenshot8)
+   ![Bot Permissions](images/oauth.png)
 
 4. Copy the generated URL and open it in a new browser tab. Select the server you want to add your bot to and click "Authorize".
 
-   ![Authorize Bot](path_to_your_screenshot9)
+   ![Authorize Bot](images/authorize.png)
 
-### Step 5: Set Up Your Bot Locally
+### Step 6: Set Up Your Bot Locally
 
 1. Clone the repository containing your bot's code:
    
    ```bash
-   git clone https://github.com/yourusername/lucy-bot.git
-   cd lucy-bot
+   git clone https://github.com/brandongrahamcobb/py.git
+   mv py Lucy
+   cd Lucy
    ```
 
 2. Run the setup script:
@@ -110,7 +113,7 @@ Lucy is a versatile Discord bot designed for managing molecular structures, inte
 
 1. Check your Discord server to see if your bot is online and responding to commands.
 
-   ![Bot Online](path_to_your_screenshot10)
+   ![Bot Online](images/online.png)
 
 ## Commands
 
