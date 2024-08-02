@@ -31,7 +31,7 @@ Lucy is a versatile Discord bot designed for managing molecular structures, inte
 
    ```bash
    git clone https://github.com/brandongrahamcobb/py.git
-   cd lucy-bot
+   cd py
    ```
 
 2. **Run the setup script:**
