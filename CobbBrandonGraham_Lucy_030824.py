@@ -1,4 +1,4 @@
-""" main.py
+""" CobbBrandonGraham_Lucy_030824.py
     Copyright (C) 2024 github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@ import logging.handlers
 import os
 import json
 import requests
-import setup
 
 from typing import List, Optional
 
@@ -101,7 +100,7 @@ async def main():
     config = load_config()
     token = config['token']
     setup_logging()
-    exts = ['game_cog', 'my_cog']
+    exts = ['CobbBrandonGraham_GameCog_030824', 'CobbBrandonGraham_MyCog_030824']
     intents = discord.Intents.all()
     intents.message_content = True
     async with Lucy(
