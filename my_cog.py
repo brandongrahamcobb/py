@@ -1,4 +1,4 @@
-""" mycog.py
+""" my_cog.py
     Copyright (C) 2024 github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -139,15 +139,15 @@ class MyCog(commands.Cog):
                 await ctx.send('Invalid second string. Enter a molecule name or SMILES string.')
             d2d = Draw.MolDraw2DCairo(512, 512)
             d2d2 = Draw.MolDraw2DCairo(512, 512)
-            fp1 = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=256)
-            fp2 = AllChem.GetMorganFingerprintAsBitVect(refmol, 2, nBits=256)
+            fp1 = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
+            fp2 = AllChem.GetMorganFingerprintAsBitVect(refmol, 2, nBits=2048)
             similarity = TanimotoSimilarity(fp1, fp2)
-            fig, maxweight = SimilarityMaps.GetSimilarityMapForFingerprint(refmol, mol, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType='bv', nBits=2048), draw2d=d2d)
+            fig, maxweight = SimilarityMaps.GetSimilarityMapForFingerprint(refmol, mol, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType='bv', nBits=8192), draw2d=d2d)
             d2d.FinishDrawing()
             buf = io.BytesIO(d2d.GetDrawingText())
             image1 = Image.open(buf)
             image1 = image1.convert("RGBA")
-            fig, maxweight = SimilarityMaps.GetSimilarityMapForFingerprint(mol, refmol, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType='bv', nBits=2048), draw2d=d2d2)
+            fig, maxweight = SimilarityMaps.GetSimilarityMapForFingerprint(mol, refmol, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType='bv', nBits=8192), draw2d=d2d2)
             d2d2.FinishDrawing()
             buf = io.BytesIO(d2d2.GetDrawingText())
             image2 = Image.open(buf)
@@ -165,11 +165,11 @@ class MyCog(commands.Cog):
             combined.paste(transparent_version, (10, 10), mask=transparent_version)
             combined.paste(original, (0, 0))
             draw = ImageDraw.Draw(combined)
-     #       for x in range(combined.width):
-      #          for y in range(combined.height):
-       #             pixel = combined.getpixel((x, y))
-        #            if sum(pixel) >= 1020:
-         #               draw.point((x, y), fill=(0, 0, 0, 0))
+ #           for x in range(combined.width):
+  #              for y in range(combined.height):
+   #                 pixel = combined.getpixel((x, y))
+    #                if sum(pixel) >= 1020:
+     #                   draw.point((x, y), fill=(0, 0, 0, 0))
             font = ImageFont.load_default(40)
             draw.text(((width - draw.textlength(label_1, font=font)) / 2, 10), label_1, fill="black", font=font)
             draw.text((width + (width - draw.textlength(label_2, font=font)) / 2, 10), label_2, fill="black", font=font)
