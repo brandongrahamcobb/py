@@ -1,4 +1,4 @@
-""" CobbBrandonGraham_Lucy_030824.py
+""" main.py
     Copyright (C) 2024 github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -15,43 +15,19 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from discord.ext import commands
+from typing import List, Optional
+from utils.helpers import load_config
+from utils.helpers import setup_logging
+
 import asyncio
-import logging
-import logging.handlers
+import discord
 import os
-import json
-import requests
+#import json
+#import requests
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from typing import List, Optional
-from utils.helpers import load_config
-
-import discord
-from discord.ext import commands
-
-# Set up logging
-def setup_logging():
-    global logger
-    log_file = 'discord.log'
-
-    # Create a file handler for logging
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging.INFO)
-
-    # Create a logging format
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(formatter)
-
-    # Add the file handler to the root logger
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    logger.addHandler(file_handler)
-
-    # Create the file if it doesn't exist
-    if not os.path.exists(log_file):
-        open(log_file, 'a').close()
 
 class Lucy(commands.Bot):
     def __init__(
@@ -64,7 +40,6 @@ class Lucy(commands.Bot):
         super().__init__(*args, **kwargs)
         self.initial_extensions = initial_extensions
         self.testing_guild_id = testing_guild_id
-
     async def setup_hook(self) -> None:
         for extension in self.initial_extensions:
             await self.load_extension(extension)

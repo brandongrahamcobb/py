@@ -45,12 +45,12 @@ class GameCog(commands.Cog):
                          1697021059]
 
     def load_users(self):
-        if os.path.exists("../json/users.json"):
-            with open("../json/users.json", "r") as f:
+        if os.path.exists("users.json"):
+            with open("users.json", "r") as f:
                 self.users = json.load(f)
     
     def save_users(self):
-        with open("../json/users.json", "w") as f:
+        with open("users.json", "w") as f:
             json.dump(self.users, f, indent=4)
 
     def get_xp_for_level(self, level):

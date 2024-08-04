@@ -15,50 +15,58 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from discord.ext import commands
-from PIL import Image
-from rdkit import Chem
-from rdkit.Chem import Draw
+import logging
+import logging.handlers
 
-import discord
+def setup_logging():
+    global logger
+    log_file = 'discord.log'
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    logger.addHandler(file_handler)
+    if not os.path.exists(log_file):
+        open(log_file, 'a').close()
+
 import json
 import os
-import rdkit
-
-up_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-up_up_dir = os.path.join(up_dir, '..')
-
-def monograph(mol: rdkit.Chem.rdchem.Mol) -> discord.File:
-    img = Draw.MolToImage(mol, size=(512, 512))
-    img_bytes = io.BytesIO()
-    img.save(img_bytes, format='PNG')
-    img_bytes.seek(0)
-    file = discord.File(fp=img_bytes, filename=f'Molecule.png')
-    return file
-
-def get_version():
-    if not os.path.exists(os.path.join(up_up_dir, 'version.txt')):
-        with open(os.path.join(up_up_dir, 'version.txt'), 'w') as f:
-            f.write('1.0.0')
-    with open(os.path.join(up_up_dir, 'version.txt'), 'r') as f:
-        version = f.read().strip()
-    major, minor, patch = map(int, version.split('.'))
-    patch += 1
-    if patch >= 10:
-        patch = 0
-        minor += 1
-    if minor >= 10:
-        minor = 0
-        major += 1
-    version = f"{major}.{minor}.{patch}"
-    with open(os.path.join(up_up_dir, 'version.txt'), 'w') as f:
-        f.write(version)
-    return version
 
 def load_config():
-    config_path = os.path.join(up_up_dir, 'config.json')
-    if os.path.exists(config_path):
-        with open(config_path, 'r') as f:
-            return json.load(f)
-    else:
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'config.json')
+    if not os.path.exists(config_path):
         raise FileNotFoundError("Configuration file not found.")
+    with open(config_path, 'r') as f:
+        return json.load(f)
+
+import requests
+from bs4 import BeautifulSoup
+
+def fetch_and_parse(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, 'html.parser')
+        return soup.get_text()
+    except requests.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import time
+
+def interact_with_chatgpt(prompt):
+    driver = webdriver.Chrome()  # Or use another driver
+    driver.get('https://chat.openai.com/')  # OpenAI ChatGPT URL
+    time.sleep(10)  # Wait for page load
+    input_field = driver.find_element(By.CSS_SELECTOR, 'textarea')
+    input_field.send_keys(prompt + Keys.RETURN)
+    time.sleep(5)  # Wait for response
+    messages = driver.find_elements(By.CSS_SELECTOR, '.message')
+    response = messages[-1].text if messages else 'No response found'
+    driver.quit()
+    return response

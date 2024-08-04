@@ -15,34 +15,58 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from bs4 import BeautifulSoup
+from bot.utils.helpers import load_config
+from bot.utils.helpers import fetch_and_parse
+from bot.utils.helpers import interact_with_chatgpt
 from discord.ext import commands
+from googleapiclient.discovery import build
 from PIL import Image, ImageDraw, ImageFont
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 from rdkit.Chem.Draw import SimilarityMaps
+from rdkit.Chem.Pharm2D import Gobbi_Pharm2D, Generate
 from rdkit.DataStructs import FingerprintSimilarity, TanimotoSimilarity
 from typing import Literal, Optional
-from bot.utils.helpers import monograph
+
+from rdkit.Chem import ChemicalFeatures
+from rdkit import rdBase
+from rdkit.RDPaths import RDDocsDir
+from rdkit.RDPaths import RDDataDir
+from rdkit.Chem.Draw import IPythonConsole
 
 import discord
 import emoji as emoji_lib
 import json
 import io
 import os
+import matplotlib.pyplot as plt
+#import numpy
 import pubchempy as pcp
-import random
+#import random
+import requests
+#import traceback
 import unicodedata
+
 
 class MyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        config = load_config()
         self.user_command_messages = {}
+        self.google_json_key = config.get('google_json_key')
+        self.my_cse_id = '4231a573aa34241e4'
+        self.headers = config.get('headers')
+
+    def google_search(search_term, api_key, cse_id, **kwargs):
+        service = build('customsearch', 'v1', developerKey=api_key)
+        res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
+        return res['items']
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot:
             return
-        # Record each command message
         if message.author != self.bot.user and message.content.startswith('!'):
             if message.author.id not in self.user_command_messages:
                 self.user_command_messages[message.author.id] = []
@@ -62,6 +86,34 @@ class MyCog(commands.Cog):
     async def on_error(self, event, *args, **kwargs) -> None:
         if event:
             logger.error(f'Error occurred in event {event}', exc_info=True)
+
+    @commands.command(name='catch_all')
+    async def catch_all(self, ctx, *, command_name: str):
+        try:
+            text = fetch_and_parse(f'https://www.cannabinoidswithturkey.com/cannabinoidinfosheets/')
+            reftext = fetch_and_parse(f'https://www.cannabinoidswithturkey.com/cannabinoidinfosheets/{command_name}')
+            if text.strip() != reftext.strip():
+                await ctx.send(f'https://www.cannabinoidswithturkey.com/cannabinoidinfosheets/{command_name}')
+            text = fetch_and_parse(f'https://www.cannabinoidswithturkey.com/info-sheets-na/')
+            reftext = fetch_and_parse(f'https://www.cannabinoidswithturkey.com/info-sheets-na/{command_name}')
+            if text.strip() != reftext.strip():
+                await ctx.send(f'https://www.cannabinoidswithturkey.com/info-sheets-na/{command_name}')
+            text = fetch_and_parse(f'https://legaldrugswithturkey.wixsite.com/legaldrugswithturkey/infosheets/')
+            reftext = fetch_and_parse(f'https://legaldrugswithturkey.wixsite.com/legaldrugswithturkey/infosheets/{command_name}')
+            if text.strip() != reftext.strip():
+                await ctx.send(f'https://legaldrugswithturkey.wixsite.com/legaldrugswithturkey/infosheets/{command_name}')
+        except Exception as e:
+            await ctx.send(e)
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            command_name = ctx.message.content[len('!'):].strip()
+            catch_all_command = self.bot.get_command('catch_all')
+            if catch_all_command:
+                await ctx.invoke(catch_all_command, command_name=command_name)
+        else:
+            raise error
 
     @commands.command(description='')
     @commands.is_owner()
@@ -114,7 +166,11 @@ class MyCog(commands.Cog):
                      file = discord.File(fp=img_bytes, filename=f'Molecule.png')
                      await ctx.send(file=file)
                 else:
-                     await ctx.send('Invalid string. Enter a molecule name or SMILES string.')
+                     embed = discord.Embed()
+                     results = MyCog.google_search(args[0], self.google_json_key, self.my_cse_id, num=10)
+                     for result in results:
+                         embed.add_field(name=result['title'], value=result['link'], inline=False)
+                     await ctx.send(embed=embed)
         elif len(args) == 2:
             other_compounds = pcp.get_compounds(args[1], 'name')
             if compounds:
@@ -180,76 +236,8 @@ class MyCog(commands.Cog):
             await ctx.send(file=file)
 
     @commands.command()
-    async def emoji(self, ctx: commands.Context, emoji_character: str = None):
-        if emoji_character is None:
-            await ctx.send('Please provide a Unicode emoji character.')
-            return
-        unicode_name = emoji_lib.demojize(emoji_character)
-        if unicode_name.startswith(':') and unicode_name.endswith(':'):
-            unicode_name = unicode_name[1:-1]
-            code_points = ' '.join(f'U+{ord(c):04X}' for c in emoji_character)
-            description = unicodedata.name(emoji_character, 'No description available')
-            unicode_info = (
-                f'**Unicode Emoji Character:** {emoji_character}\n'
-                f'**Unicode Emoji Name:** {unicode_name}\n'
-                f'**Code Points:** {code_points}\n'
-                f'**Description:** {description}'
-            )
-            await ctx.send(unicode_info)
-        else:
-            await ctx.send('Unicode emoji not found. Make sure it is a valid Unicode emoji character.')
-
-    @commands.command()
     async def how(self, ctx: commands.Context):
         help_message = """
-**Bot Commands Help**
-
-**!colorize <R> <G> <B>**
-- **Description:** Changes your role color using RGB values.
-- **Example:** `!colorize 255 0 0` (for red)
-
-**!dmpurge**
-- **Description:** Purges DM messages with Lucy.
-- **Example:** `!dmpurge`
-
-**!draw <molecule_name|SMILES> [<reference_molecule_name|SMILES>]**
-- **Description:** Draws a molecule when provided a molecule name or SMILES, or compares two molecules graphically using RDKit.
-- **Example:** `!draw C1CCCCC1` or `!draw LSD C1=CC=CC=C1`
-
-**!emoji <emoji>**
-- **Description:** Provides information about an emoji.
-- **Example:** `!emoji 😀`
-
-**!load <extension>**
-- **Description:** Loads a cog.
-- **Example:** `!load mycog`
-
-**!purge**
-- **Description:** Deletes up to 100 non-pinned messages from the channel.
-- **Example:** `!purge`
-
-**!reload <extension>**
-- **Description:** Reloads a cog.
-- **Example:** `!reload mycog`
-
-**!smiles <chemical>**
-- **Description:** Provides a SMILES code for a chemical.
-- **Example:** `!smiles water`
-
-**!unload <extension>**
-- **Description:** Unloads a cog.
-- **Example:** `!unload mycog`
-
-**!sync [~|*|^] [<guild_id> ...]**
-- **Description:** Synchronizes the bot's command tree.
-  - `~`: Syncs commands to the current guild.
-  - `*`: Copies global commands to the current guild and syncs.
-  - `^`: Clears commands in the current guild.
-  - Without arguments: Syncs commands globally.
-  - With `guild_id` arguments: Syncs commands to the specified guilds.
-- **Example:** `!sync` or `!sync ~` or `!sync *` or `!sync ^`
-
-For additional assistance or if you encounter issues, please contact support.
         """
         await ctx.send(help_message)
 
@@ -379,30 +367,98 @@ For additional assistance or if you encounter issues, please contact support.
                 deleted += 1
         return deleted
 
-    @commands.command(name='msds', help='Displays a shortened MSDS of a molecule.')
-    async def msds(self, ctx, *, molecule_name: str):
+    @commands.command(name="info")
+    async def info(self, ctx, info_type: str = None, *, argument: str = None):
+        if info_type is None:
+            await ctx.send("Please provide the type of information you need. Options are: `emoji`, `msds`.")
+            return
+        if info_type.lower() == "emoji":
+            if argument is None:
+                await ctx.send("Please provide the Unicode emoji character.")
+            else:
+                await self.get_emoji_info(ctx, argument)
+        elif info_type.lower() == "msds":
+            if argument is None:
+                await ctx.send("Please provide the molecule name.")
+            else:
+                await self.get_msds_info(ctx, argument)
+        else:
+            await ctx.send("Invalid info type. Options are: `emoji`, `msds`.")
+
+    async def get_emoji_info(self, ctx, emoji_character):
+        if emoji_character is None:
+            await ctx.send('Please provide a Unicode emoji character.')
+            return
+        unicode_name = emoji_lib.demojize(emoji_character)
+        if unicode_name.startswith(':') and unicode_name.endswith(':'):
+            unicode_name = unicode_name[1:-1]
+            code_points = ' '.join(f'U+{ord(c):04X}' for c in emoji_character)
+            description = unicodedata.name(emoji_character, 'No description available')
+            unicode_info = (
+                f'**Unicode Emoji Character:** {emoji_character}\n'
+                f'**Unicode Emoji Name:** {unicode_name}\n'
+                f'**Code Points:** {code_points}\n'
+                f'**Description:** {description}'
+            )
+            await ctx.send(unicode_info)
+        else:
+            await ctx.send('Unicode emoji not found. Make sure it is a valid Unicode emoji character.')
+
+    async def get_msds_info(self, ctx, molecule_name: str):
         # Fetch molecule data from PubChem
         compounds = pcp.get_compounds(molecule_name, 'name')
         if not compounds:
             await ctx.send('Molecule not found.')
             return
-
         compound = compounds[0]
-        compound_info = compound.to_dict(properties=['iupac_name', 'molecular_formula', 'molecular_weight'])
-        # Fetch MSDS data
+        compound_info = compound.to_dict(properties=['iupac_name', 'molecular_formula', 'molecular_weight', 'synonyms'])
+        description = compound_info.get('synonyms', ['No description available'])[0]
         msds_url = f"https://pubchem.ncbi.nlm.nih.gov/compound/{compound.cid}"
-        
-        # Prepare MSDS message
+        fda_guide_url = self.get_fda_prescriber_guide(molecule_name)
         msds_message = (
             f"**Molecule Name:** {compound_info.get('iupac_name', 'N/A')}\n"
             f"**Molecular Formula:** {compound_info.get('molecular_formula', 'N/A')}\n"
             f"**Molecular Weight:** {compound_info.get('molecular_weight', 'N/A')} g/mol\n"
-            f"**Description:** {compound_info.get('description', 'N/A')}\n"
-            f"**MSDS URL:** [View MSDS]({msds_url})"
+            f"**Description:** {description}\n"
+            f"**MSDS URL:** [View MSDS]({msds_url})\n"
+            f"**FDA Prescriber Guide:** {fda_guide_url if fda_guide_url else 'No prescriber guide found.'}"
         )
-
-        # Send the MSDS message
         await ctx.send(msds_message)
+
+    def get_fda_prescriber_guide(self, molecule_name: str) -> str:
+        search_query = f"{molecule_name} prescriber guide"
+        google_search_url = f"https://www.google.com/search?q={search_query}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = requests.get(google_search_url, headers=headers)
+        if response.status_code != 200:
+            return None
+        soup = BeautifulSoup(response.text, "html.parser")
+        for result in soup.find_all("a"):
+            href = result.get("href")
+            if href and "fda.gov" in href:
+                return href.split("&")[0].replace("/url?q=", "")
+        return None
+
+    @commands.command(name='botinfo')
+    @commands.is_owner()  # Ensures only the bot owner can use this command
+    async def botinfo(self, ctx, member: discord.Member, prompt: str):
+        """DMs the specified user with the bot's information."""
+        bot_info = (
+            "Here is some information about the bot:\n"
+            f"**Name:** {self.bot.user.name}\n"
+            f"**ID:** {self.bot.user.id}\n"
+            f"**Description:** This is a bot created by Brandon Graham Cobb for various functionalities.\n"
+            f"**Invite Link:** [Invite Bot](https://discord.com/oauth2/authorize?client_id=302202228016414721)\n"
+            f"**Support Server:** [Support Server](https://discord.gg/dNfUn8MeYN)\n"
+            f"**P.S.:** {interact_with_chatgpt(prompt)}"
+        )
+        try:
+            await member.send(bot_info)
+            await ctx.send(f"Sent bot information to {member.mention}.")
+        except discord.Forbidden:
+            await ctx.send(f"Failed to send DM to {member.mention}. They might have DMs disabled.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(MyCog(bot))
