@@ -43,6 +43,7 @@ class GameCog(commands.Cog):
                          615821622, 649568646, 685165008, 722712050, 762316670, 804091623, 848155844, 894634784, 943660770, 995373379, 
                          1049919840, 1107455447, 1168144006, 1232158297, 1299680571, 1370903066, 1446028554, 1525246918, 1608855764, 
                          1697021059]
+        self.user_command_messages = {}
 
     def load_users(self):
         if os.path.exists("users.json"):
@@ -80,13 +81,13 @@ class GameCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
-            return
-
         self.distribute_xp(str(message.author.id))
-
         if self.users[str(message.author.id)]["xp"] >= self.get_xp_for_level(self.users[str(message.author.id)]["level"] + 1):
             await message.channel.send(f"Congratulations {message.author.mention}, you reached level {self.users[str(message.author.id)]['level']}!")
+        if message.author != self.bot.user and message.content.startswith('!'):
+            if message.author.id not in self.user_command_messages:
+                self.user_command_messages[message.author.id] = []
+            self.user_command_messages[message.author.id].append(message.id)
 
     @commands.command()
     async def level(self, ctx, member: discord.Member = None):
@@ -121,6 +122,14 @@ class GameCog(commands.Cog):
             leaderboard_message += f"{i}. {member_name} - Level {level}, {xp:.2f} XP\n"
 
         await ctx.send(leaderboard_message)
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, before, after):
+        if after.content and after.content != before.content:
+            if after.content.startswith('!'):
+                ctx = await self.bot.get_context(after)
+                if ctx.valid:
+                    await self.bot.invoke(ctx)
 
 async def setup(bot):
     await bot.add_cog(GameCog(bot))

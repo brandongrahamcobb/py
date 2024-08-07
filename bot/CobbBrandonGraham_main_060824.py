@@ -52,7 +52,7 @@ async def main():
     config = load_config()
     token = config['token']
     setup_logging()
-    exts = ['cogs.game_cog', 'cogs.my_cog']
+    exts = ['cogs.admin_cog', 'cogs.game_cog', 'cogs.my_cog', 'cogs.user_cog']
     intents = discord.Intents.all()
     intents.message_content = True
     async with Lucy(
