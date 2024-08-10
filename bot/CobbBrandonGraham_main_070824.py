@@ -23,8 +23,6 @@ from utils.helpers import setup_logging
 import asyncio
 import discord
 import os
-#import json
-#import requests
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

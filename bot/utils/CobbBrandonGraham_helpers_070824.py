@@ -19,7 +19,13 @@ import logging
 import logging.handlers
 def setup_logging():
     global logger
-    log_file = 'discord.log'
+    home_dir = os.path.expanduser('~')
+    log_dir = os.path.join(home_dir, '.log', 'lucy')
+    log_file = os.path.join(log_dir, 'discord.log')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    if not os.path.exists(log_file):
+        open(log_file, 'a').close()
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -27,19 +33,19 @@ def setup_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     logger.addHandler(file_handler)
-    if not os.path.exists(log_file):
-        open(log_file, 'a').close()
 
 import json
 import os
 def load_config():
-    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'config.json')
+    home_dir = os.path.expanduser('~')
+    config_path = os.path.join(home_dir, '.config', 'lucy', 'config.json')
     if not os.path.exists(config_path):
         raise FileNotFoundError("Configuration file not found.")
     with open(config_path, 'r') as f:
         return json.load(f)
 def get_version():
-    version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'version.txt')
+    home_dir = os.path.expanduser('~')
+    version_file = os.path.join(home_dir, 'Downloads', 'Lucy', 'version.txt')
     try:
         with open(version_file, 'r') as f:
             version = f.read().strip()
