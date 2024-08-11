@@ -65,35 +65,33 @@ def fetch_and_parse(url):
         print(f"Request failed: {e}")
         return None
 
-import hashlib
-def hash_content(content):
-    return hashlib.sha256(content.encode()).hexdigest()
-def same_hashes(url1, url2):
-    try:
-        response1 = requests.get(url1)
-        response2 = requests.get(url2)
-        if response1.status_code == 200 and response2.status_code == 200:
-            hash1 = hash_content(response1.text)
-            hash2 = hash_content(response2.text)
-            if hash1 == hash2:
-                return True
-            else:
-                return False
-    except requests.RequestException as e:
-        return f"An error occurred: {e}"
-
 from googleapiclient.discovery import build
 def google_search(search_term, api_key, cse_id, **kwargs):
     service = build('customsearch', 'v1', developerKey=api_key)
     res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
     return res['items']
+def get_cse_id(option):
+    cse_ids = {
+        'turkey': '25fb95395119b40f0',
+        'web': 'e1753e22095c74f10',
+        'msds': '4231a573aa34241e4',
+        'fda': '72a76e05b0ba044d0'
+    }
+    return cse_ids.get(option, cse_ids['web'])
+def search(query, option):
+    config = load_config()
+    google_json_key = config.get('google_json_key')
+    cse_id = get_cse_id(option)
+    results = google_search(query, google_json_key, cse_id, num=3)
+    if results:
+       return results
+    return None
 
 import emoji as emoji_lib
 import unicodedata
-async def get_emoji_info(ctx, emoji_character):
+def get_emoji(emoji_character):
     if emoji_character is None:
-        await ctx.send('Please provide a Unicode emoji character.')
-        return
+        return 'Please provide a Unicode emoji character.'
     unicode_name = emoji_lib.demojize(emoji_character)
     if unicode_name.startswith(':') and unicode_name.endswith(':'):
         unicode_name = unicode_name[1:-1]
@@ -105,27 +103,64 @@ async def get_emoji_info(ctx, emoji_character):
             f'**Code Points:** {code_points}\n'
             f'**Description:** {description}'
         )
-        await ctx.send(unicode_info)
+        return unicode_info
     else:
-        await ctx.send('Unicode emoji not found. Make sure it is a valid Unicode emoji character.')
+        return 'Unicode emoji not found. Make sure it is a valid Unicode emoji character.'
 
 import pubchempy as pcp
-async def get_msds_info(ctx, molecule_name: str):
-    compounds = pcp.get_compounds(molecule_name, 'name')
-    if not compounds:
-        await ctx.send('Molecule not found.')
-        return
-    compound = compounds[0]
+def get_sds(query: str):
+    compound = get_molecule_info(query)
     compound_info = compound.to_dict(properties=['iupac_name', 'molecular_formula', 'molecular_weight', 'synonyms'])
     description = compound_info.get('synonyms', ['No description available'])[0]
-    msds_url = f"https://pubchem.ncbi.nlm.nih.gov/compound/{compound.cid}"
-#    fda_guide_url = self.get_fda_prescriber_guide(molecule_name)
+    pubchem_url = f"https://pubchem.ncbi.nlm.nih.gov/compound/{compound.cid}"
+    fda_guide_url = search(query, 'fda')
     msds_message = (
       f"**Molecule Name:** {compound_info.get('iupac_name', 'N/A')}\n"
       f"**Molecular Formula:** {compound_info.get('molecular_formula', 'N/A')}\n"
       f"**Molecular Weight:** {compound_info.get('molecular_weight', 'N/A')} g/mol\n"
       f"**Description:** {description}\n"
-      f"**MSDS URL:** [View MSDS]({msds_url})\n"
- #     f"**FDA Prescriber Guide:** {fda_guide_url if fda_guide_url else 'No prescriber guide found.'}"
+      f"**PubChem URL:** [View PubChem]({pubchem_url})\n"
+      f"**FDA Prescriber Guide:** {fda_guide_url[0]['link'] if fda_guide_url[0]['link'] else 'No prescriber guide found.'}"
     )
-    await ctx.send(msds_message)
+    return msds_message
+
+def get_molecule_info(query: str):
+    compounds = pcp.get_compounds(query, 'name')
+    return compounds[0]
+
+from PIL import Image, ImageDraw, ImageFont
+
+def calculate_max_font_size(text, max_width, min_size=10, max_size=30):
+    font_size = max_size
+    temp_image = Image.new("RGB", (0, 0))
+    draw = ImageDraw.Draw(temp_image)
+    while font_size >= min_size:
+        font = ImageFont.load_default(font_size)
+        text_bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        if text_width <= max_width:
+            return font_size
+        font_size -= 1
+    return min_size
+
+def create_gradient_image(width, height, color_start, color_end):
+    gradient = Image.new('RGB', (width, height), color=0)
+    draw = ImageDraw.Draw(gradient)
+    for y in range(height):
+        ratio = y / height
+        r = int(color_start[0] * (1 - ratio) + color_end[0] * ratio)
+        g = int(color_start[1] * (1 - ratio) + color_end[1] * ratio)
+        b = int(color_start[2] * (1 - ratio) + color_end[2] * ratio)
+        draw.line((0, y, width, y), fill=(r, g, b))
+    return gradient
+
+def add_gradient_text(image, text, position, font_path, font_size, color_start, color_end):
+    font = ImageFont.truetype(font_path, font_size)
+    text_width, text_height = ImageDraw.Draw(image).textsize(text, font=font)
+    text_image = Image.new('RGBA', (text_width, text_height), (255, 255, 255, 0))
+    text_draw = ImageDraw.Draw(text_image)
+    text_draw.text((0, 0), text, font=font, fill=(255, 255, 255, 255))
+    gradient = create_gradient_image(text_width, text_height, color_start, color_end)
+    gradient_text = Image.composite(gradient, text_image, text_image)
+    image.paste(gradient_text, position, gradient_text)
+    return image

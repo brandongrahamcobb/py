@@ -46,12 +46,24 @@ class GameCog(commands.Cog):
         self.user_command_messages = {}
 
     def load_users(self):
-        if os.path.exists("users.json"):
-            with open("users.json", "r") as f:
-                self.users = json.load(f)
-    
+        home_dir = os.path.expanduser('~')
+        config_dir = os.path.join(home_dir, '.config', 'lucy')
+        users_path = os.path.join(config_dir, 'users.json')
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
+        if not os.path.exists(users_path):
+            with open(users_path, 'w') as f:
+                json.dump({}, f, indent=4)
+        with open(users_path, 'r') as f:
+            self.users = json.load(f)
+
     def save_users(self):
-        with open("users.json", "w") as f:
+        home_dir = os.path.expanduser('~')
+        config_dir = os.path.join(home_dir, '.config', 'lucy')
+        users_path = os.path.join(config_dir, 'users.json')
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
+        with open(users_path, 'w') as f:
             json.dump(self.users, f, indent=4)
 
     def get_xp_for_level(self, level):
@@ -81,6 +93,8 @@ class GameCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if message.author.bot:
+            return
         self.distribute_xp(str(message.author.id))
         if self.users[str(message.author.id)]["xp"] >= self.get_xp_for_level(self.users[str(message.author.id)]["level"] + 1):
             await message.channel.send(f"Congratulations {message.author.mention}, you reached level {self.users[str(message.author.id)]['level']}!")
@@ -88,6 +102,11 @@ class GameCog(commands.Cog):
             if message.author.id not in self.user_command_messages:
                 self.user_command_messages[message.author.id] = []
             self.user_command_messages[message.author.id].append(message.id)
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, before, after):
+        if before.author == self.bot.user:
+            return
 
     @commands.command()
     async def level(self, ctx, member: discord.Member = None):
