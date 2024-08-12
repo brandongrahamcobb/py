@@ -18,7 +18,6 @@
 from bot.utils.helpers import calculate_max_font_size
 from bot.utils.helpers import get_emoji
 from bot.utils.helpers import get_sds
-from bot.utils.helpers import get_version
 from bot.utils.helpers import load_config
 from bot.utils.helpers import search
 from discord.ext import commands
@@ -42,12 +41,24 @@ import pubchempy as pcp
 import math
 import random
 import requests
+import traceback
 
 class UserCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.translator = Translator()
         self.user_translation_preferences = {}
+        self.config = load_config()
+
+    @commands.command()
+    async def list_channels(self, ctx, guild_id: int):
+        guild = self.bot.get_guild(guild_id)
+        if guild:
+            channels = [f'{channel.name} (ID: {channel.id})' for channel in guild.channels]
+            response = '\n'.join(channels)
+            await ctx.send(f'Channels in {guild.name}:\n{response}')
+        else:
+            await ctx.send("Guild not found or the bot is not in that guild.")
 
     def monograph(molecule: str) -> io.BytesIO():
         d2d = Draw.MolDraw2DCairo(512, 512)
@@ -249,7 +260,7 @@ class UserCog(commands.Cog):
                             await ctx.send(e)
                         file = discord.File(fp=bytes, filename=f'Molecule.png')
                     else:
-                        results = search(arg, 'web')[0]['link'], inline=False
+                        results = search(arg, 'web')[0]['link']
                         embed = discord.Embed()
                         for result in results:
                             embed.add_field(name=result['title'], value=result['link'], inline=False)
@@ -278,7 +289,7 @@ class UserCog(commands.Cog):
     @commands.command(name='info')
     async def info(self, ctx: commands.Context, argument: str = None):
         if argument is None:
-            await ctx.send('Please provide the type of information you need. Options are: `emoji`, `msds`.')
+            await ctx.send('The command is used !info <MOLECULE> or !info :emoji:')
             return
         if isinstance(argument, discord.Emoji):
             try:
@@ -294,19 +305,13 @@ class UserCog(commands.Cog):
     @commands.command(name='smiles')
     async def smiles(self, ctx: commands.Context, *, chemical_name: str):
         compounds = pcp.get_compounds(chemical_name, 'name')
-        if not compounds:
-            await ctx.send(f'No compound found for the name {chemical_name}')
-            return
         compound = compounds[0]
         canonical_smiles = compound.canonical_smiles
         await ctx.send(f'The canonical SMILES for {chemical_name} is: {canonical_smiles}')
 
     @commands.command(name='get')
     async def get(self, ctx, *, query: str):
-        try:
-            results = search(query, 'web')
-        except Exception as e:
-            await ctx.send(e)
+        results = search(query, 'web')
         embed = discord.Embed()
         for result in results:
             embed.add_field(name=result['title'], value=result['link'], inline=False)
@@ -321,12 +326,11 @@ class UserCog(commands.Cog):
             target_lang_code, source_lang_code = prefs
             try:
                 translated = self.translator.translate(message.content, dest=target_lang_code, src=source_lang_code)
-                await message.channel.send(f'Translated ({source_lang_code} -> {target_lang_code}): {translated.text}')
+                await message.channel.send(f'{translated.text}')
             except Exception as e:
                 await message.channel.send(f'Error translating message: {e}')
 
     def get_language_code(self, language_name):
-        # Convert language name to language code
         language_name = language_name.lower()
         for lang_code, lang_name in LANGUAGES.items():
             if lang_name.lower() == language_name:
@@ -335,7 +339,6 @@ class UserCog(commands.Cog):
 
     @commands.command()
     async def languages(self, ctx):
-        # Create a list of supported languages
         supported_languages = ', '.join(LANGUAGES.values())
         await ctx.send(f'Supported languages are:\n{supported_languages}')
 
@@ -355,68 +358,18 @@ class UserCog(commands.Cog):
         else:
             await ctx.send(f'{ctx.author.mention}, please specify "on" or "off".')
 
-    async def fetch_image_src(self, query):
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Run headless Chrome (no UI)
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        driver = webdriver.Chrome(service=Service(executable_path="/home/spawd/.local/bin/chromedriver"), options=chrome_options)
-        try:
-            search_url = f"https://gsrs.ncats.nih.gov/ginas/app/beta/browse-substance?search={query}"
-            driver.get(search_url)
-            driver.implicitly_wait(10)  # Adjust the wait time as needed
-            img_element = driver.find_element(By.CSS_SELECTOR, "body > app-root > app-base > app-substances-browse > div > div.substance-cards > app-substance-summary-card > mat-card > mat-card-title > a")
-            if img_element:
-                img_src = img_element.get_attribute('href')
-                if img_src:
-                    stripped = img_src.split('/', -1)[-1:]
-                    link = f'https://gsrs.ncats.nih.gov/api/v1/substances/render({stripped[0]})?format=png&size=512&stereo=true'
-                    response = requests.get(link)
-                    image_bytes = response.content
-                    image1 = Image.open(io.BytesIO(image_bytes))
-                    width, height = image1.size
-                    draw = ImageDraw.Draw(image1)
-                    font_size = min(width, height) // 10  # starting font size (adjust as needed)
-                    font = ImageFont.load_default(font_size)
-                    text_bbox = draw.textbbox((0, 0), query, font=font)
-                    text_width = text_bbox[2] - text_bbox[0]
-                    text_height = text_bbox[3] - text_bbox[1]
-                    while text_width > width - 20:
-                        font_size -= 1
-                        font = ImageFont.load_default(font_size)
-                        text_bbox = draw.textbbox((0, 0), query, font=font)
-                        text_width = text_bbox[2] - text_bbox[0]
-                        text_height = text_bbox[3] - text_bbox[1]
-                    text_x = ((width - text_width) / 2)
-                    text_y = height - text_height - 60
-                    draw.text((text_x, text_y), query, font=font, fill=(152,251,203))
-                    draw.text((text_x + 2, text_y - 2), query, font=font, fill=(152,251,203))
-                    draw.text((text_x + 4, text_y - 4), query, font=font, fill=(152,251,203))
-                    output_buffer = io.BytesIO()
-                    image1.save(output_buffer, format='PNG')
-                    output_buffer.seek(0)
-                    file = discord.File(output_buffer, filename="image.png")
-                    return file
-                else:
-                    return "No src attribute found in the <img> element"
-            else:
-                return "No <img> element found with the specified CSS path"
-        finally:
-            driver.quit()
-
     @commands.command(name='search')
     async def search(self, ctx, *, query: str):
-        # Ensure the event loop is running
-        loop = asyncio.get_event_loop()
         try:
-            #img_src = await loop.run_in_executor(None, lambda: asyncio.run(UserCog.fetch_image_src(self, query)))
             try:
-                img_src = await loop.run_in_executor(None, lambda: asyncio.run(UserCog.fetch_wm_image_src(self, query)))
-            except Exception as e:
-                await ctx.send(e)
-
-            await ctx.send(file=img_src)
-        except Exception as e:
+                watermarked_image = UserCog.fetch_wm_image_src(self, query)
+                with io.BytesIO() as image_binary:
+                    watermarked_image.save(image_binary, format='PNG')
+                    image_binary.seek(0)
+                    await ctx.send(file=discord.File(fp=image_binary, filename='watermarked_image.png'))
+            except:
+                await ctx.send(traceback.format_exc())
+        except:
             await ctx.send(f'{query} is an unknown molecule.')
 
     def fetch_wm_image_src(self, query):
@@ -437,15 +390,16 @@ class UserCog(commands.Cog):
                     link = f'https://gsrs.ncats.nih.gov/api/v1/substances/render({stripped[0]})?format=png&size=512&stereo=true'
                     response = requests.get(link)
                     image_bytes = response.content
-                    image1 = Image.open(io.BytesIO(image_bytes))
-                    width, height = image1.size
-                    draw = ImageDraw.Draw(image1)
+                    image = Image.open(io.BytesIO(image_bytes))
+                    image = image.convert("RGBA")
+                    draw = ImageDraw.Draw(image)
+                    width, height = image.size
                     diagonal = math.sqrt(width**2 + height**2)
                     font_size = int(diagonal / 15)  # Adjust this factor as needed
                     try:
                         font = ImageFont.truetype("arial.ttf", font_size)
                     except IOError:
-                        font = ImageFont.load_default()
+                        font = ImageFont.load_default(font_size)
                     bbox = draw.textbbox((0, 0), query, font=font)
                     text_width = bbox[2] - bbox[0]
                     text_height = bbox[3] - bbox[1]
@@ -455,15 +409,14 @@ class UserCog(commands.Cog):
                     watermark_draw = ImageDraw.Draw(watermark_image)
                     watermark_draw.text((text_x, text_y), query, font=font, fill=(255, 255, 255, 64))
                     watermark_image = watermark_image.rotate(45, expand=True)
-                    wm_width, wm_height = watermark_image.size
-                    paste_x = (width - wm_width) / 2
-                    paste_y = (height - wm_height) / 2
-                    image1.paste(watermark_image, (int(paste_x), int(paste_y)), watermark_image)
-                    output_buffer = io.BytesIO()
-                    image1.save(output_buffer, format='PNG')
-                    output_buffer.seek(0)
-                    file = discord.File(output_buffer, filename="image.png")
-                    return file
+                    mask = watermark_image.split()[3]
+                    image.paste(watermark_image, (0, 0), mask)
+                    return image
+#                    blended_image = Image.alpha_composite(image, watermark_image)
+                  #  wm_width, wm_height = watermark_image.size
+                   # paste_x = (width - wm_width) / 2
+                    #paste_y = (height - wm_height) / 2
+                    #image.paste(watermark_image, (int(paste_x), int(paste_y)), watermark_image)
                 else:
                     return "No src attribute found in the <img> element"
             else:

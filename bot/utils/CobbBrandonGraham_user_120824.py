@@ -15,10 +15,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from helpers import load_config
 import logging
 import logging.handlers
 def setup_logging():
     global logger
+    config = self.load_config()
+    logging_level = config.get('logging_level', 'INFO').upper()
+    logging.basicConfig(level=getattr(logging, logging_level))
     home_dir = os.path.expanduser('~')
     log_dir = os.path.join(home_dir, '.log', 'lucy')
     log_file = os.path.join(log_dir, 'discord.log')
@@ -27,31 +31,33 @@ def setup_logging():
     if not os.path.exists(log_file):
         open(log_file, 'a').close()
     file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(logging_level)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging_level)
     logger.addHandler(file_handler)
 
-import json
-import os
-def load_config():
-    home_dir = os.path.expanduser('~')
-    config_path = os.path.join(home_dir, '.config', 'lucy', 'config.json')
-    if not os.path.exists(config_path):
-        raise FileNotFoundError("Configuration file not found.")
-    with open(config_path, 'r') as f:
-        return json.load(f)
-def get_version():
-    home_dir = os.path.expanduser('~')
-    version_file = os.path.join(home_dir, 'Downloads', 'Lucy', 'version.txt')
+
+def add_user_if_new(user_id, user_name, config_path):
     try:
-        with open(version_file, 'r') as f:
-            version = f.read().strip()
-    except FileNotFoundError:
-        version = None
-    return version
+        config = load_config()
+        if 'users' not in config:
+            config['users'] = {}
+        if user_id not in config['users']:
+            user_data = {
+                'name': user_name,
+                'level': 1,
+                'xp': 0
+            }
+            config['users'][user_id] = user_data
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=4)
+            logging.info(f"User {user_name} ({user_id}) added to config.")
+        else:
+            logging.info(f"User {user_name} ({user_id}) already exists in config.")
+    except Exception as e:
+        logging.error(f"Failed to add user {user_id}: {e}")
 
 import requests
 from bs4 import BeautifulSoup
@@ -80,7 +86,7 @@ def get_cse_id(option):
     return cse_ids.get(option, cse_ids['web'])
 def search(query, option):
     config = load_config()
-    google_json_key = config.get('google_json_key')
+    google_json_key = config['api_keys']['api_key_1']
     cse_id = get_cse_id(option)
     results = google_search(query, google_json_key, cse_id, num=3)
     if results:
