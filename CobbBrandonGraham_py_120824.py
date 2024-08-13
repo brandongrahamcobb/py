@@ -18,14 +18,10 @@
 from os import getenv, makedirs
 from os.path import abspath, dirname, exists, expanduser, join
 
-import asyncio
 import datetime as dt
 import os
 import shutil
-import subprocess
 import tarfile
-import tempfile
-import virtualenv
 
 class Project:
 
@@ -35,6 +31,7 @@ class Project:
 
         self.CURRENT_DATE = dt.datetime.now().strftime("%d%m%y")
         self.PATH_NEW_JSON = join(self.COBBBRANDONGRAHAM, '.config', 'CobbBrandonGraham', 'config.json')
+        self.PATH_DOCUMENTS_PKGBUILD = join(self.COBBBRANDONGRAHAM, 'Documents', 'PKGBUILD')
         self.PATH_DOCUMENTS_MD_README = join(self.COBBBRANDONGRAHAM, 'Documents', 'md', f'CobbBrandonGraham_README_{self.CURRENT_DATE}.md')
         self.PATH_DOCUMENTS_PY = abspath(__file__)
         self.PATH_DOCUMENTS_PY_ADMIN_COG = join(self.COBBBRANDONGRAHAM, 'Documents', 'py', 'bot', 'cogs', f'CobbBrandonGraham_admin_cog_{self.CURRENT_DATE}.py')
@@ -50,6 +47,7 @@ class Project:
         self.PATH_DOCUMENTS_TXT_REQUIREMENTS = join(self.COBBBRANDONGRAHAM, 'Documents', 'txt', f'CobbBrandonGraham_requirements_{self.CURRENT_DATE}.txt')
 
         self.PATH_SRC_LICENSE = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'LICENSE')
+        self.PATH_SRC_PKGBUILD = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'PKGBUILD')
         self.PATH_SRC_PY_ADMIN_COG = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'cogs', 'admin_cog.py')
         self.PATH_SRC_PY_COGS_INIT = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'cogs', '__init__.py')
         self.PATH_SRC_PY_GAME_COG = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'cogs', 'game_cog.py')
@@ -76,6 +74,7 @@ if __name__ == '__main__':
 
     self = Project()
     shutil.copy2(self.PATH_DOCUMENTS_MD_README, self.PATH_SRC_README)
+    shutil.copy2(self.PATH_DOCUMENTS_PKGBUILD, self.PATH_SRC_PKGBUILD)
     shutil.copy2(self.PATH_DOCUMENTS_PY_ADMIN_COG, self.PATH_SRC_PY_ADMIN_COG)
     shutil.copy2(self.PATH_DOCUMENTS_PY_COGS_INIT, self.PATH_SRC_PY_COGS_INIT)
     shutil.copy2(self.PATH_DOCUMENTS_PY_GAME_COG, self.PATH_SRC_PY_GAME_COG)
@@ -89,6 +88,7 @@ if __name__ == '__main__':
     shutil.copy2(self.PATH_DOCUMENTS_TXT_REQUIREMENTS, self.PATH_SRC_TXT_REQUIREMENTS)
 
     verify_copy(self.PATH_DOCUMENTS_MD_README, self.PATH_SRC_README)
+    verify_copy(self.PATH_DOCUMENTS_PKGBUILD, self.PATH_SRC_PKGBUILD)
     verify_copy(self.PATH_DOCUMENTS_PY_ADMIN_COG, self.PATH_SRC_PY_ADMIN_COG)
     verify_copy(self.PATH_DOCUMENTS_PY_COGS_INIT, self.PATH_SRC_PY_COGS_INIT)
     verify_copy(self.PATH_DOCUMENTS_PY_GAME_COG, self.PATH_SRC_PY_GAME_COG)
@@ -104,6 +104,7 @@ if __name__ == '__main__':
     with tarfile.open(join(self.COBBBRANDONGRAHAM, 'Downloads', f'CobbBrandonGraham_lucy_{self.CURRENT_DATE}-1-x86_64.pkg.tar.gz'), 'w:gz') as tar:
 
         tar.add(self.PATH_SRC_README)
+        tar.add(self.PATH_SRC_PKGBUILD)
         tar.add(self.PATH_SRC_PY_ADMIN_COG)
         tar.add(self.PATH_SRC_PY_COGS_INIT)
         tar.add(self.PATH_SRC_PY_GAME_COG)
