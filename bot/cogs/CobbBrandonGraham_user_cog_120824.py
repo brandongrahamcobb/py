@@ -50,16 +50,6 @@ class UserCog(commands.Cog):
         self.user_translation_preferences = {}
         self.config = load_config()
 
-    @commands.command()
-    async def list_channels(self, ctx, guild_id: int):
-        guild = self.bot.get_guild(guild_id)
-        if guild:
-            channels = [f'{channel.name} (ID: {channel.id})' for channel in guild.channels]
-            response = '\n'.join(channels)
-            await ctx.send(f'Channels in {guild.name}:\n{response}')
-        else:
-            await ctx.send("Guild not found or the bot is not in that guild.")
-
     def monograph(molecule: str) -> io.BytesIO():
         d2d = Draw.MolDraw2DCairo(512, 512)
         compounds = pcp.get_compounds(molecule, 'name')
@@ -73,11 +63,6 @@ class UserCog(commands.Cog):
         image1 = image1.convert('RGBA')
         width, height = image1.size
         draw = ImageDraw.Draw(image1)
-#        for x in range(image1.width):
- #           for y in range(image1.height):
-  #              pixel = image1.getpixel((x, y))
-   #             if sum(pixel) >= 1020:
-    #                draw.point((x, y), fill=(255, 255, 255, 128))
         font_size = min(width, height) // 10  # starting font size (adjust as needed)
         font = ImageFont.load_default(font_size)
         text_bbox = draw.textbbox((0, 0), text, font=font)
@@ -213,9 +198,6 @@ class UserCog(commands.Cog):
             new_image.paste(image2, (width, 0), image2)
             original = new_image
             transparent_version = original.copy()
-            alpha = transparent_version.split()[3]
-            alpha = alpha.point(lambda p: min(p, 128))
-            transparent_version.putalpha(alpha)
             combined = Image.new('RGBA', original.size)
             combined.paste(transparent_version, (10, 10), mask=transparent_version)
             combined.paste(original, (0, 0))
@@ -260,7 +242,7 @@ class UserCog(commands.Cog):
                             await ctx.send(e)
                         file = discord.File(fp=bytes, filename=f'Molecule.png')
                     else:
-                        results = search(arg, 'web')[0]['link']
+                        results = search(arg, 'web')[0]
                         embed = discord.Embed()
                         for result in results:
                             embed.add_field(name=result['title'], value=result['link'], inline=False)
@@ -412,11 +394,6 @@ class UserCog(commands.Cog):
                     mask = watermark_image.split()[3]
                     image.paste(watermark_image, (0, 0), mask)
                     return image
-#                    blended_image = Image.alpha_composite(image, watermark_image)
-                  #  wm_width, wm_height = watermark_image.size
-                   # paste_x = (width - wm_width) / 2
-                    #paste_y = (height - wm_height) / 2
-                    #image.paste(watermark_image, (int(paste_x), int(paste_y)), watermark_image)
                 else:
                     return "No src attribute found in the <img> element"
             else:

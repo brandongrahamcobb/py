@@ -21,6 +21,16 @@ class MyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            command_name = ctx.message.content[len('!'):].strip()
+            draw_command = self.bot.get_command('draw')
+            if draw_command:
+                await ctx.invoke(draw_command, args=[command_name])
+        else:
+            raise error
+
     @commands.command(hidden='true')
     @commands.is_owner()
     async def test(self, ctx, *args):

@@ -20,7 +20,7 @@ from os.path import abspath, dirname, exists, expanduser, join
 
 import asyncio
 import datetime as dt
-import os
+import osf
 import shutil
 import subprocess
 import tarfile
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     verify_copy(self.PATH_DOCUMENTS_TXT_LICENSE, self.PATH_SRC_LICENSE)
     verify_copy(self.PATH_DOCUMENTS_TXT_REQUIREMENTS, self.PATH_SRC_TXT_REQUIREMENTS)
 
-    with tarfile.open(join(self.COBBBRANDONGRAHAM, 'Downloads', f'CobbBrandonGraham_lucy_{self.CURRENT_DATE}-1-x86_64-pkg.tar.gz'), 'w:gz') as tar:
+    with tarfile.open(join(self.COBBBRANDONGRAHAM, 'Downloads', f'CobbBrandonGraham_lucy_{self.CURRENT_DATE}-1-x86_64.pkg.tar.gz'), 'w:gz') as tar:
 
         tar.add(self.PATH_SRC_README)
         tar.add(self.PATH_SRC_PY_ADMIN_COG)
@@ -116,34 +116,3 @@ if __name__ == '__main__':
         tar.add(self.PATH_SRC_LICENSE)
         tar.add(self.PATH_SRC_TXT_REQUIREMENTS)
 
-#    asyncio.run(main())
-
-#        DIR_NEW_JSON = join(self.COBBBRANDONGRAHAM, '.config', 'CobbBrandonGraham')
-#        DIR_DEST_BOT = join(DIR_DEST_PROJECT, 'bot')
-#        DIR_DEST_COGS = join(DIR_DEST_PROJECT, 'bot', 'cogs')
-#        DIR_DEST_PROJECT = ''
-#        DIR_DEST_UTILS = join(DIR_DEST_PROJECT, 'bot', 'utils')
-#        LICENSE = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'LICENSE') # ON PURPOSE 'LICENSE' NOT 'self.PATH_DEST_LICENSE'
-#        self.PATH_DEST_PY_ADMIN_COG = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'cogs', 'admin_cog.py')
-#        self.PATH_DEST_PY_COGS_INIT = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'cogs', '__init__.py')
-#        self.PATH_DEST_PY_GAME_COG = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'cogs', 'game_cog.py')
-#        self.PATH_DEST_PY_HELPERS = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'utils', 'helpers.py')
-#        self.PATH_DEST_PY_INIT = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', '__init__.py')
-#        self.PATH_DEST_PY_MAIN = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'main.py')
-#        self.PATH_DEST_PY_MY_COG = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'cogs', 'my_cog.py')
-#        self.PATH_DEST_PY_USER_COG = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'cogs', 'user_cog.py')
-#        self.PATH_DEST_PY_UTILS_INIT = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'bot', 'utils', '__init__.py')
-#        self.PATH_DEST_TXT_REQUIREMENTS = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'requirements.txt')
-#        README = join(self.COBBBRANDONGRAHAM, 'Downloads', 'lucy-package', 'src', f'lucy_{self.CURRENT_DATE}', 'README') # ON PURPOSE 'README' NOT 'self.PATH_DEST_README'
-
-#def main()
-    #def check() as predicate:
-     #   return os.name != 'nt'
-    #if predicate:
-     #   DIR_DEST_PROJECT = join(getenv('APPDATA'), '.JSON', 'CobbBrandonGraham')
-    #    makedirs(DIR_DEST_PROJECT, exist_ok=True)
-   # else:
-        #DIR_DEST_PROJECT = join('usr', 'share', 'lucy')
-        #makedirs(DIR_DEST_PROJECT, exist_ok=True)
-        #subprocess.run(cwd=)
-        #makedirs(DIR_NEW_JSON, exist_ok=True)

@@ -15,38 +15,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import json
-import os
-def load_config():
-    home_dir = os.path.expanduser('~')
-    config_path = os.path.join(home_dir, '.config', 'lucy', 'config.json')
-    if not os.path.exists(config_path):
-        raise FileNotFoundError("Configuration file not found.")
-    with open(config_path, 'r') as f:
-        return json.load(f)
-
-import logging
-import logging.handlers
-def setup_logging():
-    global logger
-    config = load_config()
-    logging_level = config['logging_level'].upper()
-    logging.basicConfig(level=getattr(logging, logging_level))
-    home_dir = os.path.expanduser('~')
-    log_dir = os.path.join(home_dir, '.log', 'lucy')
-    log_file = os.path.join(log_dir, 'discord.log')
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    if not os.path.exists(log_file):
-        open(log_file, 'a').close()
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging_level)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(formatter)
-    logger = logging.getLogger()
-    logger.setLevel(logging_level)
-    logger.addHandler(file_handler)
-
 import requests
 from bs4 import BeautifulSoup
 def fetch_and_parse(url):
@@ -74,7 +42,7 @@ def get_cse_id(option):
     return cse_ids.get(option, cse_ids['web'])
 def search(query, option):
     config = load_config()
-    google_json_key = config.get('api_key_1', 'e1753e22095c74f10')
+    google_json_key = config['api_keys']['api_key_1']
     cse_id = get_cse_id(option)
     results = google_search(query, google_json_key, cse_id, num=3)
     if results:
