@@ -20,7 +20,7 @@ from os.path import abspath, dirname, exists, expanduser, join
 
 import asyncio
 import datetime as dt
-import osf
+import os
 import shutil
 import subprocess
 import tarfile
