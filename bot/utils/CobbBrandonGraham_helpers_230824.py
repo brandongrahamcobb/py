@@ -23,14 +23,25 @@ from functools import wraps
 import asyncio
 import discord
 import emoji as emoji_lib
+import io
+import itertools
 import json
 import os
 import pubchempy as pcp
+import random
 import requests
 import unicodedata
 
 NCBI_REQUEST_DELAY = 0.34  # Delay to ensure no more than 3 requests per second
 tasks = {}  # Dictionary to store tasks keyed by (command name, user ID)
+
+def unique_pairs(strings_list):
+    pairs = list(itertools.combinations(strings_list, 2))
+    sorted_pairs = [sorted(list(pair)) for pair in pairs]
+    sorted_pairs_overall = sorted(sorted_pairs)
+#    processed_pairs = [[repr(s)[1:-1] for s in pair] for pair in sorted_pairs_overall]
+ #   return processed_pairs
+    return sorted_pairs_overall
 
 async def delayed_command(ctx, delay_seconds):
     task_key = (ctx.command.name, ctx.author.id)
