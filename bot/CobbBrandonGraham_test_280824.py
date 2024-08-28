@@ -37,5 +37,5 @@ async def main():
         intents = intents,
     ) as bot:
         await bot.start(token)
-
+        await bot.load_cog('bot.cogs.my_cog')
 asyncio.run(main())

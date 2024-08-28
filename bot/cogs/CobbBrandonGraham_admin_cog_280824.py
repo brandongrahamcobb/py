@@ -18,6 +18,7 @@ from better_profanity import profanity
 from collections import defaultdict
 from discord.ext import commands, tasks
 from typing import Literal, Optional
+from bot.main import Lucy
 
 import discord
 
@@ -32,32 +33,21 @@ class AdminCog(commands.Cog):
         self.bot = bot
         self.user_command_messages = {}
 
-    async def on_cooldown(self, ctx, command_name: str):
-        command = self.bot.get_command(command_name)
-        if not command:
-            await ctx.send(f"No command found with the name `{command_name}`.")
-            return True
-        bucket = command._buckets.get_bucket(ctx)
-        retry_after = bucket.update_rate_limit()
-        if retry_after:
-            await ctx.send(f"Command `{command_name}` is on cooldown. Try again in {retry_after:.2f} seconds.")
-            return True
-        return False
-
- #   @commands.Cog.listener()
-#    async def on_command(self, ctx):
-  #      profanity.load_censor_words()
-   #     if profanity.
+    @commands.Cog.listener()
+    async def before_invoke(self, ctx):
+        await ctx.typing()
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'Command is on cooldown. Try again in {error.retry_after:.2f} seconds.')
-        else:
-            raise error
+    async def on_message_edit(self, before, after):
+        if after.content.startswith('!'):
+            ctx = await self.bot.get_context(after)
+            if ctx.command:
+               await ctx.invoke(ctx.command, *ctx.args, **ctx.kwargs)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
+        if message.author == self.bot.user or message.channel.id == '962009752488013834':
+            return
         # WIPE
         if message.author != self.bot.user and message.content.startswith('!'):
             if message.author.id not in self.user_command_messages:
@@ -90,31 +80,6 @@ class AdminCog(commands.Cog):
                 await message.delete()
                 deleted += 1
         return deleted
-
-    @commands.command(name='mute', hidden=True)
-    @commands.is_owner()
-#    @commands.has_permissions(manage_roles=True)
-    async def mute(self, ctx, member: discord.Member, *, reason=None):
-        """Mutes a user by adding a Muted role."""
-        muted_role = discord.utils.get(ctx.guild.roles, name="Muted")
-        
-        if not muted_role:
-            # If the "Muted" role doesn't exist, create it
-            muted_role = await ctx.guild.create_role(name="Muted")
-            
-            # Update the permissions for each channel
-            for channel in ctx.guild.channels:
-                await channel.set_permissions(muted_role, speak=False, send_messages=False, add_reactions=False)
-
-        await member.add_roles(muted_role, reason=reason)
-        await ctx.send(f"{member.mention} has been muted for: {reason}")
-
-    @mute.error
-    async def mute_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("You don't have permission to use this command.")
-        elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Please specify a member to mute.")
 
     @commands.command(name='load', hidden=True)
     @commands.is_owner()
