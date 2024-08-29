@@ -1,5 +1,5 @@
 """ main.py
-    Copyright (C) 2024 github.com/brandongrahamcobb
+    Copyright (C) 2024 github.com/<put-your-github-here>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,26 +16,39 @@
 """
 
 from discord.ext import commands
+from typing import List
 
 import asyncio
 import discord
 
-class Lucy(commands.Bot):
+class CustomBot(commands.Bot):
     def __init__(
         self,
         *args,
+        initial_extension: List[str],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.initial_extension = initial_extension
+
+    async def setup_hook(self) -> None:
+        for cog in self.initial_extension:
+            await self.load_extension(cog)
 
 async def main():
-    token = YOUR_BOT_TOKEN
+    token = YOUR_TOKEN_HERE
     intents = discord.Intents.all()
     intents.message_content = True
-    async with Lucy(
-        commands.when_mentioned_or('!'),
-        intents = intents,
+    initial_extension = 'cogs.my_cog',
+    async with CustomBot(
+        commands.when_mentioned_or('\\'),
+        initial_extension=initial_extension,
+        intents=intents,
     ) as bot:
         await bot.start(token)
-        await bot.load_cog('bot.cogs.my_cog')
-asyncio.run(main())
+
+def run():
+    asyncio.run(main())
+
+if __name__ == '__main__':
+    run()

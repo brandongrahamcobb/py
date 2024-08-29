@@ -20,11 +20,12 @@ from datetime import datetime
 from discord.ext import commands
 from googleapiclient.discovery import build
 from io import BytesIO
+from matplotlib import pyplot as plt
 from os import makedirs
 from os.path import abspath, dirname, exists, expanduser, isfile, join
 from PIL import Image, ImageFont, ImageDraw
 from rdkit import Chem
-from rdkit.Chem import AllChem, Crippen, DataStructs, Draw
+from rdkit.Chem import AllChem, Crippen, DataStructs, Draw, rdFingerprintGenerator
 from rdkit.Chem.Draw import rdMolDraw2D, SimilarityMaps
 from rdkit.DataStructs import FingerprintSimilarity, TanimotoSimilarity
 from selenium import webdriver
@@ -35,8 +36,9 @@ from typing import List
 from webdriver_manager.chrome import ChromeDriverManager
 from typing import List, Optional, Dict, Any
 
+global logger
+
 import asyncio
-import bot.utils.helpers as help
 import colorsys
 import datetime as dt
 import discord
@@ -50,13 +52,13 @@ import math
 import openai
 import random
 import requests
+import traceback
 import unicodedata
 import yaml
 
 current_date = dt.datetime.now().strftime('%d%m%y')
 
 home = expanduser('~')
-
 
 path_base = join(home, 'Documents', 'src', 'lucy')
 path_ai_cog = join(path_base, 'cogs', 'ai_cog.py')
@@ -112,67 +114,51 @@ def adjust_hue_and_saturation(image, hue_shift, saturation_shift) -> BytesIO:
     output.seek(0)
     return output
 
-async def check_for_updates(bot):
-    openai.api_key = bot.config['api_keys']['api_key_1']
-    while True:
-        await asyncio.sleep(360)  # Wait for 6 minutes
-        prompt = 'Please provide the updated code for the AICog class. Ensure the code is within the scope of a cog and does not affect other parts of the bot.'
-        response = openai.Completion.create(
-            engine='text-davinci-003',  # Use GPT-4 if available
-            prompt=prompt,
-            max_tokens=500,  # Adjust this as needed
-            n=1,
-            stop=None,
-            temperature=0.7,
-        )
-        generated_code = response.choices[0].text.strip()
-        if validate_generated_code(generated_code):
-            with open(path_ai_cog, 'r') as f:
-                current_code = f.read()
-            if generated_code != current_code:
-                with open(path_ai_cog, 'w') as f:
-                    f.write(generated_code)
-                try:
-                    await bot.reload_extension('bot.cogs.ai_cog')
-                    print('AICog has been updated and reloaded successfully.')
-                except Exception as e:
-                    print(f'Failed to reload AICog: {e}')
-            else:
-                print('No updates needed.')
-        else:
-            print('Generated code did not pass validation and was not applied.')
-
-def combine(bytes1: BytesIO, bytes2: BytesIO) -> BytesIO:
+def combine(bytes1: BytesIO, name1: str, bytes2: BytesIO, name2: str) -> BytesIO:
     img1 = Image.open(bytes1)
+    inverted_image1 = invert_colors(img1)
+    img1_bytes = BytesIO()
+    inverted_image1.save(img1_bytes, format='PNG')
+    img1_bytes_final = add_watermark(img1_bytes, watermark_text=name1)
+    img1_final = Image.open(img1_bytes_final)
     img2 = Image.open(bytes2)
-    widths, heights = zip(*(img.size for img in [img1, img2]))
+    inverted_image2 = invert_colors(img2)
+    img2_bytes = BytesIO()
+    inverted_image2.save(img2_bytes, format='PNG')
+    img2_bytes_final = add_watermark(img2_bytes, watermark_text=name2)
+    img2_final = Image.open(img2_bytes_final)
+    widths, heights = zip(*(img.size for img in [img1_final, img2_final]))
     total_width = sum(widths)
     max_height = max(heights)
     combined_img = Image.new('RGB', (total_width, max_height))
     x_offset = 0
-    for img in [img1, img2]:
+    for img in [img1_final, img2_final]:
         combined_img.paste(img, (x_offset, 0))
         x_offset += img.width
-    inverted_image = invert_colors(combined_img)
-    output = adjust_hue_and_saturation(inverted_image, hue_shift=-180, saturation_shift=160)
+    output = adjust_hue_and_saturation(combined_img, hue_shift=-180, saturation_shift=160)
     output.seek(0)
     return output
 
 def draw_fingerprint(pair) -> BytesIO:
+#    mfpgen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048, countSimulation=True)
+#    def get_fp(mol, *args, **kwargs):
+#        return mfpgen.GetFingerprint(mol)
     d2d = rdMolDraw2D.MolDraw2DCairo(1024, 1024)
     d2d.prepareMolsBeforeDrawing = False
     Options = d2d.drawOptions()
     Options.prepareMolsBeforeDrawing = False
     Options.includeMetadata = False
+    Options.bondLineWidth = 4.0
     d2d.SetDrawOptions(Options)
     mol1 = rdMolDraw2D.PrepareMolForDrawing(pair[0], kekulize=True)
     mol1.UpdatePropertyCache(False)
     mol2 = rdMolDraw2D.PrepareMolForDrawing(pair[1], kekulize=True)
     mol2.UpdatePropertyCache(False)
     fig, maxweight = SimilarityMaps.GetSimilarityMapForFingerprint(mol1, mol2, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType='bv', nBits=8192), draw2d=d2d, drawingOptions=Options)
+#    fig, maxweight = SimilarityMaps.GetSimilarityMapForFingerprint(pair[1], pair[0], get_fp, draw2d=d2d) #colorMap=brighter_color, draw2d=d2d)
     d2d.FinishDrawing()
     drawing = d2d.GetDrawingText()
-    output = BytesIO(drawing) #output = self.add_watermark(BytesIO(drawing), watermark_text=resolved_name)
+    output = BytesIO(drawing)
     return output
 
 def draw_watermarked_molecule(molecule) -> BytesIO:
@@ -315,7 +301,13 @@ def gsrs(arg):
     finally:
         driver.quit()
 
-def increment_version(config):
+async def handle_command_error(ctx: commands.Context, error: commands.CommandError):
+    log_id = str(uuid.uuid4())
+    logger.error(f"Log ID {log_id} - Error in command {ctx.command}: {error}")
+    logger.error(f"Full stack trace:\n{traceback.format_exc()}")
+    await ctx.send(f"An unexpected error occurred (Log ID: `{log_id}`). Please report this to the support team.")
+
+def increment_version(config: Dict[str, Any]):
     current_version = config['version']
     major, minor, patch = map(int, current_version.split('.'))
     patch += 1
@@ -327,7 +319,7 @@ def increment_version(config):
         major += 1
     new_version = f'{major}.{minor}.{patch}'
     config['version'] = new_version
-    with open(help.path_config_yaml, 'w') as file:
+    with open(path_config_yaml, 'w') as file:
         yaml.dump(config, file)
 
 def invert_colors(image):
@@ -357,19 +349,6 @@ def unique_pairs(strings_list):
     sorted_pairs = [sorted(list(pair)) for pair in pairs]
     sorted_pairs_overall = sorted(sorted_pairs)
     return sorted_pairs_overall
-
-def validate_generated_code(generated_code):
-    forbidden_patterns = [
-        'import os', 'import sys', 'class ', 'def setup', 
-        'bot.run', 'os.system', 'subprocess', 'eval(', 'exec('
-    ]
-    for pattern in forbidden_patterns:
-        if pattern in generated_code:
-            return False
-    required_definitions = ['def ']
-    if not all(def_ in generated_code for def_ in required_definitions):
-        return False
-    return True
 
 def write_users(data):
     if not os.path.exists(path_users_yaml):
