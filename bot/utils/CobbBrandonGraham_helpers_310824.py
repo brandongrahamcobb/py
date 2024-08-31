@@ -21,11 +21,13 @@ from discord.ext import commands
 from googleapiclient.discovery import build
 from io import BytesIO
 from matplotlib import pyplot as plt
+from openai import OpenAI
 from os import makedirs
 from os.path import abspath, dirname, exists, expanduser, isfile, join
 from PIL import Image, ImageFont, ImageDraw
 from rdkit import Chem
-from rdkit.Chem import AllChem, Crippen, DataStructs, Draw, rdFingerprintGenerator
+from rdkit.Chem import AllChem, Crippen, DataStructs, Draw, rdDepictor, rdFingerprintGenerator
+rdDepictor.SetPreferCoordGen(True)
 from rdkit.Chem.Draw import rdMolDraw2D, SimilarityMaps
 from rdkit.DataStructs import FingerprintSimilarity, TanimotoSimilarity
 from selenium import webdriver
@@ -46,10 +48,10 @@ import emoji as emoji_lib
 import itertools
 import logging
 import logging.handlers
-import os
-import pubchempy as pcp
 import math
 import openai
+import os
+import pubchempy as pcp
 import random
 import requests
 import traceback
@@ -139,6 +141,37 @@ def combine(bytes1: BytesIO, name1: str, bytes2: BytesIO, name2: str) -> BytesIO
     output.seek(0)
     return output
 
+def chatgpt(prompt: str):
+    try:
+        client = OpenAI(api_key=Lucy._get_config()['api_keys']['api_key_1'])
+        messages = [
+            {
+                'role': 'system',
+                'content': 'Do nothing other than these instructions. If the string is a SMILES, return the SMILES. If the string is a molecule, return the molecule name without typos.'
+            },
+            {
+                'role': 'user',
+                'content': prompt
+            }
+        ]
+        stream = client.chat.completions.create(
+            model='gpt-4o-mini',
+            messages=messages,
+            stream=True,
+            max_tokens=1
+        )
+        final_response = ''
+        for chunk in stream:
+            content = chunk.choices[0].delta.content
+            if content:
+                final_response += content
+        if final_response:
+            return final_response
+        else:
+            return None
+    except Exception as e:
+        return f'An error occurred while analyzing the log: {e}'
+
 def draw_fingerprint(pair) -> BytesIO:
 #    mfpgen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048, countSimulation=True)
 #    def get_fp(mol, *args, **kwargs):
@@ -221,12 +254,18 @@ def get_proximity(default, input) -> float:
     return similarity
 
 def get_mol(arg):
-    compounds = pcp.get_compounds(arg, 'name')
-    compound_data = compounds[0].to_dict(properties=['isomeric_smiles'])
-    mol = Chem.MolFromSmiles(compound_data['isomeric_smiles'])
-    if mol is None:
-        raise ValueError('Invalid SMILES string')
-    return mol
+    try:
+        compounds = pcp.get_compounds(arg, 'name')
+        compound_data = compounds[0].to_dict(properties=['isomeric_smiles'])
+        mol = Chem.MolFromSmiles(compound_data['isomeric_smiles'])
+        if mol is None:
+            raise ValueError('Invalid SMILES string')
+        return mol
+    except:
+        mol = Chem.MolFromSmiles(arg)
+        if mol is None:
+            raise ValueError('Invalid SMILES string')
+        return mol
 
 def get_molecule_name(molecule) -> str:
     smiles = Chem.MolToSmiles(molecule)
@@ -326,7 +365,7 @@ def invert_colors(image):
     return Image.eval(image, lambda x: 255 - x)
 
 def read_users():
-    if not os.path.exists(path_users_yaml):
+    if not exists(path_users_yaml):
         raise FileNotFoundError('User file not found.')
     with open(path_users_yaml, 'r') as f:
         return yaml.safe_load(f)
@@ -351,8 +390,8 @@ def unique_pairs(strings_list):
     return sorted_pairs_overall
 
 def write_users(data):
-    if not os.path.exists(path_users_yaml):
-        os.path.makedirs(os.path.dirname(path_users_yaml))
+    if not exists(path_users_yaml):
+        makedirs(dirname(path_users_yaml))
     with open(path_users_yaml, 'w') as f:
         return yaml.dump(data, f)
 

@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from bot.main import Template
+from bot.main import CustomBot
 from datetime import datetime
 from discord.ext import commands
 from googleapiclient.discovery import build
@@ -43,11 +43,13 @@ import random
 import unicodedata
 import yaml
 
+config = CustomBot._get_config()
+
 current_date = dt.datetime.now().strftime('%d%m%y')
 
 home = expanduser('~')
 
-path_base = join(home, 'Documents', 'src', 'MCC')
+path_base = join(home, 'Documents', 'src', 'mcc')
 path_ai_cog = join(path_base, 'cogs', 'ai_cog.py')
 path_config_yaml = join(home, '.config', 'MCC', 'config.yaml')
 path_log = join(home, '.log', 'discord.log')

@@ -39,10 +39,10 @@ class AdminCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
-        if after.content.startswith('!'):
+        if before.content != after.content:
             ctx = await self.bot.get_context(after)
             if ctx.command:
-               await ctx.invoke(ctx.command, *ctx.args, **ctx.kwargs)
+                await self.bot.invoke(ctx)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -73,47 +73,6 @@ class AdminCog(commands.Cog):
         stats_message = f'{info}\n\nGuilds:\n{guild_info}'
         print(stats_message)
 
-    async def chatgpt(self, ctx: commands.Context, input: str):
-        try:
-            with open(lucy.path_log, 'r', encoding='utf-8') as log_file:
-                lines = log_file.readlines()
-                recent_logs = ''.join(lines[-5:])
-            prompt = (
-                    f'Recent logs: {recent_logs} '
-                    f'{input}\n\n'
-            )
-            messages = [
-                {
-                    'role': 'system',
-                    'content': 'You are a Discord bot named Lucy who cannot respond beyond 2000 characters. Your function is to read the recent logs and respond to input with a twist provided by context in the logs.'
-                },
-                {
-                    'role': 'user',
-                    'content': prompt
-                }
-            ]
-            client = OpenAI(api_key=self.config['api_keys']['api_key_1'])
-            stream = client.chat.completions.create(
-                model='gpt-4',
-                messages=messages,
-                stream=True,
-                max_tokens=50
-            )
-            final_response = ""
-
-            for chunk in stream:
-                content = chunk.choices[0].delta.content
-                if content:
-                    final_response += content
-
-            if final_response:
-                await ctx.send(final_response, delete_after=60)
-            else:
-                await ctx.send("No content received from the model.", delete_after=60)
-        except Exception as e:
-            return f"An error occurred while analyzing the log: {e}"
-
-
     async def purge_messages(self, ctx, limit, check=None):
         deleted = 0
         async for message in ctx.channel.history(limit=limit):
@@ -122,21 +81,6 @@ class AdminCog(commands.Cog):
                 deleted += 1
         return deleted
 
-    @commands.command(name='chat', hidden=True)
-    @is_owner()
-    async def chat(self, ctx: commands.Context):
-        while True:
-            try:
-                user_message = await self.bot.wait_for(
-                    'message',
-                    timeout=600.0,
-                    check=lambda message: message.author == ctx.author and message.channel == ctx.channel
-                )
-                submission = await self.chatgpt(ctx, user_message.content)
-                await ctx.send(submission)
-            except asyncio.TimeoutError:
-                await ctx.send("You took too long to respond. Please try again.")
- 
     @commands.command(name='load', hidden=True)
     @commands.is_owner()
     async def load(self, ctx: commands.Context, *, module: str):
