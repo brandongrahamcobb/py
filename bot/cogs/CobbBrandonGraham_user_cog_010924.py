@@ -63,7 +63,7 @@ class UserCog(commands.Cog):
                 while True:
                     response = await self.bot.wait_for(
                         'message',
-                        timeout=600.0,
+                        timeout=20000.0,
                          check=lambda message: message.author == ctx.author and message.channel == ctx.channel
                     )
                     try:
@@ -79,6 +79,10 @@ class UserCog(commands.Cog):
                             if max_lsd == max_q:
                                 await ctx.send(f'{(100 * max_lsd_proximity):.3f}% | L | You\'d have to stop taking {lucy.get_molecule_name(max_lsd)} to take {lucy.get_molecule_name(molecule)} | Q | {(100 * max_q_proximity):.3f}%')
                             await ctx.send(f'{(100 * max_lsd_proximity):.3f}% = {lucy.get_molecule_name(max_lsd)} | L | {lucy.get_molecule_name(molecule)} | Q | {lucy.get_molecule_name(max_q)} = {(100 * max_q_proximity):.3f}%')
+                            lsd_new = lucy.get_proximity(molecule, self.lysergic_acid_diethylamide)
+                            q_new = lucy.get_proximity(molecule, self.quetiapine)
+                            if lsd_new == q_new:
+                                await ctx.send(f'Tanimoto Similarity: {lsd_new}')
                         await ctx.send('Which molecule would you like to know about next?')
                     except:
                         break

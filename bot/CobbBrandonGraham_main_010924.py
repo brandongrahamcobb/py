@@ -19,11 +19,15 @@ from discord.ext import commands
 from typing import List, Optional, Dict, Any
 from os import getenv, makedirs
 from os.path import abspath, dirname, expanduser, exists, isfile, join
+from bot.utils import helpers
 
 import asyncio
-import bot.utils.helpers as help
+import bot.utils.helpers as helpers
+import code
 import discord
 import os
+import threading
+import sys
 import yaml
 
 global logger
@@ -31,6 +35,13 @@ global logger
 def prompt_for_values(prompt: str, default_value: str) -> str:
     value = input(f'{prompt} [{default_value}]: ')
     return value if value else default_value
+
+def start_repl(bot):
+    def repl():
+        banner = "Python REPL. Type commands to interact with the bot."
+        local = {"bot": bot, "helpers": bot.helpers}
+        code.interact(banner=banner, local=local)
+    threading.Thread(target=repl, daemon=True).start()
 
 class Lucy(commands.Bot):
 
@@ -50,8 +61,8 @@ class Lucy(commands.Bot):
     @classmethod
     def _get_config(cls) -> Dict[str, Any]:
         if cls._config is None:
-            if isfile(help.path_config_yaml):
-                with open(help.path_config_yaml, 'r') as file:
+            if isfile(helpers.path_config_yaml):
+                with open(helpers.path_config_yaml, 'r') as file:
                     data = yaml.safe_load(file)
                 data['cogs'] = prompt_for_values('Enter the cogs.', data.get('cogs', [
                     'bot.cogs.admin_cog',
@@ -74,7 +85,7 @@ class Lucy(commands.Bot):
                     current_key = data['api_keys'].get(key, '')
                     data['api_keys'][key] = prompt_for_values(f'Enter API key {i}', current_key)
             else:
-                makedirs(dirname(help.path_config_yaml), exist_ok=True)
+                makedirs(dirname(helpers.path_config_yaml), exist_ok=True)
                 data = {
                     'api_keys': {},
                     'cogs': prompt_for_values('Enter the cogs.', [
@@ -95,7 +106,7 @@ class Lucy(commands.Bot):
                 }
                 for i in range(1, 21):
                     data['api_keys'][f'api_key_{i}'] = prompt_for_values(f'Enter API key {i}', '')
-            with open(help.path_config_yaml, 'w') as file:
+            with open(helpers.path_config_yaml, 'w') as file:
                 yaml.dump(data, file)
             cls._config = data
             return cls._config
@@ -128,10 +139,14 @@ async def main():
         config = await bot.load_config()
         bot.config = config
 
-        help.increment_version(config)
-        help.setup_logging(config)
+        bot.helpers = helpers
+        helpers.increment_version(config)
+        helpers.setup_logging(config)
+
+        start_repl(bot)
 
         await bot.start(config['token'])
+
 
 def run():
     asyncio.run(main())
