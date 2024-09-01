@@ -74,7 +74,7 @@ class CustomBot(commands.Bot):
             cls._config = data
             return cls._config
 
-    async def load_config(self) -> Dict[str, Any]:
+    def load_config(self) -> Dict[str, Any]:
         return self._get_config()
 
     async def setup_hook(self) -> None:
@@ -91,7 +91,7 @@ async def main():
         ],
     ) as bot:
 
-        config = await bot.load_config()
+        config = bot.load_config()
         bot.config = config
 
         await bot.start(config['token'])

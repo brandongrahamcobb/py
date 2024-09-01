@@ -41,7 +41,6 @@ class UserCog(commands.Cog):
         self.lysergic_acid_diethylamide = lucy.get_mol('lysergic acid diethylamide')
         self.quetiapine = lucy.get_mol('quetiapine')
 
-
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot: # or message.channel.id == '962009752488013834':
@@ -55,30 +54,31 @@ class UserCog(commands.Cog):
         self.stacks[user_id] = mol_objects
 
     @commands.command(name='analog', description='Submit one molecule to test or multiple to set a stack.')
-    async def analog(self, ctx: commands.Context, molecules: str = None):
-        if molecules:
-            args = shlex.split(molecules)
+    async def analog(self, ctx: commands.Context, *args):
+        if args:
             try:
                 self.set_user_stack(user_id=ctx.author.id, molecule_names=args)
+                await ctx.send([lucy.get_molecule_name(mol) for mol in self.get_user_stack(ctx.author.id)])
                 await ctx.send('Stack overwritten. Which molecule would you like to know about?')
                 while True:
                     response = await self.bot.wait_for(
                         'message',
-                        timeout=60.0,
-                        check=lambda message: message.author == ctx.author and message.channel == ctx.channel
+                        timeout=600.0,
+                         check=lambda message: message.author == ctx.author and message.channel == ctx.channel
                     )
                     try:
-                        molecule = response.content
-                        defender = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, lucy.get_mol(molecule)))
-                        proximity = lucy.get_proximity(lucy.get_mol(molecule), defender)
-                        await ctx.send(f'{molecule} is most analogous to {lucy.get_molecule_name(defender)} by a degree of {(100 * proximity):.3f}%')
-                        max_lsd = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.lysergic_acid_diethylamide))
-                        max_lsd_proximity = lucy.get_proximity(lucy.get_mol(molecule), max_lsd)
-                        max_q = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.quetiapine))
-                        max_q_proximity = lucy.get_proximity(lucy.get_mol(molecule), max_q)
-                        if max_lsd == max_q:
-                            await ctx.send(f'LSD: {(100 * max_lsd_proximity):.3f} | {lucy.get_molecule_name(max_lsd)} | Quetiapine: {(100 * max_q_proximity):.3f}%')
-                        await ctx.send([lucy.get_molecule_name(mol) for mol in self.get_user_stack(ctx.author.id)])
+                        molecule = lucy.get_mol(response.content)
+                        defender = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, molecule))
+                        proximity = lucy.get_proximity(molecule, defender)
+                        await ctx.send(f'{lucy.get_molecule_name(molecule)} is most analogous to {lucy.get_molecule_name(defender)} by a degree of {(100 * proximity):.3f}%')
+                        if ctx.author.id == 154749533429956608:
+                            max_lsd = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.lysergic_acid_diethylamide))
+                            max_q = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.quetiapine))
+                            max_lsd_proximity = lucy.get_proximity(molecule, max_lsd)
+                            max_q_proximity = lucy.get_proximity(molecule, max_q)
+                            if max_lsd == max_q:
+                                await ctx.send(f'{(100 * max_lsd_proximity):.3f}% | L | You\'d have to stop taking {lucy.get_molecule_name(max_lsd)} to take {lucy.get_molecule_name(molecule)} | Q | {(100 * max_q_proximity):.3f}%')
+                            await ctx.send(f'{(100 * max_lsd_proximity):.3f}% = {lucy.get_molecule_name(max_lsd)} | L | {lucy.get_molecule_name(molecule)} | Q | {lucy.get_molecule_name(max_q)} = {(100 * max_q_proximity):.3f}%')
                         await ctx.send('Which molecule would you like to know about next?')
                     except:
                         break
