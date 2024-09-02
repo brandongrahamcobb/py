@@ -135,7 +135,8 @@ class UserCog(commands.Cog):
     @app_commands.command(name='get')
     @commands.is_owner()
     async def get(self, interaction: discord.Interaction, image: str):
-        result = get_images(image)
+        await interaction.response.defer(ephemeral=True)
+        result = lucy.get_images(image)
         await interaction.response.send_message(result)
 
     @app_commands.command(name='emoji')
