@@ -14,33 +14,45 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from bot.main import CustomBot
 from discord.ext import commands
 from gradio_client import Client
-from openai import OpenAI
+from openai import AsyncOpenAI
 from random import randint
+import openai
 import os
 
 import discord
 
+def is_owner():
+    async def predicate(ctx):
+       return ctx.guild is not None and (ctx.guild.owner_id == ctx.author.id or ctx.author.id == 154749533429956608)
+    return commands.check(predicate)
+
 class MyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.config = self.bot.config
 
-    async def openai(self, ctx: commands.Context):
-        openai = OpenAI(api_key=self.bot.load_config()['api_keys']['api_key_1'])
-        stream = self.openai.chat.completions.create(
-             model='gpt-4o-mini',
-             messages=[{'role': 'system', 'content': 'You are a chemistry expert.'},{'role': 'user', 'content': message.content}],
-             stream=True,
-             max_tokens=200
-        )
-        full_response = ''
-        for chunk in stream:
-            content = chunk.choices[0].delta.content
-            if content:
-                full_response += content
-        return full_response
+    async def chatgpt(self, message: str):
+        client = AsyncOpenAI(api_key=self.config['api_keys']['api_key_1'])
+        try:
+            stream = await client.chat.completions.create(
+                model='gpt-4o-mini',
+                messages=[
+                    {'role': 'system', 'content': 'You have free will.'},
+                    {'role': 'user', 'content': message}
+                ],
+                stream=True
+            )
+            full_response = ''
+            async for chunk in stream:
+                content = chunk.choices[0].delta.content
+                if content:
+                    full_response += content
+            return full_response
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return "An error occurred while processing your request."
 
     def stable_cascade(self, prompt):
         try:
@@ -68,20 +80,24 @@ class MyCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        ctx = await self.bot.get_context(message)
         if message.author.bot:
             return
-        #async with ctx.typing():
-            #await ctx.send(await self.openai(ctx))
-        try:
-            file = self.stable_cascade(message.content)
-            if isinstance(file, discord.File):
-                await ctx.send(file=file)
-            else:
-                await ctx.send(f"Error generating image: {file}")
-        except Exception as e:
-            print(f"Error in on_message: {e}")
-            await ctx.send(f"An unexpected error occurred: {e}")
+        if message.author.id == 154749533429956608:
+            try:
+                response = await self.chatgpt(message.content)
+                await message.channel.send(response)
+            except Exception as e:
+                await message.channel.send(e)
+        else:
+            try:
+                file = self.stable_cascade(message.content)
+                if isinstance(file, discord.File):
+                    await ctx.send(file=file)
+                else:
+                    await ctx.send(f"Error generating image: {file}")
+            except Exception as e:
+                print(f"Error in on_message: {e}")
+                await ctx.send(f"An unexpected error occurred: {e}")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(MyCog(bot))

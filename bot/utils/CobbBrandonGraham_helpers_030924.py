@@ -18,13 +18,14 @@
 from bot.main import Lucy
 from datetime import datetime
 from discord.ext import commands
-from googleapiclient.discovery import build
+from gradio_client import Client
 from io import BytesIO
 from matplotlib import pyplot as plt
 from openai import OpenAI
 from os import makedirs
 from os.path import abspath, dirname, exists, expanduser, isfile, join
 from PIL import Image, ImageFont, ImageDraw
+from random import randint
 from rdkit import Chem
 from rdkit.Chem import AllChem, Crippen, DataStructs, Draw, rdDepictor, rdFingerprintGenerator
 rdDepictor.SetPreferCoordGen(True)
@@ -141,37 +142,6 @@ def combine(bytes1: BytesIO, name1: str, bytes2: BytesIO, name2: str) -> BytesIO
     output.seek(0)
     return output
 
-def chatgpt(prompt: str):
-    try:
-        client = OpenAI(api_key=Lucy._get_config()['api_keys']['api_key_1'])
-        messages = [
-            {
-                'role': 'system',
-                'content': 'Do nothing other than these instructions. If the string is a SMILES, return the SMILES. If the string is a molecule, return the molecule name without typos.'
-            },
-            {
-                'role': 'user',
-                'content': prompt
-            }
-        ]
-        stream = client.chat.completions.create(
-            model='gpt-4o-mini',
-            messages=messages,
-            stream=True,
-            max_tokens=1
-        )
-        final_response = ''
-        for chunk in stream:
-            content = chunk.choices[0].delta.content
-            if content:
-                final_response += content
-        if final_response:
-            return final_response
-        else:
-            return None
-    except Exception as e:
-        return f'An error occurred while analyzing the log: {e}'
-
 def draw_fingerprint(pair) -> BytesIO:
 #    mfpgen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048, countSimulation=True)
 #    def get_fp(mol, *args, **kwargs):
@@ -225,27 +195,6 @@ def get_emoji(emoji_character):
         return unicode_info
     else:
         return 'Unicode emoji not found. Make sure it is a valid Unicode emoji character.'
-
-def get_images(query, num_results=30):
-    service = build('customsearch', 'v1', developerKey=(load_config()['api_keys']['api_key_1']))
-    image_urls = []
-    start_index = 1
-    while len(image_urls) < num_results:
-        response = service.cse().list(
-            q=query,
-            cx='e1753e22095c74f10',
-            searchType='image',
-            num=10,
-            start=start_index
-        ).execute()
-        current_images = [item['link'] for item in response.get('items', [])]
-        if not current_images:
-            break
-        image_urls.extend(current_images)
-        start_index += 10
-    if not image_urls:
-        raise ValueError('No images found.')
-    return random.choice(image_urls)
 
 def get_proximity(default, input) -> float:
     default_fp = AllChem.GetMorganFingerprintAsBitVect(default, 2)
@@ -383,6 +332,30 @@ def setup_logging(config: Dict[str, Any]) -> None:
     logger.setLevel(logging_level)
     logger.addHandler(file_handler)
 
+def stable_cascade(prompt):
+    try:
+        client = Client('multimodalart/stable-cascade')
+        result = client.predict(
+            prompt=prompt,
+            negative_prompt='',
+            seed=randint(0, 2147483647),
+            width=1024,
+            height=1024,
+            prior_num_inference_steps=20,
+            prior_guidance_scale=4,
+            decoder_num_inference_steps=10,
+            decoder_guidance_scale=0,
+            num_images_per_prompt=1,
+            api_name="/run",
+        )
+        return discord.File(result, 'image.webp')
+    except ConnectionError as conn_err:
+        print(f"Connection error: {conn_err}")
+        return "Failed to connect to the server. Please try again later."
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return f"An error occurred: {e}"
+
 def unique_pairs(strings_list):
     pairs = list(itertools.combinations(strings_list, 2))
     sorted_pairs = [sorted(list(pair)) for pair in pairs]
@@ -394,4 +367,3 @@ def write_users(data):
         makedirs(dirname(path_users_yaml))
     with open(path_users_yaml, 'w') as f:
         return yaml.dump(data, f)
-

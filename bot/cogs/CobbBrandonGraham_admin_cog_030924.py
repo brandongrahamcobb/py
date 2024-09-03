@@ -152,7 +152,7 @@ class AdminCog(commands.Cog):
             await ctx.send(f'Deleted {deleted} bot messages.')
         elif option == 'all':
             deleted = await ctx.channel.purge(limit=limit)
-            await ctx.send(f'Deleted {deleted} messages.')
+            await ctx.send(f'Deleted all messages.')
         elif option == 'user':
             def is_user_message(message):
                 return message.author == ctx.author
