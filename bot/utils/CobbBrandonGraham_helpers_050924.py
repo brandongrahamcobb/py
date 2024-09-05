@@ -1,4 +1,4 @@
-''' helpers.py
+f''' helpers.py
     Copyright (C) 2024 github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -119,13 +119,13 @@ def adjust_hue_and_saturation(image, hue_shift, saturation_shift) -> BytesIO:
 
 def combine(bytes1: BytesIO, name1: str, bytes2: BytesIO, name2: str) -> BytesIO:
     img1 = Image.open(bytes1)
-    inverted_image1 = invert_colors(img1)
+    inverted_image1 = Image.eval(img1, lambda x: 255 - x)
     img1_bytes = BytesIO()
     inverted_image1.save(img1_bytes, format='PNG')
     img1_bytes_final = add_watermark(img1_bytes, watermark_text=name1)
     img1_final = Image.open(img1_bytes_final)
     img2 = Image.open(bytes2)
-    inverted_image2 = invert_colors(img2)
+    inverted_image2 = Image.eval(img2, lambda x: 255 - x)
     img2_bytes = BytesIO()
     inverted_image2.save(img2_bytes, format='PNG')
     img2_bytes_final = add_watermark(img2_bytes, watermark_text=name2)
@@ -168,6 +168,9 @@ def draw_watermarked_molecule(molecule) -> BytesIO:
     resolved_name = get_molecule_name(molecule)
     d2d = rdMolDraw2D.MolDraw2DCairo(1024, 1024)
     Options = d2d.drawOptions()
+    Options.prepareMolsBeforeDrawing = False
+    Options.includeMetadata = False
+    Options.bondLineWidth = 4.0
     d2d.SetDrawOptions(Options)
     rdMolDraw2D.SetDarkMode(Options)
     mol = rdMolDraw2D.PrepareMolForDrawing(molecule, kekulize=True)
@@ -310,15 +313,6 @@ def increment_version(config: Dict[str, Any]):
     with open(path_config_yaml, 'w') as file:
         yaml.dump(config, file)
 
-def invert_colors(image):
-    return Image.eval(image, lambda x: 255 - x)
-
-def read_users():
-    if not exists(path_users_yaml):
-        raise FileNotFoundError('User file not found.')
-    with open(path_users_yaml, 'r') as f:
-        return yaml.safe_load(f)
-
 def setup_logging(config: Dict[str, Any]) -> None:
     logging_level = config['logging_level'].upper()
     logging.basicConfig(level=getattr(logging, logging_level))
@@ -361,9 +355,3 @@ def unique_pairs(strings_list):
     sorted_pairs = [sorted(list(pair)) for pair in pairs]
     sorted_pairs_overall = sorted(sorted_pairs)
     return sorted_pairs_overall
-
-def write_users(data):
-    if not exists(path_users_yaml):
-        makedirs(dirname(path_users_yaml))
-    with open(path_users_yaml, 'w') as f:
-        return yaml.dump(data, f)

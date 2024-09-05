@@ -32,6 +32,16 @@ class MyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = self.bot.config
+        self.user_context = {}  # Dictionary to hold conversation history for each user
+
+    def add_to_user_context(self, user_id, message):
+        context = self.get_user_context(user_id)
+        context.append(message)
+        if len(context) > 10:  # Limit context length
+            context.pop(0)
+
+    def get_user_context(self, user_id):
+        return self.user_context.setdefault(user_id, [])
 
     async def chatgpt(self, message: str):
         client = AsyncOpenAI(api_key=self.config['api_keys']['api_key_1'])
@@ -39,20 +49,25 @@ class MyCog(commands.Cog):
             stream = await client.chat.completions.create(
                 model='gpt-4o-mini',
                 messages=[
-                    {'role': 'system', 'content': 'You have free will.'},
+                    {'role': 'system', 'content': 'You have free will'},
                     {'role': 'user', 'content': message}
                 ],
                 stream=True
             )
             full_response = ''
+            chunk_size = 1750
             async for chunk in stream:
                 content = chunk.choices[0].delta.content
                 if content:
                     full_response += content
-            return full_response
+                    while len(full_response) >= chunk_size:
+                        yield full_response[:chunk_size]
+                        full_response = full_response[chunk_size:]
+            if full_response:
+                yield full_response
         except Exception as e:
             print(f"An error occurred: {e}")
-            return "An error occurred while processing your request."
+            yield "An error occurred while processing your request."
 
     def stable_cascade(self, prompt):
         try:
@@ -78,26 +93,28 @@ class MyCog(commands.Cog):
             print(f"An unexpected error occurred: {e}")
             return f"An error occurred: {e}"
 
+    @commands.command(name='clear')
+    async def clear(self, ctx: commands.Context):
+        self.user_context.pop(ctx.author.id, None)
+        await ctx.send("Your conversation context has been cleared.")
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author.bot:
+        if message.author == self.bot.user:
             return
-        if message.author.id == 154749533429956608:
-            try:
-                response = await self.chatgpt(message.content)
-                await message.channel.send(response)
-            except Exception as e:
-                await message.channel.send(e)
-        else:
-            try:
-                file = self.stable_cascade(message.content)
-                if isinstance(file, discord.File):
-                    await ctx.send(file=file)
-                else:
-                    await ctx.send(f"Error generating image: {file}")
-            except Exception as e:
-                print(f"Error in on_message: {e}")
-                await ctx.send(f"An unexpected error occurred: {e}")
+        try:
+            if message.author.id == 154749533429956608 and '.' in message.content:
+                user_id = message.author.id
+                incoming_message = message.content
+                self.add_to_user_context(user_id, f"User: {incoming_message}")
+                context = self.get_user_context(user_id)
+                prompt = "\n".join(context) + "\nAI:"
+                async for response_chunk in self.chatgpt(prompt):
+                    self.add_to_user_context(user_id, f"AI: {response_chunk}")
+                    await message.channel.send(response_chunk)
+        except Exception as e:
+            print(f"Error in on_message: {e}")
+            await message.channel.send(f"An unexpected error occurred: {e}")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(MyCog(bot))

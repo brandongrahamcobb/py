@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='lucy',
-    version='300824',
+    version='050924',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -10,8 +10,6 @@ setup(
         'bs4',
         'discord.py',
         'emoji',
-        'google-api-python-client',
-        'googletrans==4.0.0-rc1',
         'pip',
         'pubchempy',
         'pillow',

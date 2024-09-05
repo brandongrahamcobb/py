@@ -38,13 +38,8 @@ class UserCog(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.stacks = {}
-        self.lysergic_acid_diethylamide = lucy.get_mol('salvinorin a')
-        self.quetiapine = lucy.get_mol('salvinorin a')
-
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        if message.author.bot: # or message.channel.id == '962009752488013834':
-            return
+        self.lysergic_acid_diethylamide = lucy.get_mol('lysergic acid diethylamide')
+        self.tartrate = lucy.get_mol('tartrate')
 
     def get_user_stack(self, user_id: int):
         return self.stacks.get(user_id, [])
@@ -60,9 +55,9 @@ class UserCog(commands.Cog):
         if args:
             self.set_user_stack(user_id=ctx.author.id, molecule_names=args)
         previous_lsd_defender = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.lysergic_acid_diethylamide))
-        previous_q_defender = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.quetiapine))
-        if previous_lsd_defender != previous_q_defender:
-            await ctx.send(f'{lucy.get_molecule_name(previous_lsd_defender)} | ERROR | {lucy.get_molecule_name(previous_q_defender)}')
+        previous_t_defender = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.tartrate))
+        if previous_lsd_defender != previous_t_defender:
+            await ctx.send(f'{lucy.get_molecule_name(previous_lsd_defender)} | ERROR | {lucy.get_molecule_name(previous_t_defender)}')
             return
         while True:
             await ctx.send([lucy.get_molecule_name(mol) for mol in self.get_user_stack(ctx.author.id)])
@@ -74,18 +69,16 @@ class UserCog(commands.Cog):
             )
             try:
                 new_defender = lucy.get_mol(response.content)
-                await ctx.send(f'{lucy.get_molecule_name(new_defender)} | YOUR CHOICE | {lucy.get_molecule_name(new_defender)}')
                 old_lsd_proximity = lucy.get_proximity(self.lysergic_acid_diethylamide, previous_lsd_defender)
-                old_q_proximity = lucy.get_proximity(self.quetiapine, previous_q_defender)
+                old_t_proximity = lucy.get_proximity(self.tartrate, previous_t_defender)
                 new_lsd_proximity = lucy.get_proximity(self.lysergic_acid_diethylamide, new_defender)
-                new_q_proximity = lucy.get_proximity(self.quetiapine, new_defender)
-                if previous_lsd_defender == previous_q_defender and new_defender != previous_lsd_defender and new_lsd_proximity < old_lsd_proximity and new_q_proximity < old_q_proximity:
+                new_t_proximity = lucy.get_proximity(self.tartrate, new_defender)
+                if previous_lsd_defender == previous_t_defender and new_defender != previous_lsd_defender and new_lsd_proximity < old_lsd_proximity and new_t_proximity < old_t_proximity:
                     new_stack.append(response.content)
                     self.set_user_stack(user_id=ctx.author.id, molecule_names=new_stack)
                 else:
                     await ctx.send('Interacts unfavorably.')
-                await ctx.send(f'{(100 * new_lsd_proximity):.3f}% {response.content} {(100 * new_q_proximity):.3f}%')
-
+                await ctx.send(f'{(100 * new_lsd_proximity):.3f}% {response.content} {(100 * new_t_proximity):.3f}%')
             except Exception as e:
                 await ctx.send(e)
                 break
