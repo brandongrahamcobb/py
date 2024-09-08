@@ -21,13 +21,12 @@ from discord.ext import commands
 from gradio_client import Client
 from io import BytesIO
 from matplotlib import pyplot as plt
-from openai import OpenAI
 from os import makedirs
 from os.path import abspath, dirname, exists, expanduser, isfile, join
 from PIL import Image, ImageFont, ImageDraw
 from random import randint
 from rdkit import Chem
-from rdkit.Chem import AllChem, Crippen, DataStructs, Draw, rdDepictor, rdFingerprintGenerator
+from rdkit.Chem import AllChem, Crippen, DataStructs, Draw, rdDepictor, rdFingerprintGenerator, rdFMCS
 rdDepictor.SetPreferCoordGen(True)
 from rdkit.Chem.Draw import rdMolDraw2D, SimilarityMaps
 from rdkit.DataStructs import FingerprintSimilarity, TanimotoSimilarity
@@ -355,3 +354,28 @@ def unique_pairs(strings_list):
     sorted_pairs = [sorted(list(pair)) for pair in pairs]
     sorted_pairs_overall = sorted(sorted_pairs)
     return sorted_pairs_overall
+
+def view_difference(molecule1, molecule2):
+    mcs_result = rdFMCS.FindMCS([molecule1, molecule2])
+    mcs_molecule = Chem.MolFromSmarts(mcs_result.smartsString)
+    non_matching_atoms1 = [
+        atom.GetIdx() 
+        for atom in molecule1.GetAtoms() 
+        if atom.GetIdx() not in molecule1.GetSubstructMatch(mcs_molecule)
+    ]
+    non_matching_atoms2 = [
+        atom.GetIdx()
+        for atom in molecule2.GetAtoms() 
+        if atom.GetIdx() not in molecule2.GetSubstructMatch(mcs_molecule)
+    ]
+    img = Draw.MolsToGridImage(
+        [molecule1, molecule2],
+        highlightAtomLists=[non_matching_atoms1, non_matching_atoms2],
+        legends=["Molecule 1", "Molecule 2"]
+    )
+    img_bytes = BytesIO()
+    img.save(img_bytes, format='PNG')
+    img_bytes.seek(0)  # Go to the beginning of the BytesIO buffer
+    
+    # Send the image in the Discord channel
+    return discord.File(img_bytes, filename='molecules_diff.png')

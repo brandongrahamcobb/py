@@ -18,8 +18,15 @@ from discord.ext import commands
 from gradio_client import Client
 from openai import AsyncOpenAI
 from random import randint
+import asyncio
+import numpy as np
 import openai
 import os
+import sounddevice as sd
+import wave
+
+SILENCE_DURATION = 30  # seconds
+SAMPLE_RATE = 16000  # Sample rate for recording
 
 import discord
 
@@ -32,6 +39,7 @@ class MyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = self.bot.config
+        self.openai_client = AsyncOpenAI(api_key=self.config['api_keys']['api_key_1'])
         self.user_context = {}  # Dictionary to hold conversation history for each user
 
     def add_to_user_context(self, user_id, message):
@@ -44,9 +52,8 @@ class MyCog(commands.Cog):
         return self.user_context.setdefault(user_id, [])
 
     async def chatgpt(self, message: str):
-        client = AsyncOpenAI(api_key=self.config['api_keys']['api_key_1'])
         try:
-            stream = await client.chat.completions.create(
+            stream = await self.openai_client.chat.completions.create(
                 model='gpt-4o-mini',
                 messages=[
                     {'role': 'system', 'content': 'You have free will'},
@@ -69,34 +76,79 @@ class MyCog(commands.Cog):
             print(f"An error occurred: {e}")
             yield "An error occurred while processing your request."
 
-    def stable_cascade(self, prompt):
-        try:
-            client = Client('multimodalart/stable-cascade')
-            result = client.predict(
-                prompt=prompt,
-                negative_prompt='',
-                seed=randint(0, 2147483647),
-                width=1024,
-                height=1024,
-                prior_num_inference_steps=20,
-                prior_guidance_scale=4,
-                decoder_num_inference_steps=10,
-                decoder_guidance_scale=0,
-                num_images_per_prompt=1,
-                api_name="/run",
+    async def record_audio(self, filepath):
+        audio_data = []
+        silence_start = None
+        def callback(indata, frames, time, status):
+            nonlocal silence_start
+            volume_norm = np.linalg.norm(indata)  # Measure audio volume
+            audio_data.append(indata.copy())
+            if volume_norm < 0.01:
+                if silence_start is None:
+                    silence_start = time.inputBuffer
+            else:
+                silence_start = None
+        with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, callback=callback):
+            print("Recording...")
+            while True:
+                await asyncio.sleep(1)
+                if silence_start is not None and (time.inputBuffer - silence_start) > SILENCE_DURATION:
+                    print("Recording stopped due to silence.")
+                    break
+        audio_data = np.concatenate(audio_data, axis=0)
+        with wave.open(filepath, 'wb') as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)  # 2 bytes for int16
+            wf.setframerate(SAMPLE_RATE)
+            wf.writeframes(audio_data.astype(np.int16).tobytes())
+
+    async def record_and_transcribe(self, ctx: commands.Context):
+        filepath = 'audio.wav'
+        await self.record_audio(filepath)
+        with open(filepath, 'rb') as audio_file:
+            transcription = self.openai_client.audio.transcriptions.create(
+                model = 'whisper-1',
+                file = audio_file
             )
-            return discord.File(result, 'image.webp')
-        except ConnectionError as conn_err:
-            print(f"Connection error: {conn_err}")
-            return "Failed to connect to the server. Please try again later."
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-            return f"An error occurred: {e}"
+            audio_data = transcription.text
+            async for response_chunk in self.chatgpt(audio_data, ctx.message):
+                self.add_to_user_context(user_id, f"AI: {response_chunk}")
+                await message.channel.send(response_chunk)
 
     @commands.command(name='clear')
     async def clear(self, ctx: commands.Context):
         self.user_context.pop(ctx.author.id, None)
         await ctx.send("Your conversation context has been cleared.")
+
+    @commands.command(name='join')
+    async def join(self, ctx: commands.Context):
+        try:
+            if ctx.author.voice:
+                channel = ctx.author.voice.channel
+                await channel.connect()
+                await ctx.send(f'Joined {channel.name}!')
+            else:
+                await ctx.send("You need to be in a voice channel for me to join!")
+        except Exception as e:
+            await ctx.send(e)
+
+    @commands.command(name='leave')
+    async def leave(self, ctx: commands.Context):
+        if ctx.voice_client:
+            await ctx.voice_client.disconnect()
+            await ctx.send("Left the voice channel.")
+        else:
+            await ctx.send("I'm not in a voice channel!")
+
+    @commands.command(name='transcribe')
+    async def transcribe(self, ctx: commands.Context):
+        if ctx.voice_client:
+            try:
+                await self.record_and_transcribe(ctx)
+            except Exception as e:
+                await ctx.send(e)
+        else:
+            await ctx.send("I'm not in a voice channel.")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):

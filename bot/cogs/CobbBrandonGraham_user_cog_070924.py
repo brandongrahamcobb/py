@@ -83,6 +83,16 @@ class UserCog(commands.Cog):
                 await ctx.send(e)
                 break
 
+    @commands.hybrid_command(name='compare', description='Draw a molecule or compare molecules by their names.')
+    async def compare(self, ctx: commands.Context, *, molecules: str) -> None:
+        if ctx.interaction:
+            await ctx.interaction.response.defer(ephemeral=True)
+        args = shlex.split(molecules)
+        mol1 = lucy.get_mol(args[0])
+        mol2 = lucy.get_mol(args[1])
+        image = lucy.view_difference(mol1, mol2)
+        await ctx.send(file=image)
+
     @commands.hybrid_command(name='draw', description='Draw a molecule or compare molecules by their names.')
     async def draw(self, ctx: commands.Context, *, molecules: str) -> None:
         try:
