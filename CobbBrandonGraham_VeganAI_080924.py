@@ -10,8 +10,6 @@ from collections import defaultdict
 import threading
 
 app = Quart(__name__)
-<<<<<<< HEAD
-=======
 base = dirname(os.path.abspath(__file__))
 
 conversations = defaultdict(list)
@@ -20,7 +18,6 @@ css = join(base, 'static', 'styles', 'styles.css')
 html = join(base, 'templates', 'index.html')
 js = join(base, 'static', 'scripts', 'script.js')
 py = os.path.abspath(__file__)
->>>>>>> 5258710 (mend)
 openai_client = AsyncOpenAI()
 
 @app.route('/')
