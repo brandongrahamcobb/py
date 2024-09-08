@@ -18,7 +18,7 @@ css = join(base, 'static', 'styles', 'styles.css')
 html = join(base, 'templates', 'index.html')
 js = join(base, 'static', 'scripts', 'script.js')
 py = os.path.abspath(__file__)
-openai_client = AsyncOpenAI()
+openai_client = AsyncOpenAI(api_key=REDACTED)
 
 @app.route('/')
 async def index():
@@ -49,10 +49,11 @@ async def chatgpt():
                 content = chunk.choices[0].delta.content
                 if content is not None:
                     full_response += content
-
-            # Store assistant response
             conversations[conversation_id].append({'role': 'assistant', 'content': full_response})
-            yield full_response
+            parts = full_response.split('```')
+            for part in parts:
+                yield part
+        #            yield full_response
 
         except Exception as e:
             logging.error(f"Error occurred: {e}")
