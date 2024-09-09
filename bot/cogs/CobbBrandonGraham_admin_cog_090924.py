@@ -48,6 +48,10 @@ class AdminCog(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         if message.author == self.bot.user or message.channel.id == '962009752488013834':
             return
+        if message.channel.id == '937463813626822656' and not message.author.bot and len(message.author.roles) > 1 and :
+            if len(message.author.roles) > 1:
+                nerd = self.bot.get_role('1277654132177768609')
+                await message.author.add_role(nerd)
         # WIPE
         if message.author != self.bot.user and message.content.startswith('!'):
             if message.author.id not in self.user_command_messages:
