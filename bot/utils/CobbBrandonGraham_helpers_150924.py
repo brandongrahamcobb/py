@@ -116,25 +116,22 @@ def adjust_hue_and_saturation(image, hue_shift, saturation_shift) -> BytesIO:
     output.seek(0)
     return output
 
-def combine(bytes1: BytesIO, name1: str, bytes2: BytesIO, name2: str) -> BytesIO:
-    img1 = Image.open(bytes1)
-    inverted_image1 = Image.eval(img1, lambda x: 255 - x)
-    img1_bytes = BytesIO()
-    inverted_image1.save(img1_bytes, format='PNG')
-    img1_bytes_final = add_watermark(img1_bytes, watermark_text=name1)
-    img1_final = Image.open(img1_bytes_final)
-    img2 = Image.open(bytes2)
-    inverted_image2 = Image.eval(img2, lambda x: 255 - x)
-    img2_bytes = BytesIO()
-    inverted_image2.save(img2_bytes, format='PNG')
-    img2_bytes_final = add_watermark(img2_bytes, watermark_text=name2)
-    img2_final = Image.open(img2_bytes_final)
-    widths, heights = zip(*(img.size for img in [img1_final, img2_final]))
+def combine(images: list, names: list) -> BytesIO:
+    combined_images = []
+    for index, (bytes_io, name) in enumerate(zip(images, names)):
+        img = Image.open(bytes_io)
+        inverted_image = Image.eval(img, lambda x: 255 - x)
+        img_bytes = BytesIO()
+        inverted_image.save(img_bytes, format='PNG')
+        img_bytes_final = add_watermark(img_bytes, watermark_text=name)
+        img_final = Image.open(img_bytes_final)
+        combined_images.append(img_final)
+    widths, heights = zip(*(img.size for img in combined_images))
     total_width = sum(widths)
     max_height = max(heights)
     combined_img = Image.new('RGB', (total_width, max_height))
     x_offset = 0
-    for img in [img1_final, img2_final]:
+    for img in combined_images:
         combined_img.paste(img, (x_offset, 0))
         x_offset += img.width
     output = adjust_hue_and_saturation(combined_img, hue_shift=-180, saturation_shift=160)

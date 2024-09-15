@@ -14,16 +14,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from better_profanity import profanity
 from collections import defaultdict
+from datetime import datetime, timedelta
 from discord.ext import commands, tasks
 from typing import Literal, Optional
 from bot.main import Lucy
-from openai import OpenAI
 
 import asyncio
 import bot.utils.helpers as lucy
 import discord
+import time
+import json
+
+CHANNEL_ID = 937463813626822656
+GUILD_ID = 777341210871726090
 
 def is_owner():
     async def predicate(ctx):
@@ -36,7 +40,52 @@ class AdminCog(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.user_command_messages = {}
-        self.nerd = self.bot.get_role('1277654132177768609')
+        self.persistent_users = lucy.path_users_yaml
+        self.check_roles.start()  # Start the periodic task
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        now = datetime.now()
+        user_data = {"joined_at": now.isoformat()}
+        with open(self.persistent_users, 'a') as f:
+            f.write(f"{member.id}:{json.dumps(user_data)}\n")
+
+    @tasks.loop(minutes=5)
+    async def check_roles(self):
+        now = datetime.now()
+        to_remove = []
+        with open(self.persistent_users, 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            user_id, data = line.split(':', 1)
+            user_id = int(user_id)
+            user_info = json.loads(data)
+            joined_at = datetime.fromisoformat(user_info['joined_at'])
+            time_difference = now - joined_at
+            guild = await self.bot.fetch_guild(777341210871726090)
+            member = guild.get_member(user_id)
+            if member == None:
+                break
+            else:
+                if member.roles > 1:
+                    nerd_role = guild.get_role(1277654132177768609)
+                    if nerd_role and nerd_role not in member.roles:
+                        await member.add_roles(nerd_role)
+                    to_remove.append(line)
+                elif time_difference > timedelta(hours=24):
+                    self.kick_function(member)
+                    to_remove.append(line)
+        with open(self.persistent_users, 'w') as f:
+            for line in lines:
+                if line not in to_remove:
+                    f.write(line)
+
+    def kick_function(self, member):
+        print(f"{member.name} did not qualify for roles in 24 hours.")
+
+    @check_roles.before_loop
+    async def before_check_roles(self):
+        await self.bot.wait_until_ready()
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -47,10 +96,8 @@ class AdminCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if message.author == self.bot.user or message.channel.id == '962009752488013834':
+        if message.author == self.bot.user:
             return
-#        if message.channel.id == '937463813626822656' and not message.author.bot and len(message.author.roles) > 1 and not message.author.has_role(self.nerd):
- #           await message.author.add_role(nerd)
         # WIPE
         if message.author != self.bot.user and message.content.startswith('!'):
             if message.author.id not in self.user_command_messages:
@@ -75,6 +122,17 @@ class AdminCog(commands.Cog):
         )
         stats_message = f'{info}\n\nGuilds:\n{guild_info}'
         print(stats_message)
+        self.delete_old_messages.start()
+
+    @tasks.loop(hours=24)
+    async def delete_old_messages(self):
+        guild = await self.bot.fetch_guild(GUILD_ID)
+        channel = guild.get_channel(CHANNEL_ID)
+        if channel is not None:
+            async for message in channel.history(limit=100):
+                if (discord.utils.utcnow() - message.created_at).days >= 1:
+                    await message.delete()
+                    print(f'Deleted message from {message.author}: {message.content}')
 
     async def purge_messages(self, ctx, limit, check=None):
         deleted = 0

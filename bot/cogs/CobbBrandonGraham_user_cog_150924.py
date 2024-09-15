@@ -38,8 +38,7 @@ class UserCog(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.stacks = {}
-        self.lysergic_acid_diethylamide = lucy.get_mol('lysergic acid diethylamide')
-        self.tartrate = lucy.get_mol('tartrate')
+        self.diaminobenzidine = lucy.get_mol('diaminobenzidine')
 
     def get_user_stack(self, user_id: int):
         return self.stacks.get(user_id, [])
@@ -48,37 +47,33 @@ class UserCog(commands.Cog):
         mol_objects = [lucy.get_mol(name) for name in molecule_names]
         self.stacks[user_id] = mol_objects
 
-    @commands.command(name='analog', description='Submit one molecule to test or multiple to set a stack.')
-    @commands.is_owner()
+    @commands.command(name='stack', description='Chose your guide.')
     async def analog(self, ctx: commands.Context, *args):
         new_stack = list(args)
         if args:
             self.set_user_stack(user_id=ctx.author.id, molecule_names=args)
-        previous_lsd_defender = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.lysergic_acid_diethylamide))
-        previous_t_defender = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.tartrate))
-        if previous_lsd_defender != previous_t_defender:
-            await ctx.send(f'{lucy.get_molecule_name(previous_lsd_defender)} | ERROR | {lucy.get_molecule_name(previous_t_defender)}')
-            return
+        original = max(self.get_user_stack(ctx.author.id), key=lambda mol: lucy.get_proximity(mol, self.diaminobenzidine))
         while True:
+            await ctx.send(f'{ctx.author.name}\'s Stack')
             await ctx.send([lucy.get_molecule_name(mol) for mol in self.get_user_stack(ctx.author.id)])
-            await ctx.send('Build your stack!')
+            await ctx.send('Which molecule would you like to interview for your stack?')
             response = await self.bot.wait_for(
                 'message',
                 timeout=20000.0,
                 check=lambda message: message.author == ctx.author and message.channel == ctx.channel
             )
             try:
-                new_defender = lucy.get_mol(response.content)
-                old_lsd_proximity = lucy.get_proximity(self.lysergic_acid_diethylamide, previous_lsd_defender)
-                old_t_proximity = lucy.get_proximity(self.tartrate, previous_t_defender)
-                new_lsd_proximity = lucy.get_proximity(self.lysergic_acid_diethylamide, new_defender)
-                new_t_proximity = lucy.get_proximity(self.tartrate, new_defender)
-                if previous_lsd_defender == previous_t_defender and new_defender != previous_lsd_defender and new_lsd_proximity < old_lsd_proximity and new_t_proximity < old_t_proximity:
+                new = lucy.get_mol(response.content)
+                original_proximity = lucy.get_proximity(self.diaminobenzidine, original)
+                new_proximity = lucy.get_proximity(self.diaminobenzidine, new)
+                if new_proximity < original_proximity:
                     new_stack.append(response.content)
+                    embed = lucy.get_sds(response.content)
+                    await ctx.send(embed=embed)
                     self.set_user_stack(user_id=ctx.author.id, molecule_names=new_stack)
-                else:
-                    await ctx.send('Interacts unfavorably.')
-                await ctx.send(f'{(100 * new_lsd_proximity):.3f}% {response.content} {(100 * new_t_proximity):.3f}%')
+                elif new_proximity > original_proximity:
+                    await ctx.send(f'DANGER: {response.content}')
+                await ctx.send(f'{(100 * new_proximity):.3f}% {response.content} {(100 * original_proximity):.3f}%')
             except Exception as e:
                 await ctx.send(e)
                 break
@@ -140,8 +135,9 @@ class UserCog(commands.Cog):
         await ctx.send(lucy.get_emoji(argument))
 
     @commands.hybrid_command(name='get', hidden=True)
-    @commands.has_permissions(manage_roles=True)
     async def get(self, ctx: commands.Context, *, argument: str):
+#        if ctx.guild.id != 1131418877214068858:
+ #           return
         if ctx.interaction:
              await ctx.interaction.response.defer(ephemeral=True)
         try:
@@ -194,6 +190,21 @@ class UserCog(commands.Cog):
             if arg is None:
                 return
             await ctx.send(f'{arg} is an unknown molecule.')
+
+    @commands.hybrid_command(name='snort')
+    async def snort(self, ctx: commands.Context, molecules: str, quantity: int):
+        fingerprints = []
+        names = []
+        if not molecules or molecules == 'cocaine' or 'cocaethylene' or 'coke' and quantity > 100:
+            if ctx.interaction:
+                await ctx.interaction.response.defer(ephemeral=True)
+            args = shlex.split(molecules)
+            molecule = lucy.get_mol(args[0])
+            for mol in range(quantity):
+                names.append(args[0])
+                fingerprints.append(lucy.draw_fingerprint([molecule, molecule]))
+            combined_image = lucy.combine(fingerprints, names)
+            await ctx.send(file=discord.File(combined_image, f'molecule_comparison.png'))
 
     @commands.hybrid_command(name='smiles')
     async def smiles(self, ctx: commands.Context, *, molecules: str):

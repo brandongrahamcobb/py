@@ -33,7 +33,6 @@ class Project:
         self.COBBBRANDONGRAHAM = expanduser('~')
 
         self.CURRENT_DATE = dt.datetime.now().strftime("%d%m%y")
-        self.PATH_NEW_YAML = join(self.COBBBRANDONGRAHAM, '.config', 'lucy', 'config.yaml')
         self.PATH_DOCUMENTS_MD_README = join(self.COBBBRANDONGRAHAM, 'Documents', 'md', f'CobbBrandonGraham_README_{self.CURRENT_DATE}.md')
         self.PATH_DOCUMENTS_PY = abspath(__file__)
         self.PATH_DOCUMENTS_PY_ADMIN_COG = join(self.COBBBRANDONGRAHAM, 'Documents', 'py', 'bot', 'cogs', f'CobbBrandonGraham_admin_cog_{self.CURRENT_DATE}.py')
