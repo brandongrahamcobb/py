@@ -94,7 +94,7 @@ class Hybrid(commands.Cog):
             await ctx.send('\N{OK HAND SIGN}')
 
     @commands.hybrid_command(name='draw', description='Usage: !draw glow <molecule> or !draw gsrs <molecule> or !draw shadow <molecule>. Use quotations for multistring molecules.')
-    async def molecule(self, ctx: commands.Context, option: str = commands.parameter(default="glow", description="Compare `compare or Draw style `glow` `gsrs` `shadow`."), *, molecule: str = commands.parameter(default=None, description="Any molecule"), quantity: int = commands.parameter(default=1, description="Quantity of glows")):
+    async def molecule(self, ctx: commands.Context, option: str = commands.parameter(default="glow", description="Compare `compare or Draw style `glow` `gsrs` `shadow`."), *, molecules: str = commands.parameter(default=None, description="Any molecule"), quantity: int = commands.parameter(default=1, description="Quantity of glows")):
         try:
             if ctx.interaction:
                 await ctx.interaction.response.defer(ephemeral=True)
@@ -129,7 +129,7 @@ class Hybrid(commands.Cog):
                 fingerprints = []
                 names = []
                 molecule = helpers.get_mol(args[0])
-                for _ in range(quantity):
+                for _ in range(quantity.default):
                     names.append(args[0])
                     fingerprints.append(helpers.draw_fingerprint([molecule, molecule]))
                 combined_image = helpers.combine(fingerprints, names)
