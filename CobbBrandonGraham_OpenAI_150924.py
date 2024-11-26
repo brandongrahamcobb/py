@@ -7,7 +7,7 @@ import traceback
 with open(os.path.abspath(__file__), 'r') as python:
     file_contents = python.read()
 
-ai_client = OpenAI(api_key='sk-proj-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+ai_client = OpenAI(api_key='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')
 base = os.path.dirname(os.path.abspath(__file__))
 conversations = defaultdict(list)
 

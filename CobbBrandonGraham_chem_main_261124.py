@@ -71,7 +71,7 @@ def handle_option(option, molecules):
             names = []
             molecule = helpers.get_mol(args[0])
 
-            for _ in range(quantity.default):  # Assuming quantity is defined elsewhere
+            for _ in range(1):  # Assuming quantity is defined elsewhere
                 names.append(args[0])
                 fingerprints.append(helpers.draw_fingerprint([molecule, molecule]))
 
@@ -122,7 +122,11 @@ def handle_option(option, molecules):
 
             image = helpers.draw_watermarked_molecule(mol)  # Assuming this returns an Image object
 
-            # Save or show the shadow image
+            # Check if watermarked_image is a BytesIO and convert it to an Image
+            if isinstance(image, io.BytesIO):
+                image.seek(0)  # Move to the beginning of the BytesIO object
+                image = Image.open(image)  # Convert BytesIO to PIL Image
+            # Save the watermarked image
             save_image(image, f'{args[0]}.png')
             view_image(image, f'Shadow Molecule for {args[0]}')
 
