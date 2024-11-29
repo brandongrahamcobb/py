@@ -17,7 +17,7 @@
 
 from discord import app_commands, Embed
 from discord.ext import commands
-from recipe_scrapers import scrape_me
+#from recipe_scrapers import scrape_me
 
 import bot.utils.helpers as helpers
 
@@ -40,12 +40,12 @@ class Hybrid(commands.Cog):
         self.sativa = self.bot.get_cog('Sativa')
 
         self.sys_input = """
-            I want you to reply in under 1800 characters.
-            I want you to talk like a vegan activist.
-            I want you to use facts as often as possible.
-            I want you to respond with 1 - 2 sentences unless the topic is too complex for two sentences.
-            I want you to reason veganism with the Holy Bible, along with other requestable sources.
          """
+#            I want you to reply in under 1800 characters.
+#            I want you to talk like a vegan activist.
+#            I want you to use facts as often as possible.
+#            I want you to respond with 1 - 2 sentences unless the topic is too complex for two sentences.
+#            I want you to reason veganism with the Holy Bible, along with other requestable sources.
 
     async def text_to_voice(self, text, voice_client):
         # Use gTTS to convert text to audio and play it in the voice channel
@@ -349,15 +349,15 @@ class Hybrid(commands.Cog):
             await ctx.send(f'An error occurred: {e}')
 
 
-    @commands.command(name='recipe', description='Usage: !recipe')
-    async def recipe(self, ctx: commands.Context, *args):
-        try:
-            if ctx.interaction:
-                await ctx.interaction.response.defer(ephemeral=True)
-            embed = helpers.get_recipe(args[0])
-            await ctx.send(embed=embed)
-        except Exception as e:
-            await ctx.send(f'An error occurred: {e}')
+#    @commands.command(name='recipe', description='Usage: !recipe')
+#    async def recipe(self, ctx: commands.Context, *args):
+#        try:
+#            if ctx.interaction:
+#                await ctx.interaction.response.defer(ephemeral=True)
+#            embed = helpers.get_recipe(args[0])
+#            await ctx.send(embed=embed)
+#        except Exception as e:
+#            await ctx.send(f'An error occurred: {e}')
 
     @commands.command(name='recipe2', description='Usage: !recipe2')
     async def recipe_two(self, ctx: commands.Context, *args):

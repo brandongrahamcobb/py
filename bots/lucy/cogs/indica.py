@@ -27,9 +27,6 @@ class Indica(commands.Cog):
         self.hybrid = self.bot.get_cog('Hybrid')
         self.sativa = self.bot.get_cog('Sativa')
         self.sys_input = """
-            I want you to reply in under 1800 characters.
-            Talk like a vegan activist expert on serotonin.
-            Talk very concisely (2-4 sentences) and cite facts.
         """
         self.channel_id = 1305608084017905734
         self.post_message.start()
@@ -42,7 +39,9 @@ class Indica(commands.Cog):
         channel = self.bot.get_channel(self.channel_id)
         if channel is not None:
             async for response in helpers.deprecated_create_completion('Inspire me to be hungry!', self.sys_input, self.channel_id):
-                await channel.send(response)
+                responses = helpers.chunk_string(text=response)
+                for response in responses:
+                    await channel.send(response)
 
     @post_message.before_loop
     async def before_post_message(self):
@@ -114,7 +113,9 @@ class Indica(commands.Cog):
         if self.bot.user.mentioned_in(message) or isinstance(message.channel, discord.DMChannel):
             conversation_id = message.channel.id + message.author.id
             async for response in helpers.deprecated_create_completion(f'{message.content}', self.sys_input, conversation_id):
-               await message.channel.send(f"@{message.author.name}, {response}")
+                responses = helpers.chunk_string(text=response)
+                for response in responses:
+                    await message.channel.send(f"@{message.author.name}, {response}")
 #        if int(message.guild.id) == int(self.config['testing_guild_id']):
 #            conversation_id = None
 #            async for response in helpers.deprecated_create_completion(message.content, sys_input="Verify whether the prompt contains misinformation. If it does, respond with a warning. Otherwise, respond with an empty string", conversation_id=None):

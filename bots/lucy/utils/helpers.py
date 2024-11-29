@@ -18,10 +18,6 @@
 
 from bs4 import BeautifulSoup
 from collections import defaultdict
-from cryptography.fernet import Fernet
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from datetime import datetime
 from discord import Embed
 from discord.ext import commands
@@ -38,7 +34,7 @@ from rdkit.Chem import AllChem, Crippen, DataStructs, Draw, rdDepictor, rdFinger
 rdDepictor.SetPreferCoordGen(True)
 from rdkit.Chem.Draw import rdMolDraw2D, SimilarityMaps
 from rdkit.DataStructs import FingerprintSimilarity, TanimotoSimilarity
-from recipe_scrapers import scrape_me
+#from recipe_scrapers import scrape_me
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -71,14 +67,37 @@ import yaml
 
 conversations = defaultdict(list)
 current_date = dt.datetime.now().strftime('%d%m%y')
-dir_base = abspath(__file__)
 
 path_home = expanduser('~')
-path_base = dirname(dir_base)
-path_ai_cog = join(path_base, 'cogs', 'ai_cog.py')
 path_config_yaml = join(path_home, '.config', 'vyrtuous', 'config.yaml')
 path_log = join(path_home, '.log', 'discord.log')
 path_users_yaml = join(path_home, '.config', 'vyrtuous', 'users.yaml')
+
+# Define base directory and paths
+dir_base = dirname(abspath(__file__))
+path_helpers = join(dir_base, 'helpers.py')
+path_hybrid = join(dir_base, '..', 'cogs', 'hybrid.py')
+path_indica = join(dir_base, '..', 'cogs', 'indica.py')
+path_main = join(dir_base, '..', 'main.py')
+path_sativa = join(dir_base, '..', 'cogs', 'sativa.py')
+
+# File loader function
+def load_file(path_to_file):
+    if not exists(path_to_file):
+        raise FileNotFoundError(f"The file at '{path_to_file}' does not exist.")
+    try:
+        with open(path_to_file, 'r', encoding='utf-8') as file:
+            content = file.read()
+        return content
+    except Exception as e:
+        raise IOError(f"An error occurred while reading the file: {e}")
+
+# Load files
+helpers_py = load_file(path_helpers)  # Correct variable name
+hybrid_py = load_file(path_hybrid)
+indica_py = load_file(path_indica)
+main_py = load_file(path_main)
+sativa_py = load_file(path_sativa)
 
 def add_watermark(image: BytesIO, watermark_text: str = '~spooky~') -> BytesIO:
     RGB_image = Image.open(image)
@@ -150,13 +169,28 @@ def combine(images: list, names: list) -> BytesIO:
     output.seek(0)
     return output
 
+def chunk_string(text: str, limit: int = 1800) -> list:
+    """Splits a string into chunks of a specified limit."""
+    chunks = []
+    while len(text) > limit:
+        # Find the last space within the limit to not cut words
+        split_point = text.rfind(' ', 0, limit)
+        if split_point == -1:  # If there's no space found, split at limit
+            split_point = limit
+            # Append chunk and reduce the text
+        chunks.append(text[:split_point])
+        text = text[split_point:].lstrip()  # Remove leading whitespace
+    if text:
+        chunks.append(text)  # Append any remaining text
+    return chunks
+
 async def deprecated_create_completion(input_text, sys_input, conversation_id):
     try:
         config = load_config()
         api_key = config['api_keys']['api_key_2']
         ai_client = AsyncOpenAI(api_key=api_key)
         messages = conversations[conversation_id]
-        messages.append({'role': 'system', 'content': sys_input})
+        messages.append({'role': 'system', 'content': f'You are Lucy, the Discord bot. Your responses are limited to 2000 characters. Your main.py file is {main_py}. Your cogs are in cogs/ {hybrid_py}, {indica_py}, {sativa_py}. Your helpers are in utils/ {helpers_py}. Your additional System input is: {sys_input}'})
         messages.append({'role': 'user', 'content': input_text})
         stream = await ai_client.chat.completions.create(
             model='gpt-4o-mini',
@@ -265,29 +299,29 @@ def get_molecule_name(molecule) -> str:
         return compound_data['synonyms'][0]
     return 'Unknown'
 
-def get_recipe(url):
-    try:
-        scraper = scrape_me(url)
-        title = scraper.title()
-        total_time = scraper.total_time()
-        ingredients = scraper.ingredients()
-        instructions = scraper.instructions()
-        image = scraper.image()
-        servings = scraper.yields()
-        source_url = scraper.host()
-    except Exception as e:
-        return None
-    ingredients_formatted = "\n".join([f"• {item}" for item in ingredients])
-    instructions_formatted = instructions.replace('\n', '\n')
-    embed = Embed(title=title, url=url, color=0x1ABC9C)
-    if image:
-        embed.set_thumbnail(url=image)
-    embed.add_field(name="Servings", value=servings or "N/A", inline=True)
-    embed.add_field(name="Total Time", value=f"{total_time} minutes" if total_time else "N/A", inline=True)
-    embed.add_field(name="Ingredients", value=ingredients_formatted, inline=False)
-    embed.add_field(name="Instructions", value=instructions_formatted, inline=False)
-    embed.set_footer(text=f"Source: {source_url}")
-    return embed
+#def get_recipe(url):
+#    try:
+#        scraper = scrape_me(url)
+#        title = scraper.title()
+#        total_time = scraper.total_time()
+#        ingredients = scraper.ingredients()
+#        instructions = scraper.instructions()
+#        image = scraper.image()
+#        servings = scraper.yields()
+#        source_url = scraper.host()
+#    except Exception as e:
+#        return None
+#    ingredients_formatted = "\n".join([f"• {item}" for item in ingredients])
+#    instructions_formatted = instructions.replace('\n', '\n')
+#    embed = Embed(title=title, url=url, color=0x1ABC9C)
+#    if image:
+#        embed.set_thumbnail(url=image)
+#    embed.add_field(name="Servings", value=servings or "N/A", inline=True)
+#    embed.add_field(name="Total Time", value=f"{total_time} minutes" if total_time else "N/A", inline=True)
+#    embed.add_field(name="Ingredients", value=ingredients_formatted, inline=False)
+#    embed.add_field(name="Instructions", value=instructions_formatted, inline=False)
+#    embed.set_footer(text=f"Source: {source_url}")
+#    return embed
 
 async def get_other_recipe(url):
     # Request the content of the recipe page
