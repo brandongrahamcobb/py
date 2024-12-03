@@ -22,19 +22,22 @@ from datetime import datetime
 from discord import Embed
 from discord.ext import commands
 from gradio_client import Client
+from gtts import gTTS
 from io import BytesIO
 from matplotlib import pyplot as plt
 from openai import AsyncOpenAI
 from os import makedirs
 from os.path import abspath, dirname, exists, expanduser, isfile, join
 from PIL import Image, ImageFont, ImageDraw
+from pydub import AudioSegment
+from pydub.playback import play
 from random import randint
 from rdkit import Chem
 from rdkit.Chem import AllChem, Crippen, DataStructs, Draw, rdDepictor, rdFingerprintGenerator, rdFMCS
 rdDepictor.SetPreferCoordGen(True)
 from rdkit.Chem.Draw import rdMolDraw2D, SimilarityMaps
 from rdkit.DataStructs import FingerprintSimilarity, TanimotoSimilarity
-#from recipe_scrapers import scrape_me
+from recipe_scrapers import scrape_me
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -61,6 +64,7 @@ import os
 import pubchempy as pcp
 import random
 import requests
+import speech_recognition as sr
 import traceback
 import unicodedata
 import yaml
@@ -73,7 +77,6 @@ path_config_yaml = join(path_home, '.config', 'vyrtuous', 'config.yaml')
 path_log = join(path_home, '.log', 'discord.log')
 path_users_yaml = join(path_home, '.config', 'vyrtuous', 'users.yaml')
 
-# Define base directory and paths
 dir_base = dirname(abspath(__file__))
 path_helpers = join(dir_base, 'helpers.py')
 path_hybrid = join(dir_base, '..', 'cogs', 'hybrid.py')
@@ -81,7 +84,6 @@ path_indica = join(dir_base, '..', 'cogs', 'indica.py')
 path_main = join(dir_base, '..', 'main.py')
 path_sativa = join(dir_base, '..', 'cogs', 'sativa.py')
 
-# File loader function
 def load_file(path_to_file):
     if not exists(path_to_file):
         raise FileNotFoundError(f"The file at '{path_to_file}' does not exist.")
@@ -92,8 +94,7 @@ def load_file(path_to_file):
     except Exception as e:
         raise IOError(f"An error occurred while reading the file: {e}")
 
-# Load files
-helpers_py = load_file(path_helpers)  # Correct variable name
+helpers_py = load_file(path_helpers)
 hybrid_py = load_file(path_hybrid)
 indica_py = load_file(path_indica)
 main_py = load_file(path_main)
@@ -107,7 +108,7 @@ def add_watermark(image: BytesIO, watermark_text: str = '~spooky~') -> BytesIO:
     diagonal = math.sqrt(width**2 + height**2)
     font_size = int(diagonal / 15)
     try:
-        font = ImageFont.truetype('Roboto-Regular.ttf', font_size)  # Replace with the path to your font file
+        font = ImageFont.truetype('Roboto-Regular.ttf', font_size)
     except IOError:
         font = ImageFont.load_default()
     while True:
@@ -116,7 +117,7 @@ def add_watermark(image: BytesIO, watermark_text: str = '~spooky~') -> BytesIO:
         if text_width <= 512 or font_size <= 1:
             break
         font_size -= 1
-        font = ImageFont.truetype('Roboto-Regular.ttf', font_size)  # Replace with the path to your font file
+        font = ImageFont.truetype('Roboto-Regular.ttf', font_size)
     text_height = bbox[3] - bbox[1]
     text_x = (width - text_width) / 2
     text_y = height - (2 * text_height)
@@ -147,6 +148,18 @@ def adjust_hue_and_saturation(image, hue_shift, saturation_shift) -> BytesIO:
     output.seek(0)
     return output
 
+def chunk_string(text: str, limit: int = 1800) -> list:
+    chunks = []
+    while len(text) > limit:
+        split_point = text.rfind('\n', 0, limit)
+        if split_point == -1:
+            split_point = limit
+        chunks.append(text[:split_point])
+        text = text[split_point:].lstrip()
+    if text:
+        chunks.append(text)
+    return chunks
+
 def combine(images: list, names: list) -> BytesIO:
     combined_images = []
     for index, (bytes_io, name) in enumerate(zip(images, names)):
@@ -169,21 +182,6 @@ def combine(images: list, names: list) -> BytesIO:
     output.seek(0)
     return output
 
-def chunk_string(text: str, limit: int = 1800) -> list:
-    """Splits a string into chunks of a specified limit."""
-    chunks = []
-    while len(text) > limit:
-        # Find the last space within the limit to not cut words
-        split_point = text.rfind(' ', 0, limit)
-        if split_point == -1:  # If there's no space found, split at limit
-            split_point = limit
-            # Append chunk and reduce the text
-        chunks.append(text[:split_point])
-        text = text[split_point:].lstrip()  # Remove leading whitespace
-    if text:
-        chunks.append(text)  # Append any remaining text
-    return chunks
-
 async def deprecated_create_completion(input_text, sys_input, conversation_id):
     try:
         config = load_config()
@@ -191,6 +189,7 @@ async def deprecated_create_completion(input_text, sys_input, conversation_id):
         ai_client = AsyncOpenAI(api_key=api_key)
         messages = conversations[conversation_id]
         messages.append({'role': 'system', 'content': f'You are Lucy, the Discord bot. Your responses are limited to 2000 characters. Your main.py file is {main_py}. Your cogs are in cogs/ {hybrid_py}, {indica_py}, {sativa_py}. Your helpers are in utils/ {helpers_py}. Your additional System input is: {sys_input}'})
+        #messages.append({'role': 'system', 'content': f'You are Lucy, the Discord bot. Your responses are limited to 2000 characters. {sys_input}'})
         messages.append({'role': 'user', 'content': input_text})
         stream = await ai_client.chat.completions.create(
             model='gpt-4o-mini',
@@ -299,67 +298,52 @@ def get_molecule_name(molecule) -> str:
         return compound_data['synonyms'][0]
     return 'Unknown'
 
-#def get_recipe(url):
-#    try:
-#        scraper = scrape_me(url)
-#        title = scraper.title()
-#        total_time = scraper.total_time()
-#        ingredients = scraper.ingredients()
-#        instructions = scraper.instructions()
-#        image = scraper.image()
-#        servings = scraper.yields()
-#        source_url = scraper.host()
-#    except Exception as e:
-#        return None
-#    ingredients_formatted = "\n".join([f"• {item}" for item in ingredients])
-#    instructions_formatted = instructions.replace('\n', '\n')
-#    embed = Embed(title=title, url=url, color=0x1ABC9C)
-#    if image:
-#        embed.set_thumbnail(url=image)
-#    embed.add_field(name="Servings", value=servings or "N/A", inline=True)
-#    embed.add_field(name="Total Time", value=f"{total_time} minutes" if total_time else "N/A", inline=True)
-#    embed.add_field(name="Ingredients", value=ingredients_formatted, inline=False)
-#    embed.add_field(name="Instructions", value=instructions_formatted, inline=False)
-#    embed.set_footer(text=f"Source: {source_url}")
-#    return embed
+def get_recipe(url):
+    try:
+        scraper = scrape_me(url)
+        title = scraper.title()
+        total_time = scraper.total_time()
+        ingredients = scraper.ingredients()
+        instructions = scraper.instructions()
+        image = scraper.image()
+        servings = scraper.yields()
+        source_url = scraper.host()
+    except Exception as e:
+        return None
+    ingredients_formatted = "\n".join([f"• {item}" for item in ingredients])
+    instructions_formatted = instructions.replace('\n', '\n')
+    embed = Embed(title=title, url=url, color=0x1ABC9C)
+    if image:
+        embed.set_thumbnail(url=image)
+    embed.add_field(name="Servings", value=servings or "N/A", inline=True)
+    embed.add_field(name="Total Time", value=f"{total_time} minutes" if total_time else "N/A", inline=True)
+    embed.add_field(name="Ingredients", value=ingredients_formatted, inline=False)
+    embed.add_field(name="Instructions", value=instructions_formatted, inline=False)
+    embed.set_footer(text=f"Source: {source_url}")
+    return embed
 
 async def get_other_recipe(url):
-    # Request the content of the recipe page
     response = requests.get(url)
-    
     if response.status_code != 200:
-        return None  # Handle the case where the page cannot be retrieved
-
-    # Parse the HTML content
+        return None
     soup = BeautifulSoup(response.content, 'html.parser')
-
-    # Find the recipe section by ID
     recipe_div = soup.find('div', id='recipe')
     if not recipe_div:
-        return None  # If recipe section is not found
-
-    # Extract recipe title (assuming it's within the recipe div)
-    title = recipe_div.find('h2', class_='wprm-recipe-name').text.strip()  # Adjust class as needed
-
-    # Extract ingredients
+        return None
+    title = recipe_div.find('h2', class_='wprm-recipe-name').text.strip()
     ingredients = []
-    ingredient_elements = recipe_div.find_all('ul', class_='wprm-recipe-ingredients')  # Adjust class as needed
+    ingredient_elements = recipe_div.find_all('ul', class_='wprm-recipe-ingredients')
     for ul in ingredient_elements:
         for li in ul.find_all('li'):
             ingredients.append(li.text.strip())
-
-    # Extract instructions
     instructions = []
-    instruction_elements = recipe_div.find_all('ol', class_='wprm-recipe-instructions')  # Adjust class as needed
+    instruction_elements = recipe_div.find_all('ol', class_='wprm-recipe-instructions')
     for ol in instruction_elements:
         for li in ol.find_all('li'):
             instructions.append(li.text.strip())
-
-    # Create a Discord embed
     embed = discord.Embed(title=title, color=discord.Color.green())
-    embed.add_field(name="Ingredients", value='\n'.join(ingredients[:10]), inline=False)  # Limit to 10 ingredients
-    embed.add_field(name="Instructions", value='\n'.join(instructions[:5]), inline=False)  # Limit to 5 instructions
-
+    embed.add_field(name="Ingredients", value='\n'.join(ingredients[:10]), inline=False)
+    embed.add_field(name="Instructions", value='\n'.join(instructions[:5]), inline=False)
     return embed
 
 
@@ -417,20 +401,17 @@ def get_sds(query: str):
     embed.add_field(name='PubMed URL', value=f'[View PubMed]({pubmed_description_url})' if pubmed_description_url else 'No PubMed URL found.', inline=True)
     return embed
 
-def scrape_google_search(query: str, num_results: int = 5):
-    """
-    Scrapes Google search results for a given query.
+async def join_voice_channel(channel_id):
+    channel = self.bot.get_channel(channel_id)
+    if isinstance(channel, discord.VoiceChannel):
+        return await channel.connect()
+    else:
+        raise Exception("Channel is not a voice channel.")
 
-    Args:
-        query (str): The search query.
-        num_results (int): Number of search results to fetch.
-
-    Returns:
-        list: A list of dictionaries with 'title' and 'link'.
-    """
+def google(query: str, num_results: int = 5):
     headers = {
         "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "Chrome/91.0.4472.124 Arch Linux 6.12.1-arch1-1"
         )
     }
     search_url = "https://www.google.com/search"
@@ -533,10 +514,6 @@ def increment_version(config: Dict[str, Any]):
     with open(path_config_yaml, 'w') as file:
         yaml.dump(config, file)
 
-def load_python_file(self):
-    with open(os.path.abspath(__file__), 'r') as python:
-        return python.read()
-
 def save_users(data):
     with open(join(path_home, 'Downloads', 'users.yaml'), 'w') as f:
         yaml.dump({'users': list(data)}, f)
@@ -578,8 +555,36 @@ def stable_cascade(prompt):
         print(f"An unexpected error occurred: {e}")
         return f"An error occurred: {e}"
 
+async def text_to_voice(self, text, voice_client):
+    audio_file = 'response.mp3'
+    tts = gTTS(text=text, lang='en', slow=False)
+    tts.save(audio_file)
+    if voice_client.is_connected():
+        audio_source = discord.FFmpegPCMAudio(audio_file)
+        voice_client.play(audio_source, after=lambda e: os.remove(audio_file) if e is None else None)
+    else:
+        await voice_client.disconnect()
+
 def unique_pairs(strings_list):
     pairs = list(itertools.combinations(strings_list, 2))
     sorted_pairs = [sorted(list(pair)) for pair in pairs]
     sorted_pairs_overall = sorted(sorted_pairs)
     return sorted_pairs_overall
+
+async def voice_to_text(ctx):
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        r.adjust_for_ambient_noise(source)
+        print("Listening...")
+        try:
+            audio = r.listen(source, timeout=30)
+            text = r.recognize_google(audio)
+            await ctx.send(f"You said: {text}")
+            return text
+        except sr.UnknownValueError:
+            await ctx.send("I could not understand the audio input.")
+            return None
+        except Exception as e:
+            print(f"Error: {e}")
+            await ctx.send("An error occurred while processing the audio.")
+            return None

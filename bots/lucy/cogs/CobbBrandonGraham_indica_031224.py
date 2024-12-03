@@ -29,7 +29,7 @@ class Indica(commands.Cog):
         self.sys_input = """
         """
         self.channel_id = 1305608084017905734
-        self.post_message.start()
+#        self.post_message.start()
 
     def cog_unload(self):
         self.post_message.stop()
@@ -91,8 +91,8 @@ class Indica(commands.Cog):
 #            Why are phytonutrients important?
 #            Why is a calorie, calorie out a short sighted approach to nutrition
 
-    async def check_message_for_misinformation(self, message):
-        await message.channel.send(f"⚠️ Misinformation alert: {response}")
+#    async def check_message_for_misinformation(self, message):
+#        await message.channel.send(f"⚠️ Misinformation alert: {response}")
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -108,27 +108,30 @@ class Indica(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         # Ignore messages from self.
-        if message.author == self.bot.user or '!warn' in message.content.lower():
+        if message.author == self.bot.user or '!' in message.content[0]:
             return
         if self.bot.user.mentioned_in(message) or isinstance(message.channel, discord.DMChannel):
-            conversation_id = message.channel.id + message.author.id
-            async for response in helpers.deprecated_create_completion(f'{message.content}', self.sys_input, conversation_id):
-                responses = helpers.chunk_string(text=response)
-                for response in responses:
-                    await message.channel.send(f"@{message.author.name}, {response}")
-#        if int(message.guild.id) == int(self.config['testing_guild_id']):
-#            conversation_id = None
-#            async for response in helpers.deprecated_create_completion(message.content, sys_input="Verify whether the prompt contains misinformation. If it does, respond with a warning. Otherwise, respond with an empty string", conversation_id=None):
-#                if response:
-#                    async with message.channel.typing():
-#                        await asyncio.sleep(1)
-#                        await message.channel.send(response)
-        #await self.check_message_for_misinformation(message)
-        #response = await self.check_for_misinformation(message.content)
-        #if response:
-          #      await message.channel.send(f"@{message.author.name}, {response}")
-  #              async for response in helpers.deprecated_create_completion(prompt, "", "response"):
-   #                 await channel.send(f"@{message.author.name}, {response}")
+            if int(message.guild.id) != int(self.config['testing_guild_id']):
+                conversation_id = message.channel.id + message.author.id
+                async for response in helpers.deprecated_create_completion(f'{message.content}', self.sys_input, conversation_id):
+                    responses = helpers.chunk_string(text=response)
+                    for response in responses:
+                        await message.channel.send(f"@{message.author.name}, {response}")
+        if int(message.guild.id) == int(self.config['testing_guild_id']):
+            conversation_id = None
+            async for response in helpers.deprecated_create_completion(message.content, sys_input="Verify whether the prompt is about {message.channel.name}. If it isn't, respond. Otherwise, respond with an empty string", conversation_id=None):
+                if response != '':
+                    async with message.channel.typing():
+                        await message.channel.send(response)
+                        await message.delete()
+#        response = await self.check_for_misinformation(message.content)
+ #       if response:
+  #          await message.channel.send(f"@{message.author.name}, {response}")
+   #         async for response in helpers.deprecated_create_completion(prompt, self.sys_input, "response"):
+    #            if response:
+     #               async with message.channel.typing():
+      #                  await asyncio.sleep(1)
+       #                 await message.channel.send(response)
 #        await self.bot.process_commands(message)
 
         

@@ -17,20 +17,15 @@
 
 from discord import app_commands, Embed
 from discord.ext import commands
-#from recipe_scrapers import scrape_me
 
 import bot.utils.helpers as helpers
 
 import asyncio
 import discord
 import io
-import speech_recognition as sr
 import os
-from gtts import gTTS
 import shlex
 import traceback
-from pydub import AudioSegment
-from pydub.playback import play
 
 class Hybrid(commands.Cog):
     def __init__(self, bot):
@@ -41,82 +36,6 @@ class Hybrid(commands.Cog):
 
         self.sys_input = """
          """
-#            I want you to reply in under 1800 characters.
-#            I want you to talk like a vegan activist.
-#            I want you to use facts as often as possible.
-#            I want you to respond with 1 - 2 sentences unless the topic is too complex for two sentences.
-#            I want you to reason veganism with the Holy Bible, along with other requestable sources.
-
-    async def text_to_voice(self, text, voice_client):
-        # Use gTTS to convert text to audio and play it in the voice channel
-        audio_file = 'response.mp3'
-        tts = gTTS(text=text, lang='en', slow=False)
-        tts.save(audio_file)
-
-        if voice_client.is_connected():
-            audio_source = discord.FFmpegPCMAudio(audio_file)
-            voice_client.play(audio_source, after=lambda e: os.remove(audio_file) if e is None else None)
-        else:
-            await voice_client.disconnect()
-
-    async def join_voice_channel(self, channel_id):
-        channel = self.bot.get_channel(channel_id)
-        if isinstance(channel, discord.VoiceChannel):
-            return await channel.connect()
-        else:
-            raise Exception("Channel is not a voice channel.")
-
-    async def voice_to_text(self, ctx):
-        r = sr.Recognizer()
-        with sr.Microphone() as source:
-            r.adjust_for_ambient_noise(source)
-            print("Listening...")
-            try:
-                audio = r.listen(source, timeout=30)
-                text = r.recognize_google(audio)
-                await ctx.send(f"You said: {text}")
-                return text
-            except sr.UnknownValueError:
-                await ctx.send("I could not understand the audio input.")
-                return None
-            except Exception as e:
-                print(f"Error: {e}")
-                await ctx.send("An error occurred while processing the audio.")
-                return None
-
-    @commands.hybrid_command(name='join', description='Join a voice channel. Usage: !join [channel_id]')
-    async def join(self, ctx: commands.Context, channel_id: int):
-        try:
-            voice_client = await self.join_voice_channel(channel_id)
-            await ctx.send(f"Joined the voice channel: {voice_client.channel.name}")
-        except Exception as e:
-            await ctx.send(str(e))
-
-    @commands.hybrid_command(name='leave', description='Leave the voice channel. Usage: !leave')
-    async def leave(self, ctx: commands.Context):
-        voice_client = discord.utils.get(self.bot.voice_clients)
-        if voice_client and voice_client.is_connected():
-            await voice_client.disconnect()
-            await ctx.send("Disconnected from the voice channel.")
-        else:
-            await ctx.send("I'm not currently in a voice channel.")
-
-    @commands.hybrid_command(name='talk', description='Start talking. Usage: !talk')
-    async def talk(self, ctx: commands.Context):
-        voice_client = discord.utils.get(self.bot.voice_clients)
-        if voice_client:
-            await ctx.send("I am ready to listen for 30 seconds!")
-            user_input = await self.voice_to_text(ctx)
-
-            if user_input:
-                async for response in helpers.deprecated_create_completion(user_input, self.sys_input, 'VC'):
-                    if response:
-                        await ctx.send(response)  # Send the response message
-                        await self.text_to_voice(response, voice_client)  # Convert to voice and play it
-                else:
-                    await ctx.send("I received no response.")
-        else:
-            await ctx.send("I'm not connected to a voice channel.")
 
     @commands.command(description='Change your role color using RGB values. Usage: between `!colorize 0 0 0` and `!colorize 255 255 255`')
     async def colorize(self, ctx: commands.Context, r: int = commands.parameter(default="149", description="Anything between 0 and 255."), g: int = commands.parameter(default="165", description="Anything betwen 0 and 255."), b: int = commands.parameter(default="165", description="Anything between 0 and 255.")):
@@ -136,25 +55,25 @@ class Hybrid(commands.Cog):
         await ctx.author.add_roles(newrole)
         await ctx.send(f'I successfully changed your role color to {r}, {g}, {b}')
 
-#    @commands.command(name='colors')
-#    async def colors(self, ctx: commands.Context, *args):
-#        try:
-#            attachment = ctx.message.attachments[0]
-#            img_data = requests.get(attachment.url).content
-#            image = Image.open(io.BytesIO(img_data))
-#            image = image.resize((100, 100))
-#            image = image.convert('RGB')
-#            pixels = list(image.getdata())
-#            pixels = [pixel for pixel in pixels if not (pixel[0] > 150 and pixel[1] > 150 and pixel[2] > 150)]
-#            pixels = [pixel for pixel in pixels if not (pixel[0] < 10 and pixel[1] < 10 and pixel[2] < 10)]
-#            color_counts = Counter(pixels)
-#            predominant_colors = color_counts.most_common(int(args[0]))
-#            message = "Predominant colors (excluding whites above (150, 150, 150)):\n"
-#            for color, count in predominant_colors:
-#                message += f"Color: {color} Count: {count}\n"
-#            await ctx.send(message)
-#        except Exception as e:
-#            await ctx.send(e)
+    @commands.command(name='colors')
+    async def colors(self, ctx: commands.Context, *args):
+        try:
+            attachment = ctx.message.attachments[0]
+            img_data = requests.get(attachment.url).content
+            image = Image.open(io.BytesIO(img_data))
+            image = image.resize((100, 100))
+            image = image.convert('RGB')
+            pixels = list(image.getdata())
+            pixels = [pixel for pixel in pixels if not (pixel[0] > 150 and pixel[1] > 150 and pixel[2] > 150)]
+            pixels = [pixel for pixel in pixels if not (pixel[0] < 10 and pixel[1] < 10 and pixel[2] < 10)]
+            color_counts = Counter(pixels)
+            predominant_colors = color_counts.most_common(int(args[0]))
+            message = "Predominant colors (excluding whites above (150, 150, 150)):\n"
+            for color, count in predominant_colors:
+                message += f"Color: {color} Count: {count}\n"
+            await ctx.send(message)
+        except Exception as e:
+            await ctx.send(e)
 
     @commands.hybrid_command(name='get', description='Limited usage. Usage: !get <prompt-for-image>.')
     async def get(self, ctx: commands.Context, *, argument: str = commands.parameter(default=None, description="Image prompt.")):
@@ -168,6 +87,23 @@ class Hybrid(commands.Cog):
                 await ctx.send(f"Error generating image: {file}")
         except Exception as e:
             await ctx.send(traceback.format_exc())
+
+    @commands.hybrid_command(name='join', description='Join a voice channel. Usage: !join [channel_id]')
+    async def join(self, ctx: commands.Context, channel_id: int):
+        try:
+            voice_client = await helpers.join_voice_channel(channel_id)
+            await ctx.send(f"Joined the voice channel: {voice_client.channel.name}")
+        except Exception as e:
+            await ctx.send(str(e))
+
+    @commands.hybrid_command(name='leave', description='Leave the voice channel. Usage: !leave')
+    async def leave(self, ctx: commands.Context):
+        voice_client = discord.utils.get(self.bot.voice_clients)
+        if voice_client and voice_client.is_connected():
+            await voice_client.disconnect()
+            await ctx.send("Disconnected from the voice channel.")
+        else:
+            await ctx.send("I'm not currently in a voice channel.")
 
     @commands.command(name='load', hidden=True)
     async def load(self, ctx: commands.Context, *, module: str):
@@ -250,54 +186,55 @@ class Hybrid(commands.Cog):
         except Exception as e:
             print(f'An error occurred: {traceback.format_exc()}')
 
-#    def chunk_string(self, text: str, limit: int = 2000) -> list:
-#        """Splits a string into chunks of a specified limit."""
-#        chunks = []
-#        while len(text) > limit:
-#            # Find the last space within the limit to not cut words
-#            split_point = text.rfind(' ', 0, limit)
-#            if split_point == -1:  # If there's no space found, split at limit
-#                split_point = limit
-#            # Append chunk and reduce the text
-#            chunks.append(text[:split_point])
-#            text = text[split_point:].lstrip()  # Remove leading whitespace
-#        if text:
-#            chunks.append(text)  # Append any remaining text
-#        return chunks
-#    
-#    @commands.hybrid_command(name='query')
-#    async def search_messages(self, ctx: commands.Context, *, query: str):
-#        """Search all messages in all channels for a specific string."""
-#        found_messages = []
-#        
-#        # Iterate through all channels in the guild
-#        for channel in ctx.guild.text_channels:
-#            try:
-#                # Fetch the message history of the channel
-#                async for message in channel.history(limit=None):
-#                    if query.lower() in message.content.lower():  # Search for the query in the message
-#                        found_messages.append(message)
-#            except discord.Forbidden:
-#                # Handle cases where the bot does not have permission to read the channel
-#                await ctx.send(f"I cannot read messages in channel: {channel.name}")
-#                continue
-#            except discord.HTTPException as e:
-#                # Handle HTTP exceptions
-#                await ctx.send(f"Failed to fetch messages from {channel.name}: {e}")
-#                continue
-#    
-#        # Format the results
-#        if found_messages:
-#            response = f"Found {len(found_messages)} messages containing '{query}':"
-#            for msg in found_messages[:10]:  # Limit response to first 10 matches for brevity
-#                response += f"\n- {msg.author}: {msg.content} (in {msg.channel})"
-#            if len(found_messages) > 10:
-#                response += "\n...and more."
-#            chunks = self.chunk_string(response)
-#            for chunk in chunks:
-#                await ctx.send(chunk)
-#        else:
-#            await ctx.send(f"No messages found containing '{query}'.")
+    @commands.command(name='pomodoro', help='Start a Pomodoro timer.')
+    async def pomodoro(self, ctx, work_time: int = 25, short_break: int = 5, long_break: int = 15, cycles: int = 4):
+        await ctx.send(f"Starting a Pomodoro timer with {work_time} minutes work, {short_break} minutes short break, "
+                       f"and {long_break} minutes long break for {cycles} cycles.")
+        for _ in range(cycles):
+            await ctx.send(f"**Work Session**: {work_time} minutes!")
+            await asyncio.sleep(work_time * 60)
+            await ctx.send(f"**Short Break**: {short_break} minutes!")
+            await asyncio.sleep(short_break * 60)
+        await ctx.send(f"**Long Break**: {long_break} minutes!")
+        await asyncio.sleep(long_break * 60)
+        await ctx.send("Pomodoro session completed. Great job!")
+
+    @commands.hybrid_command(name='talk', description='Start talking. Usage: !talk')
+    async def talk(self, ctx: commands.Context):
+        voice_client = discord.utils.get(self.bot.voice_clients)
+        if voice_client:
+            await ctx.send("I am ready to listen for 30 seconds!")
+            user_input = await helpers.voice_to_text(ctx)
+
+            if user_input:
+                async for response in helpers.deprecated_create_completion(user_input, self.sys_input, 'VC'):
+                    if response:
+                        await ctx.send(response)  # Send the response message
+                        await helpers.text_to_voice(response, voice_client)  # Convert to voice and play it
+                else:
+                    await ctx.send("I received no response.")
+        else:
+            await ctx.send("I'm not connected to a voice channel.")
+
+    @commands.command(name='recipe', description='Usage: !recipe')
+    async def recipe(self, ctx: commands.Context, *args):
+        try:
+            if ctx.interaction:
+                await ctx.interaction.response.defer(ephemeral=True)
+            embed = helpers.get_recipe(args[0])
+            await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(f'An error occurred: {e}')
+
+    @commands.command(name='recipe2', description='Usage: !recipe2')
+    async def recipe_two(self, ctx: commands.Context, *args):
+        try:
+            if ctx.interaction:
+                await ctx.interaction.response.defer(ephemeral=True)
+            embed = await helpers.get_other_recipe(args[0])
+            await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(f'An error occurred: {e}')
 
     @commands.hybrid_command(hidden=True)
     async def reload(self, ctx: commands.Context, *, module: str):
@@ -345,27 +282,6 @@ class Hybrid(commands.Cog):
                 await ctx.send("I do not have permission to delete that message.")
             except discord.HTTPException:
                 await ctx.send("An error occurred while trying to delete the message.")
-        except Exception as e:
-            await ctx.send(f'An error occurred: {e}')
-
-
-#    @commands.command(name='recipe', description='Usage: !recipe')
-#    async def recipe(self, ctx: commands.Context, *args):
-#        try:
-#            if ctx.interaction:
-#                await ctx.interaction.response.defer(ephemeral=True)
-#            embed = helpers.get_recipe(args[0])
-#            await ctx.send(embed=embed)
-#        except Exception as e:
-#            await ctx.send(f'An error occurred: {e}')
-
-    @commands.command(name='recipe2', description='Usage: !recipe2')
-    async def recipe_two(self, ctx: commands.Context, *args):
-        try:
-            if ctx.interaction:
-                await ctx.interaction.response.defer(ephemeral=True)
-            embed = await helpers.get_other_recipe(args[0])
-            await ctx.send(embed=embed)
         except Exception as e:
             await ctx.send(f'An error occurred: {e}')
 

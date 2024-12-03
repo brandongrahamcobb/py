@@ -47,6 +47,39 @@ class Sativa(commands.Cog):
                 deleted += 1
         return deleted
 
+    @commands.hybrid_command(name='query')
+    @commands.has_permissions(manage_messages=True)
+    async def search_messages(self, ctx: commands.Context, *, query: str):
+        """Search all messages in all channels for a specific string."""
+        found_messages = []
+        # Iterate through all channels in the guild
+        for channel in ctx.guild.text_channels:
+            try:
+                # Fetch the message history of the channel
+                async for message in channel.history(limit=None):
+                    if query.lower() in message.content.lower():  # Search for the query in the message
+                        found_messages.append(message)
+            except discord.Forbidden:
+                # Handle cases where the bot does not have permission to read the channel
+                await ctx.send(f"I cannot read messages in channel: {channel.name}")
+                continue
+            except discord.HTTPException as e:
+                # Handle HTTP exceptions
+                await ctx.send(f"Failed to fetch messages from {channel.name}: {e}")
+                continue
+        # Format the results
+        if found_messages:
+            response = f"Found {len(found_messages)} messages containing '{query}':"
+            for msg in found_messages[:10]:  # Limit response to first 10 matches for brevity
+                response += f"\n- {msg.author}: {msg.content} (in {msg.channel})"
+            if len(found_messages) > 10:
+                response += "\n...and more."
+            chunks = self.chunk_string(response)
+            for chunk in chunks:
+                await ctx.send(chunk)
+        else:
+            await ctx.send(f"No messages found containing '{query}'.")
+
     @commands.command(name='sync', hidden=True)
     @is_owner()
     async def sync(self, ctx: commands.Context, guilds: commands.Greedy[discord.Object], spec: Optional[Literal['~', '*', '^']] = None) -> None:
