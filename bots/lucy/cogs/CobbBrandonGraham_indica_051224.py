@@ -148,7 +148,8 @@ class Indica(commands.Cog):
         if message.author == self.bot.user or '!' in message.content[0]:
             return
         conversation_id = message.channel.id + message.author.id
-        if int(message.guild.id) == int(self.config['testing_guild_id']):
+#        if (int(message.guild.id) == int(self.config['testing_guild_id']))
+        if self.bot.user.mentioned_in(message) or isinstance(message.channel, discord.DMChannel):
             async for moderation in helpers.create_moderation(f'{message.content} in channel: {message.channel.name}'):
                 if hasattr(moderation, 'error') and moderation.error:
                     print(moderation.error)
@@ -163,18 +164,17 @@ class Indica(commands.Cog):
                         f"Your message was deleted due to inappropriate content. Infractions: {count}"
                     )
                     await message.author.send(embed=embed)
+                else:
+                    description = await self.bot.application_info()
+                    combined = description.description + self.sys_input
+                    async for response in helpers.deprecated_create_completion(f'{message.content}', combined, conversation_id):
+                        responses = helpers.chunk_string(text=response)
+                        await message.reply(f"@{message.author.name}, {responses[0]}")
+                        for response in responses[1:]:
+                            await message.reply(response)
                #     if count >= 3:
                 #        await message.author.ban(reason="Multiple infractions")
 #        else:
-            if self.bot.user.mentioned_in(message) or isinstance(message.channel, discord.DMChannel):
-                description = await self.bot.application_info()
-                combined = description.description + self.sys_input
-                async for response in helpers.deprecated_create_completion(f'{message.content}', combined, conversation_id):
-                    responses = helpers.chunk_string(text=response)
-                    await message.reply(f"@{message.author.name}, {responses[0]}")
-                    for response in responses[1:]:
-                        await message.reply(response)
-#
 #        if int(message.guild.id) == int(self.config['testing_guild_id']):
 #            conversation_counter = 0  # Initialize a counter to track messages in the conversation
 #            async for response in helpers.deprecated_create_completion(
