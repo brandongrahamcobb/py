@@ -23,12 +23,13 @@ import asyncio
 import bot.utils.helpers as helpers
 import discord
 import time
-import json
 import os
 import spacy
+import yaml
 
 path_home = os.path.expanduser('~')
 path_nlp_dictionary = os.path.join(path_home, '.config', 'vyrtuous', 'nlp_dictionary.json')
+path_users_yaml = os.path.join(path_home, '.config', 'vyrtuous', 'users.yaml')
 
 def is_owner():
     async def predicate(ctx):
@@ -42,6 +43,7 @@ class Sativa(commands.Cog):
         self.config = bot.config
         self.nlp = spacy.load('en_core_web_sm')
         self.nlp_dict = helpers.load_json(path_nlp_dictionary)
+        self.users_dict = helpers.load_yaml(path_users_yaml)
         self.hybrid = self.bot.get_cog('Hybrid')
         self.indica = self.bot.get_cog('Indica')
         self.user_command_messages = {}
@@ -146,15 +148,19 @@ class Sativa(commands.Cog):
                     if token.is_alpha and not token.is_stop:  # Avoid punctuation and stop words
                         self.nlp_dict[token.text] = self.nlp_dict.get(token.text, 0) + 1
                 await helpers.save_json(path_nlp_dictionary, self.nlp_dict)  # Save the updated dictionary
+                user_infraction_count = helpers.increment_infraction(original_message.author.id, self.users_dict)
+                await helpers.save_yaml(path_users_yaml, self.users_dict)
                 await original_message.delete()  # Attempt to delete the original message
                 await ctx.send(f"Warning issued for message: '{ctx.message.id}'")
-#                await ctx.send(f"Updated NLP dictionary: {self.nlp_dict}")
+            # await ctx.send(f"Updated NLP dictionary: {self.nlp_dict}")
             except discord.NotFound:
                 await ctx.send("The original message was not found.")
             except discord.Forbidden:
                 await ctx.send("I do not have permission to delete that message.")
             except discord.HTTPException:
                 await ctx.send("An error occurred while trying to delete the message.")
+            except Exception as e:
+                await ctx.send(f'An error occurred: {e}')
         except Exception as e:
             await ctx.send(f'An error occurred: {e}')
 

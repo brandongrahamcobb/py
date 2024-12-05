@@ -25,6 +25,7 @@ import bot.utils.helpers as helpers
 import asyncio
 import discord
 import io
+import json
 import opuslib
 import os
 import shlex
@@ -187,12 +188,15 @@ class Hybrid(commands.Cog):
         await asyncio.sleep(long_break * 60)
         await ctx.send("Pomodoro session completed. Great job!")
 
-    @commands.hybrid_command(name='stats')
-    async def stats(self, ctx, member: discord.Member = None):
-        member = member or ctx.author
-        users = helpers.load_yaml(path_users_yaml)
-        count = users.get(str(member.id), 0)
-        embed = helpers.create_embed("User Stats", f"{member} has {count} infractions.", 0x00ff00)
+    @commands.hybrid_command(name='warnings', description='View infraction statistics for users.')
+    async def warnings(self, ctx: commands.Context):
+    # Create a title and description for the embed
+        users_dict = helpers.load_yaml(path_users_yaml)
+        title = "Infraction Statistics"
+        description = "Here are the current infractions for users:\n"
+        for user_id, count in users_dict.items():
+             description += f"<@{user_id}>: {count} infractions\n"
+        embed = helpers.create_embed(title, description)
         await ctx.send(embed=embed)
 
     @commands.command(name='recipe', description='Usage: !recipe')
