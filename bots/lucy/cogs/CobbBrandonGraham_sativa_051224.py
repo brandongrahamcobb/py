@@ -24,6 +24,11 @@ import bot.utils.helpers as helpers
 import discord
 import time
 import json
+import os
+import spacy
+
+path_home = os.path.expanduser('~')
+path_nlp_dictionary = os.path.join(path_home, '.config', 'vyrtuous', 'nlp_dictionary.json')
 
 def is_owner():
     async def predicate(ctx):
@@ -35,6 +40,8 @@ class Sativa(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
+        self.nlp = spacy.load('en_core_web_sm')
+        self.nlp_dict = helpers.load_json(path_nlp_dictionary)
         self.hybrid = self.bot.get_cog('Hybrid')
         self.indica = self.bot.get_cog('Indica')
         self.user_command_messages = {}
@@ -118,6 +125,38 @@ class Sativa(commands.Cog):
             await ctx.send(f'{e.__class__.__name__}: {e}')
         else:
             await ctx.send('\N{OK HAND SIGN}')
+
+    @commands.hybrid_command(name='warn', description='Usage: !warn. Respond to any message with !warn.')
+    @commands.has_permissions(manage_messages=True)
+    async def warn(self, ctx: commands.Context):
+        try:
+            if self.bot.user in ctx.message.mentions:
+                return
+            if ctx.interaction:
+                await ctx.interaction.response.defer(ephemeral=True)
+            if ctx.message.reference is None:
+                await ctx.send("Please reply to a message you want to delete.")
+                return
+            original_message_id = ctx.message.reference.message_id
+            original_message = await ctx.channel.fetch_message(original_message_id)
+            try:
+                message_content = original_message.content
+                doc = self.nlp(message_content)
+                for token in doc:
+                    if token.is_alpha and not token.is_stop:  # Avoid punctuation and stop words
+                        self.nlp_dict[token.text] = self.nlp_dict.get(token.text, 0) + 1
+                await helpers.save_json(path_nlp_dictionary, self.nlp_dict)  # Save the updated dictionary
+                await original_message.delete()  # Attempt to delete the original message
+                await ctx.send(f"Warning issued for message: '{ctx.message.id}'")
+#                await ctx.send(f"Updated NLP dictionary: {self.nlp_dict}")
+            except discord.NotFound:
+                await ctx.send("The original message was not found.")
+            except discord.Forbidden:
+                await ctx.send("I do not have permission to delete that message.")
+            except discord.HTTPException:
+                await ctx.send("An error occurred while trying to delete the message.")
+        except Exception as e:
+            await ctx.send(f'An error occurred: {e}')
 
     @commands.command(name='wipe', hidden=True)
     @is_owner()

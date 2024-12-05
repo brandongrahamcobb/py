@@ -503,6 +503,12 @@ def load_contents(path_to_file):
     except Exception as e:
         raise IOError(f"An error occurred while reading the file: {e}")
 
+def load_json(path_to_file):
+    if not os.path.exists(path_to_file):
+        return {}
+    with open(path_to_file, 'r') as f:
+        return json.load(f) or {}
+
 def load_yaml(path_to_file):
     if not os.path.exists(path_to_file):
         return {}
@@ -527,6 +533,12 @@ def increment_version(config: Dict[str, Any]):
     config['version'] = new_version
     with open(path_config_yaml, 'w') as file:
         yaml.dump(config, file)
+
+async def save_json(path_to_file, data):
+    if not exists(path_to_file):
+        return {}
+    with open(path_to_file, 'w') as f:
+        json.dump(data, f)
 
 async def save_yaml(path_to_file, data):
     if not exists(path_to_file):

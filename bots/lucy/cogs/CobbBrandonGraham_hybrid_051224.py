@@ -18,7 +18,6 @@ from discord.utils import get
 from discord import app_commands, Embed
 from discord.ext import commands
 from openai import AsyncOpenAI
-from pydub import AudioSegment
 from tempfile import NamedTemporaryFile
 
 import bot.utils.helpers as helpers
@@ -189,7 +188,7 @@ class Hybrid(commands.Cog):
         await ctx.send("Pomodoro session completed. Great job!")
 
     @commands.hybrid_command(name='stats')
-    async def user_stats(self, ctx, member: discord.Member = None):
+    async def stats(self, ctx, member: discord.Member = None):
         member = member or ctx.author
         users = helpers.load_yaml(path_users_yaml)
         count = users.get(str(member.id), 0)
@@ -242,28 +241,6 @@ class Hybrid(commands.Cog):
         for result in results:
             embed.add_field(name=result["title"], value=result["link"], inline=False)
         await ctx.send(embed=embed)
-
-    @commands.hybrid_command(name='warn', description='Usage: !warn. Respond to any message with !warn.')
-    async def warn(self, ctx: commands.Context):
-        try:
-            if ctx.interaction:
-                await ctx.interaction.response.defer(ephemeral=True)
-            if ctx.message.reference is None:
-                await ctx.send("Please reply to a message you want to delete.")
-                return
-            original_message_id = ctx.message.reference.message_id
-            original_message = await ctx.channel.fetch_message(original_message_id)
-            try:
-                await original_message.delete()  # Attempt to delete the original message
-                await ctx.send("Message deleted successfully.")
-            except discord.NotFound:
-                await ctx.send("The original message was not found.")
-            except discord.Forbidden:
-                await ctx.send("I do not have permission to delete that message.")
-            except discord.HTTPException:
-                await ctx.send("An error occurred while trying to delete the message.")
-        except Exception as e:
-            await ctx.send(f'An error occurred: {e}')
 
     @commands.command(name='vegan', description='Usage: !vegan')
     async def vegan(self, ctx: commands.Context, *args):
