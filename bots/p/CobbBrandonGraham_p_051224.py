@@ -12,7 +12,7 @@ import io
 from PIL import Image
 
 # A placeholder for your helpers module. Replace with your actual import statement.
-import helpers
+import CobbBrandonGraham_helpers_051224 as helpers
 
 def view_image(image: Image.Image, title: str):
     """Display the image using the default image viewer."""
