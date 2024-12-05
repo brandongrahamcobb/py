@@ -56,6 +56,7 @@ import datetime as dt
 import discord
 import emoji as emoji_lib
 import itertools
+import json
 import logging
 import logging.handlers
 import math
@@ -225,6 +226,29 @@ async def create_transcription(audio_bytes, sample_rate=48000):
 #        messages.append({'role': 'system', 'content': f'You are Lucy, the Discord bot. Your responses are limited to 2000 characters. Your main.py file is {main_py}. Your cogs are in cogs/ {hybrid_py}, {indica_py}, {sativa_py}. Your helpers are in utils/ {helpers_py}. Your additional System input is: {sys_input}'})
         #messages.append({'role': 'system', 'content': f'You are Lucy, the Discord bot. Your responses are limited to 2000 characters. {sys_input}'})
 async def deprecated_create_completion(input_text, sys_input, conversation_id):
+    try:
+        config = load_yaml(path_config_yaml)
+        api_key = config['api_keys']['api_key_2']
+        ai_client = AsyncOpenAI(api_key=api_key)
+        messages = conversations[conversation_id]
+        messages.append({'role': 'system', 'content': sys_input})
+        messages.append({'role': 'user', 'content': input_text})
+        stream = await ai_client.chat.completions.create(
+            model='gpt-4o-mini',
+            messages=messages,
+            stream=True
+        )
+        full_response = ''
+        async for chunk in stream:
+            content = chunk.choices[0].delta.content
+            if content is not None:
+                full_response += content
+        conversations[conversation_id].append({'role': 'assistant', 'content': full_response})
+        yield full_response
+    except Exception as e:
+        yield traceback.format_exc()
+
+async def deprecated_create_moderation(input_text, sys_input, conversation_id):
     try:
         config = load_yaml(path_config_yaml)
         api_key = config['api_keys']['api_key_2']
@@ -535,16 +559,12 @@ def increment_version(config: Dict[str, Any]):
         yaml.dump(config, file)
 
 async def save_json(path_to_file, data):
-    if not exists(path_to_file):
-        return {}
     with open(path_to_file, 'w') as f:
         json.dump(data, f)
 
 async def save_yaml(path_to_file, data):
-    if not exists(path_to_file):
-        return {}
     with open(path_to_file, 'w') as f:
-        yaml.dump({'users': list(data)}, f)
+        yaml.dump(data, f)
 
 def setup_logging(config: Dict[str, Any]) -> None:
     logging_level = config['logging_level'].upper()
