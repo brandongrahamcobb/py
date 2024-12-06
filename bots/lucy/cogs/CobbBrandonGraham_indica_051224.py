@@ -1,23 +1,104 @@
-import json
-import discord
-from discord.ext import commands
-import bot.utils.helpers as helpers
-import os
+''' ListenerCog.py The purpose of the program is to contain a declaration of a few self variables and all the listeners for a discord bot.
+    Copyright (C) 2024  github.com/brandongrahamcobb
 
-path_home = os.path.expanduser('~')
-path_users_yaml = os.path.join(path_home, '.config', 'vyrtuous', 'users.yaml')
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+'''
+from collections import defaultdict
+from discord.ext import commands, tasks
+from gtts import gTTS
+from os.path import abspath, dirname, expanduser, join
+
+import asyncio
+import bot.utils.helpers as helpers
+import datetime
+import discord
+import opuslib
+import os
+import subprocess
+import wave
+
+dir_base = dirname(abspath(__file__))
+path_helpers = join(dir_base, '..', 'utils', 'helpers.py')
+path_home = expanduser('~')
+path_hybrid = join(dir_base, '..', 'cogs', 'hybrid.py')
+path_indica = join(dir_base, '..', 'cogs', 'indica.py')
+path_main = join(dir_base, '..', 'main.py')
+path_sativa = join(dir_base, '..', 'cogs', 'sativa.py')
+path_users_yaml = join(path_home, '.config', 'vyrtuous', 'users.yaml')
+
+import json
 
 class Indica(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.users = {}  # Assuming this is initialized with your user data structure
+        self.config = bot.config
+        self.hybrid = self.bot.get_cog('Hybrid')
+        self.sativa = self.bot.get_cog('Sativa')
+        self.helpers_py = helpers.load_contents(path_helpers)
+        self.hybrid_py = helpers.load_contents(path_hybrid)
+        self.indica_py = helpers.load_contents(path_indica)
+        self.main_py = helpers.load_contents(path_main)
+        self.sativa_py = helpers.load_contents(path_sativa)
+        self.hybrid = self.bot.get_cog('Hybrid')
+        self.sativa = self.bot.get_cog('Sativa')
+        self.sys_input = f"""
+            Your main.py file is {self.main_py}.
+            Your cogs are in cogs/ {self.hybrid_py}, {self.indica_py}, {self.sativa_py}.
+            Your helpers are in utils/ {self.helpers_py}.
+        """
+        self.channel_id = 1305608084017905734
+#        self.post_message.start()
+        self.users = {}
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, before, after):
+        if before.content != after.content:
+            ctx = await self.bot.get_context(after)
+            if ctx.command:
+                await self.bot.invoke(ctx)
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
-            return  # Ignore messages from the bot itself
-
+        # Ignore messages from self.
+        if message.author == self.bot.user or message.content.startswith('!'):
+            return
+        if message.author == self.bot.user or '!' in message.content[0]:
+            return
         if self.bot.user.mentioned_in(message) or isinstance(message.channel, discord.DMChannel):
+            if int(message.guild.id) != int(self.config['testing_guild_id']):
+                conversation_id = message.channel.id + message.author.id
+                async for response in helpers.deprecated_create_completion(f'{message.content}', self.sys_input, conversation_id):
+                    responses = helpers.chunk_string(text=response)
+                    for response in responses:
+                        await message.channel.send(f"@{message.author.name}, {response}")
+        if int(message.guild.id) == int(self.config['testing_guild_id']):
+            async for moderation in helpers.create_moderation(message.content):
+                if isinstance(moderation, dict) and 'error' in moderation:
+                    print(f"Moderation error: {moderation['error']}")
+                    return  # Handle errors (e.g., log or notify users)
+            # Check the structure of the moderation response
+                if 'results' in moderation and len(moderation['results']) > 0:
+                    flagged = moderation['results'][0].get('flagged', False)
+                    print("Flagged Status:", flagged)
+                    categories = moderation['results'][0].get('categories', {})
+                    print("Categories:", categories)
+                    if flagged:
+                        await message.delete()  # Delete the flagged message
+                        await message.channel.send("Your message was flagged and deleted due to inappropriate content.")
+                else:
+                    print("No moderation results found.")
+        if int(message.guild.id) == int(self.config['testing_guild_id']):
             moderation_input = f'{message.content} in channel: {message.channel.name}'
             structured_sys_input = self.get_sys_input(message.id)
             try:
@@ -96,6 +177,7 @@ You are a moderation assistant. Please analyze the following message and respond
     ]
 }}
 """
+
     async def handle_moderation_result(self, flagged, message):
         if flagged:
             await message.delete()
@@ -108,30 +190,11 @@ You are a moderation assistant. Please analyze the following message and respond
             await message.author.send(embed=embed)
         else:
             # This may also call for a response
-            response = await helpers.deprecated_create_completion(f'{message.content}', self.get_sys_input(message.id))
-            responses = helpers.chunk_string(text=response)
-            await message.reply(f"@{message.author.name}, {responses[0]}")
-            for response in responses[1:]:
-                await message.reply(response)
-
-    @commands.Cog.listener()
-    async def on_message_edit(self, before, after):
-        if before.content != after.content:
-            ctx = await self.bot.get_context(after)
-            if ctx.command:
-                await self.bot.invoke(ctx)
-
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error):
-        # Handle command errors properly
-        if isinstance(error, commands.CommandNotFound):
-            await ctx.send("Unknown command. Use `!help` to see available commands.")
-        elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Missing arguments. Use `!help` to see how to use the command.")
-        elif isinstance(error, commands.BadArgument):
-            await ctx.send("Invalid argument type. Please check your inputs.")
-        else:
-            await ctx.send(f"An error occurred: {str(error)}")
+            async for response in helpers.deprecated_create_completion(f'{message.content}', self.sys_input, conversation_id=None):
+                responses = helpers.chunk_string(text=response)
+                await message.reply(f"@{message.author.name}, {responses[0]}")
+                for response in responses[1:]:
+                    await message.reply(response)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -152,6 +215,7 @@ You are a moderation assistant. Please analyze the following message and respond
         stats_message = f'{info}\n\nGuilds:\n{guild_info}'
         print(stats_message)
         user = await self.bot.fetch_user(self.config['owner_id'])
+        await user.send(stats_message)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Indica(bot))
