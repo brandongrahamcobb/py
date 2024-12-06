@@ -60,6 +60,11 @@ class Indica(commands.Cog):
         self.channel_id = 1305608084017905734
 #        self.post_message.start()
         self.users = {}
+    
+    async def add_application_info(self, text_input):
+        text = await self.bot.application_info()
+        text_full = text.description + text_input
+        return text_full
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -76,9 +81,9 @@ class Indica(commands.Cog):
         if message.author == self.bot.user or '!' in message.content[0]:
             return
         if self.bot.user.mentioned_in(message) or isinstance(message.channel, discord.DMChannel):
-            if int(message.guild.id) != int(self.config['testing_guild_id']):
+            if int(message.guild.id) == int(self.config['testing_guild_id']):
                 conversation_id = message.channel.id + message.author.id
-                async for response in helpers.deprecated_create_completion(f'{message.content}', self.sys_input, conversation_id):
+                async for response in helpers.deprecated_create_completion(f'{message.content}', await self.add_application_info(self.sys_input), conversation_id):
                     responses = helpers.chunk_string(text=response)
                     for response in responses:
                         await message.channel.send(f"@{message.author.name}, {response}")
@@ -102,30 +107,20 @@ class Indica(commands.Cog):
             moderation_input = f'{message.content} in channel: {message.channel.name}'
             structured_sys_input = self.get_sys_input(message.id)
             try:
-                # Assuming deprecated_create_moderation is an asynchronous generator
                 async for moderation_response in helpers.deprecated_create_moderation(
                     input_text=moderation_input,
                     sys_input=structured_sys_input,
                     conversation_id='1'
                 ):
-                    # Log the raw response for debugging
-                    print("Moderation Response Raw Output:", repr(moderation_response))
-
-                    # Validate the response before parsing
                     if not moderation_response or not moderation_response.strip():
                         print("Received an empty or null response from moderation.")
                         continue  # Skip this iteration and continue with the next
-
-                    # Attempt to parse the moderation response
                     try:
                         moderation_dict = json.loads(moderation_response)
                     except json.JSONDecodeError as e:
                         print(f"JSON decoding failed: {e}")
                         print(f"Response content was: '{moderation_response}'")
-                        # Handle or log the error as needed
                         continue  # Skip this iteration and continue with the next
-
-                    # Perform further processing with the valid JSON
                     flagged = moderation_dict.get('results', [{}])[0].get('flagged', False)
                     await self.handle_moderation_result(flagged, message)
             except Exception as e:
@@ -188,13 +183,12 @@ You are a moderation assistant. Please analyze the following message and respond
                 f"Your message was deleted due to inappropriate content. Infractions: {count}"
             )
             await message.author.send(embed=embed)
-        else:
             # This may also call for a response
-            async for response in helpers.deprecated_create_completion(f'{message.content}', self.sys_input, conversation_id=None):
-                responses = helpers.chunk_string(text=response)
-                await message.reply(f"@{message.author.name}, {responses[0]}")
-                for response in responses[1:]:
-                    await message.reply(response)
+#            async for response in helpers.deprecated_create_completion(f'{message.content}', self.sys_input, conversation_id=None):
+#                responses = helpers.chunk_string(text=response)
+#                await message.reply(f"@{message.author.name}, {responses[0]}")
+#                for response in responses[1:]:
+#                    await message.reply(response)
 
     @commands.Cog.listener()
     async def on_ready(self):
