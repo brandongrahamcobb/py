@@ -98,9 +98,8 @@ class GPT:
             async def stream_response():
                 full_response = ''
                 async for chunk in response_stream:
-                    delta = chunk.choices[0].delta
-                    content = delta.get('content', '')
-                    if content:
+                    content = chunk.choices[0].delta.content
+                    if content is not None:
                         full_response += content
                         yield content
                 # Append assistant's full response to the conversation history
