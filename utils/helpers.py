@@ -104,7 +104,7 @@ OPENAI_CHAT_MODELS = {
     'deprecated': ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
 }
 # OpenAI
-OPENAI_ENDPOINT_URLs = {
+OPENAI_ENDPOINT_URLS = {
     'audio': 'https://api.openai.com/v1/audio/speech',
     'batch': 'https://api.openai.com/v1/audio/batches',
     'chat': 'https://api.openai.com/v1/chat/completions',
@@ -124,17 +124,17 @@ OPENAI_CHAT_MODERATION_COMPLETIONS = 1
 OPENAI_CHAT_MODERATION_MAX_TOKENS = 2000
 OPENAI_CHAT_MODERATION_MODEL = 'gpt-3.5-turbo'
 OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = { 'type': 'json_object' }
-OPENAI_CHAT_MODERATION_STOP = False
+OPENAI_CHAT_MODERATION_STOP = ''
 OPENAI_CHAT_MODERATION_STORE = False
 OPENAI_CHAT_MODERATION_STREAM = True
-OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a moderation assistant.'
+OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a JSON moderation assistant.'
 OPENAI_CHAT_MODERATION_TEMPERATURE = 1.0
 OPENAI_CHAT_MODERATION_TOP_P = 1.0
 OPENAI_CHAT_MODEL = 'gpt-4o-mini'
 OPENAI_CHAT_N = 1
 OPENAI_CHAT_RESPONSE_FORMAT = None
 OPENAI_CHAT_STOP = ''
-OPENAI_CHAT_STORE = True
+OPENAI_CHAT_STORE = False
 OPENAI_CHAT_STREAM = True
 OPENAI_CHAT_SYS_INPUT = ''
 OPENAI_CHAT_TEMPERATURE = 0.7

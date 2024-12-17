@@ -1,4 +1,5 @@
 from gradio_client import Client
+from random import randint
 
 def stable_cascade(prompt):
     try:

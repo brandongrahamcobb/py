@@ -2,6 +2,7 @@ from openai import AsyncOpenAI
 
 import load_yaml
 import openai
+import traceback
 
 async def create_completion_deprecated(input_text, conversation_id, model, sys_input):
     try:

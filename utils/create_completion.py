@@ -2,6 +2,7 @@ from openai import AsyncOpenAI
 
 import load_yaml
 import openai
+import traceback
 
 async def create_completion(input_text, conversation_id, conversations, model):
     try:
