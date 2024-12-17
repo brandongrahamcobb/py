@@ -51,3 +51,47 @@ PATH_SETUP_LOGGING = 'setup_logging.py'
 PATH_STABLE_CASCADE = 'stable_cascade.py'
 PATH_UNIQUE_PAIRS = 'unique_pairs.py'
 PATH_VYRTUOUS = 'vyrtuous.py'
+
+# OpenAI
+OPENAI_ENDPOINT_URLs = {
+    'audio': 'https://api.openai.com/v1/audio/speech',
+    'batch': 'https://api.openai.com/v1/audio/batches',
+    'chat': 'https://api.openai.com/v1/chat/completions',
+    'embeddings': 'https://api.openai.com/v1/embeddings',
+    'files': 'https://api.openai.com/v1/files',
+    'fine-tuning': 'https://api.openai.com/v1/fine_tuning/jobs',
+    'images': 'https://api.openai.com/v1/images/generations',
+    'models': 'https://api.openai.com/v1/models',
+    'moderations': 'https://api.openai.com/v1/moderations',
+    'uploads': 'https://api.openai.com/v1/uploads',
+}
+OPENAI_HEADERS = {
+    'Content-Type': 'application/json',
+    'OpenAI-Organization': 'org-3LYwtg7DSFJ7RLn9bfk4hATf',
+    'User-Agent': 'brandongrahamcobb@icloud.com',
+#    'OpenAI-Project': 'proj_u5htBCWX0LSHxkw45po1Vfz9',
+}
+OPENAI_MODEL_OUTPUT_LIMITS = {
+    "gpt-3.5-turbo": 4096,
+    "gpt-4": 8192,
+    "gpt-4-32k": 32768,
+    "gpt-4o": 4096,         # Initially capped at 4,096; updated to 16,384 in later versions
+    "gpt-4o-mini": 16384,
+    "gpt-4-turbo": 4096,
+    "o1-preview": 32768,
+    "o1-mini": 65536,
+}
+OPENAI_MODEL_CONTEXT_LIMITS = {
+    "gpt-3.5-turbo": 4096,
+    "gpt-4": 8192,
+    "gpt-4-32k": 32768,
+    "gpt-4o": 128000,
+    "gpt-4o-mini": 128000,
+    "gpt-4-turbo": 128000,
+    "o1-preview": 128000,
+    "o1-mini": 128000,
+}
+OPENAI_MODELS = {
+    'current': ['o1-preview', 'o1-mini'],
+    'deprecated': ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+}

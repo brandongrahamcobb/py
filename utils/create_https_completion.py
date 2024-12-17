@@ -1,6 +1,6 @@
 from openai import AsyncOpenAI
 
-improt load_yaml
+import load_yaml
 import openai
 
 async def create_https_completion(completions, conversation_id, input_text, max_tokens, model, stop, store, stream, sys_input, temperature, top_p):
@@ -9,12 +9,8 @@ async def create_https_completion(completions, conversation_id, input_text, max_
         api_key = config['api_keys']['api_key_1']
         ai_client = AsyncOpenAI(api_key=api_key)
         url = "https://api.openai.com/v1/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "OpenAI-Organization": "org-3LYwtg7DSFJ7RLn9bfk4hATf",
-            "OpenAI-Project": "proj_u5htBCWX0LSHxkw45po1Vfz9",
-        }
+        headers = helpers.OPENAI_HEADERS
+        headers.update({'Authorization': f'Bearer {api_key}'
         request_data = {
             "max_tokens": int(max_tokens),  # Set maximum tokens
             "messages": [

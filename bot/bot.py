@@ -1,8 +1,10 @@
-from vyrtuous import Vyrtuous
+from utils.increment_version import increment_version
+from utils.setup_logging import setup_logging
+from utils.vyrtuous import Vyrtuous
 
+import asyncio
 import discord
-import increment_version
-import setup_logging
+import utils.helpers as helpers
 
 async def main():
     intents = discord.Intents.all()
@@ -19,7 +21,9 @@ async def main():
 
         config = await bot.load_config()
         bot.config = config
-        bot.helpers = helpers
-        increment_version(config)
-        setup_logging(config)
+        increment_version(config, helpers.PATH_CONFIG_YAML)
+        setup_logging(config, helpers.PATH_LOG)
         await bot.start(config['token'])
+
+if __name__ == '__main__':
+    asyncio.run(main())

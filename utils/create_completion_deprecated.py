@@ -3,13 +3,14 @@ from openai import AsyncOpenAI
 import load_yaml
 import openai
 
-async def create_completion(input_text, conversation_id, conversations, model):
+async def create_completion_deprecated(input_text, conversation_id, model, sys_input):
     try:
-        config = load_yaml(helpers.PATH_CONFIG_YAML)
+        config = helpers.load_yaml(helpers.path_config_yaml)
         api_key = config['api_keys']['api_key_1']
         ai_client = AsyncOpenAI(api_key=api_key)
         messages = conversations[conversation_id]
-        messages.append({'role': 'users', 'content': input_text})
+        messages.append({'role': 'system', 'content': sys_input})
+        messages.append({'role': 'user', 'content': input_text})
         stream = await ai_client.chat.completions.create(
             model=model,
             messages=messages,

@@ -1,14 +1,13 @@
+from os import makedirs
+from os.path import dirname, exists
 from typing import Any, Dict
 
 global logger
 
-import load_yaml
 import logging
 import logging.handlers
 
-
-def setup_logging(config: Dict[str, Any]) -> None:
-    config = load_yaml(helpers.hapth_config_yaml)
+def setup_logging(config: Dict[str, Any], path_log) -> None:
     logging_level = config['logging_level'].upper()
     logging.basicConfig(level=getattr(logging, logging_level))
     if not exists(dirname(path_log)):

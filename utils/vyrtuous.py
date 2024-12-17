@@ -1,7 +1,13 @@
-from discord import commands
+from discord.ext import commands
+from os import makedirs
+from os.path import dirname, isfile
 from typing import Any, Dict, List, Optional
+from utils.load_yaml import load_yaml
+from utils.prompt_for_values import prompt_for_values
 
 import discord
+import utils.helpers as helpers
+import yaml
 
 class Vyrtuous(commands.Bot):
 
@@ -21,8 +27,8 @@ class Vyrtuous(commands.Bot):
     @classmethod
     def _get_config(cls) -> Dict[str, Any]:
         if cls._config is None:
-            if isfile(helpers.path_config_yaml):
-                data = load_yaml(helpers.path_config_yaml)
+            if isfile(helpers.PATH_CONFIG_YAML):
+                data = load_yaml(helpers.PATH_CONFIG_YAML)
                 data['cogs'] = prompt_for_values('Enter the cogs.', data.get('cogs', [
                     'bot.cogs.hybrid',
                     'bot.cogs.indica',
@@ -43,7 +49,7 @@ class Vyrtuous(commands.Bot):
                     current_key = data['api_keys'].get(key, '')
                     data['api_keys'][key] = prompt_for_values(f'Enter API key {i}', current_key)
             else:
-                makedirs(dirname(helpers.path_config_yaml), exist_ok=True)
+                makedirs(dirname(helpers.PATH_CONFIG_YAML), exist_ok=True)
                 data = {
                     'api_keys': {},
                     'cogs': prompt_for_values('Enter the cogs.', [
@@ -63,7 +69,7 @@ class Vyrtuous(commands.Bot):
                 }
                 for i in range(1, 21):
                     data['api_keys'][f'api_key_{i}'] = prompt_for_values(f'Enter API key {i}', '')
-            with open(helpers.path_config_yaml, 'w') as file:
+            with open(helpers.PATH_CONFIG_YAML, 'w') as file:
                 yaml.dump(data, file)
             cls._config = data
             return cls._config
