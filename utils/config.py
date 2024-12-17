@@ -1,10 +1,10 @@
 from os import makedirs
 from os.path import isfile, dirname
 from typing import Dict, Any
+import utils.helpers as helpers
+from utils.load_yaml import load_yaml
+from utils.prompt_for_values import prompt_for_values
 
-from prompt_for_values import prompt_for_values
-import helpers as helpers
-from load_yaml import load_yaml
 import yaml
 
 class Config:
@@ -32,23 +32,24 @@ class Config:
                 config['discord_testing_guild_id'] = prompt_for_values('Enter the testing guild ID', config.get('discord_testing_guild_id', '1286307083976835103'))
                 config['discord_token'] = prompt_for_values('Enter the bot token', config.get('discord_token', ''))
                 config['logging_level'] = prompt_for_values('Enter the logging level', config.get('logging_level', 'INFO'))
-                config['openai_model'] = prompt_for_value(f'Enter the model: {helpers.OPENAI_MODELS}', config.get('openai_model', 'gpt-4o-mini')
-                config['openai_n'] = prompt_for_value(f'Enter the response number', config.get('openai_n', '1')
-                config['openai_organization'] = prompt_for_value(f'Enter the organization ID', config.get('openai_organization', OPENAI_HEADERS['OpenAI-Organization'])
-                config['openai_project'] = prompt_for_value(f'Enter the project ID', config.get('openai_project', OPENAI_HEADERS['OpenAI-Project'])
-                config['openai_store'] = prompt_for_value(f'Enter the storage preference (True/False)?', config.get('openai_store', 'True')
-                config['openai_stream'] = prompt_for_value(f'Enter the stream preference (True/False)?', config.get('openai_stream', 'True')
-                config['openai_stop'] = prompt_for_value(f'Enter the stop criteria?', config.get('openai_stop', '')
-                config['openai_temperature'] = prompt_for_value(f'Enter from 0.0 to 2.0 tje temperature?', config.get('openai_temperature', '1.0')
-                config['openai_user'] = prompt_for_value(f'Enter your name?', config.get('openai_user', 'Brandon Graham Cobb')
+                config['openai_model'] = prompt_for_values(f'Enter the model: {helpers.OPENAI_MODELS}', config.get('openai_model', 'gpt-4o-mini'))
+                config['openai_n'] = prompt_for_values(f'Enter the response number', config.get('openai_n', '1'))
+                config['openai_organization'] = prompt_for_values(f'Enter the organization ID', config.get('openai_organization', helpers.OPENAI_HEADERS['OpenAI-Organization']))
+                config['openai_project'] = prompt_for_values(f'Enter the project ID', config.get('openai_project', helpers.OPENAI_HEADERS['OpenAI-Project']))
+                config['openai_store'] = prompt_for_values(f'Enter the storage preference (True/False)?', config.get('openai_store', 'True'))
+                config['openai_stream'] = prompt_for_values(f'Enter the stream preference (True/False)?', config.get('openai_stream', 'True'))
+                config['openai_stop'] = prompt_for_values(f'Enter the stop criteria?', config.get('openai_stop', ''))
+                config['openai_temperature'] = prompt_for_values(f'Enter from 0.0 to 2.0 tje temperature?', config.get('openai_temperature', '1.0'))
+                config['openai_user'] = prompt_for_values(f'Enter your name?', config.get('openai_user', 'Brandon Graham Cobb'))
                 config['user_agent'] = prompt_for_values('Enter the User-Agent header', config.get('user_agent', 'Vyrtuous'))
                 config['version'] = prompt_for_values('Enter the bot version', config.get('version', '1.0.0'))
                 if config['openai_model'] in helpers.OPENAI_MODELS['deprecated']:
-                    config['openai_system_input'] = prompt_for_value(f'What is the system_input?', config.get('openai_system_input', '')
+                    config['openai_system_input'] = prompt_for_values(f'What is the system_input?', config.get('openai_system_input', ''))
             else:
                 makedirs(dirname(helpers.PATH_CONFIG_YAML), exist_ok=True)
+                for i in range(1, 21):
+                    config['api_keys'][f'api_key_{i}'] = prompt_for_values(f'Enter API key {i}', '')
                 config = {
-                    'api_keys': {},
                     'database_url': prompt_for_values('Enter the database URL', ''),
                     'discord_cogs': prompt_for_values('Enter the cogs.', [
                         'bot.cogs.hybrid',
@@ -74,10 +75,8 @@ class Config:
                     'version': prompt_for_values('Enter the bot version', '1.0.0'),
                     'openai_system_input': prompt_for_values('What is the system_input?', ''),
                 }
-                for i in range(1, 21):
-                    config['api_keys'][f'api_key_{i}'] = prompt_for_values(f'Enter API key {i}', '')
             with open(helpers.PATH_CONFIG_YAML, 'w') as file:
                 yaml.dump(config, file)
             cls._config = config
         return cls._config
-=
+

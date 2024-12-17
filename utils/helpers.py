@@ -69,7 +69,7 @@ OPENAI_HEADERS = {
     'Content-Type': 'application/json',
     'OpenAI-Organization': 'org-3LYwtg7DSFJ7RLn9bfk4hATf',
     'User-Agent': 'brandongrahamcobb@icloud.com',
-#    'OpenAI-Project': 'proj_u5htBCWX0LSHxkw45po1Vfz9',
+    'OpenAI-Project': 'proj_u5htBCWX0LSHxkw45po1Vfz9',
 }
 OPENAI_MODEL_OUTPUT_LIMITS = {
     "gpt-3.5-turbo": 4096,

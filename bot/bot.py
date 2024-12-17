@@ -1,25 +1,19 @@
+from utils.config import Config
 from utils.increment_version import increment_version
 from utils.setup_logging import setup_logging
-from utils.vyrtuous import Vyrtuous
 
 import asyncio
 import discord
 import utils.helpers as helpers
 
 async def main():
-    intents = discord.Intents.all()
+    config = Config().get_config()
 
-    async with Vyrtuous(
-        command_prefix='!',
-        intents=intents,
-        initial_extensions=[
-            'bot.cogs.hybrid',
-            'bot.cogs.indica',
-            'bot.cogs.sativa'
-        ],
+    async with Discord(
+        initial_extensions=config['discord_cogs'],
+        intents=config['discord_intents'],
+        testing_guild_id=config['discord_testing_guild_id'],
     ) as bot:
-
-        config = await bot.load_config()
         bot.config = config
         increment_version(config, helpers.PATH_CONFIG_YAML)
         setup_logging(config, helpers.PATH_LOG)
