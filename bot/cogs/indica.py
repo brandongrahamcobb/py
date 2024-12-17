@@ -14,15 +14,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from collections import defaultdict
 from discord.ext import commands, tasks
-from os.path import abspath, dirname, expanduser, join
-
+from os.path import abspath, dirname, exists, expanduser, join
+from utils.load_contents import load_contents
+import utils.helpers as helpers
 import asyncio
 import datetime
 import discord
 import os
 import subprocess
 import traceback
+
+from utils.create_https_completion import create_https_completion
+from utils.create_moderation import create_moderation
 
 CHECKMARK_EMOJI = '✅'
 CROSS_EMOJI = '❌'
@@ -38,13 +43,13 @@ class Indica(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
+        self.conversations = defaultdict(list)
         self.hybrid = self.bot.get_cog('Hybrid')
         self.sativa = self.bot.get_cog('Sativa')
         self.add_watermark = load_contents(helpers.PATH_ADD_WATERMARK)
         self.adjust_hue_and_saturation = load_contents(helpers.PATH_ADJUST_HUE_AND_SATURATION)
         self.arpp = load_contents(helpers.PATH_ARPP)
         self.combine = load_contents(helpers.PATH_COMBINE)
-        self.config = load_contents(helpers.PATH_CONFIG)
         self.create_batch_completion = load_contents(helpers.PATH_CREATE_BATCH_COMPLETION)
         self.create_completion_deprecated = load_contents(helpers.PATH_CREATE_COMPLETION_DEPRECATED)
         self.create_completion = load_contents(helpers.PATH_CREATE_COMPLETION)
@@ -82,10 +87,6 @@ class Indica(commands.Cog):
             Your utilities are {self.sum_of_paths}.
         """
     
-    async def add_application_info(self, text_input):
-        text = await self.bot.application_info()
-        text_full = text.description + text_input
-        return text_full
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -97,7 +98,7 @@ class Indica(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         try:
-            if message.attachments:
+            if self.config['openai_moderation_image']:
                 for attachment in message.attachments:
                     if attachment.content_type.startswith('image/'):
                         input_text = [
@@ -112,46 +113,32 @@ class Indica(commands.Cog):
                                 },
                             },
                         ]
-                        async for response in openai_helpers.create_completion(completions=1, conversation_id='ChemistryWizard', input_text=input_text, max_tokens=16384, model='gpt-4o-mini', stop='', store=False, stream=False, sys_input=await self.add_application_info(self.sys_input), temperature=1.0, top_p=1.0):
-                            await message.channel.send(response)
-                        #async for moderation in openai_helpers.create_moderation(input_text):
-                         #   await openai_helpers.handle_api_moderation(message, moderation)
+                        async for moderation in create_moderation(input_text):
+                            if moderation:
+                                await message.delete()
+                                channel = await message.author.create_dm()
+                                await channel.send(self.config['openai_moderation_warning'])
+            if self.config['openai_chat_moderation']:
+                async for moderation in create_https_completion(
+                    completions=helpers.OPENAI_CHAT_MODERATION_COMPLETIONS,
+                    custom_id=message.author.id,
+                    input_text=message.content,
+                    max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
+                    model=self.config['openai_chat_moderation_model'],
+                    response_format=helpers.OPENAI_CHAT_MODERATION_RESPONSE_FORMAT,
+                    stop=helpers.OPENAI_CHAT_MODERATION_STOP,
+                    store=helpers.OPENAI_CHAT_MODERATION_STORE,
+                    stream=helpers.OPENAI_CHAT_MODERATION_STREAM,
+                    sys_input=helpers.OPENAI_CHAT_MODERATION_SYS_INPUT,
+                    temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
+                    top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
+                ):
+                    if moderation:
+                        await message.delete()
+                        channel = await message.author.create_dm()
+                        await channel.send(self.config['openai_moderation_warning'])
         except Exception as e:
             print(e)
 
-   @commands.Cog.listener()
-    async def on_ready(self):
-        bot_user = self.bot.user
-        bot_name = bot_user.name
-        bot_id = bot_user.id
-        guild_count = len(self.bot.guilds)
-        embed = discord.Embed(
-            title="Bot Status",
-            description="The bot is now online and ready!",
-            color=discord.Color.green()
-        )
-        embed.add_field(name="Bot Name", value=f"{bot_name}", inline=False)
-        embed.add_field(name="Bot ID", value=f"{bot_id}", inline=False)
-        embed.add_field(name="Connected Guilds", value=f"{guild_count}", inline=False)
-        guild_info = '\n'.join([f"- {guild.name} (ID: {guild.id})" for guild in self.bot.guilds])
-        embed.add_field(name="Guilds", value=guild_info if guild_info else "No guilds connected", inline=False)
-        channel_id = 1315735859848544378
-        channel = self.bot.get_channel(channel_id)
-        if channel:
-            await channel.send(embed=embed)
-        print("=============================")
-        print(f"Bot Name: {bot_name}")
-        print(f"Bot ID: {bot_id}")
-        print(f"Connected Guilds: {guild_count}")
-        print("Guilds:")
-        print(guild_info)
-        print("=============================")
-        owner_id = self.bot.config.get('owner_id')  # Ensure you have 'owner_id' in config
-        if owner_id:
-            try:
-                owner = await self.bot.fetch_user(owner_id)
-                await owner.send(embed=embed)
-            except Exception as e:
-                print(f"Could not DM owner: {e}")
 async def setup(bot: commands.Bot):
     await bot.add_cog(Indica(bot))

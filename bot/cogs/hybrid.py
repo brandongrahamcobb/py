@@ -19,6 +19,7 @@ from discord import Embed
 from discord.ext import commands
 from PIL import Image
 from utils.add_watermark import add_watermark
+from utils.combine import combine
 from utils.draw_fingerprint import draw_fingerprint
 from utils.draw_watermarked_molecule import draw_watermarked_molecule
 from utils.get_mol import get_mol
@@ -66,8 +67,8 @@ class Hybrid(commands.Cog):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
-    @commands.hybrid_command(name='draw', description='Usage: !draw glow <molecule> or !draw gsrs <molecule> or !draw shadow <molecule>. Use quotations for multistring molecules.')
-    async def molecule(self, ctx: commands.Context, option: str = commands.parameter(default="glow", description="Compare `compare or Draw style `glow` `gsrs` `shadow`."), *, molecules: str = commands.parameter(default=None, description="Any molecule"), quantity: int = commands.parameter(default=1, description="Quantity of glows")):
+    @commands.hybrid_command(name='draw', description='Usage: !draw glow <molecule> or !draw gsrs <molecule> or !draw shadow <molecule>')
+    async def molecule(self, ctx: commands.Context, option: str = commands.parameter(default="glow"), *, molecules: str = commands.parameter(default=None, description="Any molecule"), quantity: int = commands.parameter(default=1, description="Quantity of glows")):
         try:
             if ctx.interaction:
                 await ctx.interaction.response.defer(ephemeral=True)

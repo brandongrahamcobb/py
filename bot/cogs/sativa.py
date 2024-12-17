@@ -17,7 +17,7 @@
 from discord.ext import commands, tasks
 from typing import Literal, Optional
 
-import bot.utils.helpers as helpers
+import utils.helpers as helpers
 import discord
 
 
