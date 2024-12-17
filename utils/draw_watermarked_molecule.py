@@ -1,8 +1,8 @@
 from io import BytesIO
 from rdkit.Chem.Draw import rdMolDraw2D
 
-import add_watermark
-import get_molecule_name
+from utils.add_watermark import add_watermark
+from utils.get_molecule_name import get_molecule_name
 
 def draw_watermarked_molecule(molecule) -> BytesIO:
     resolved_name = get_molecule_name(molecule)

@@ -1,4 +1,5 @@
 from utils.config import Config
+from utils.discord import Discord
 from utils.increment_version import increment_version
 from utils.setup_logging import setup_logging
 
@@ -10,14 +11,15 @@ async def main():
     config = Config().get_config()
 
     async with Discord(
+        command_prefix=config['discord_command_prefix'],
         initial_extensions=config['discord_cogs'],
-        intents=config['discord_intents'],
+        intents=eval(config['discord_intents']),
         testing_guild_id=config['discord_testing_guild_id'],
     ) as bot:
         bot.config = config
         increment_version(config, helpers.PATH_CONFIG_YAML)
         setup_logging(config, helpers.PATH_LOG)
-        await bot.start(config['token'])
+        await bot.start(config['discord_token'])
 
 if __name__ == '__main__':
     asyncio.run(main())

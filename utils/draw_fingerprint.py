@@ -1,5 +1,7 @@
 from rdkit.Chem.Draw import rdMolDraw2D, SimilarityMaps
 
+from io import BytesIO
+
 def draw_fingerprint(pair) -> BytesIO:
 #    mfpgen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048, countSimulation=True)
 #    def get_fp(mol, *args, **kwargs):

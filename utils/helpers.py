@@ -28,14 +28,18 @@ PATH_CONFIG_JSON = join(PATH_HOME, '.config', 'spawd', 'config.json')
 PATH_LOG = join(PATH_HOME, '.log', 'spawd', 'discord.log')
 
 # Script Paths
+PATH_ADD_WATERMARK= 'add_watermark.py'
 PATH_ADJUST_HUE_AND_SATURATION = 'adjust_hue_and_saturation.py'
 PATH_ARPP = 'api_request_parallel_processor.py'
-PATH_BOT = 'bot.py'
+PATH_CLEAR_SCREEN = 'clearn_screen.py'
 PATH_COMBINE = 'combine.py'
+PATH_CONFIG = 'config.py'
 PATH_CREATE_BATCH_COMPLETION = 'create_batch_completion.py'
+PATH_CREATE_COMPLETION_DEPRECATED = 'create_completion_deprecated.py'
 PATH_CREATE_COMPLETION = 'create_completion.py'
 PATH_CREATE_HTTPS_COMPLETION = 'create_https_completion.py'
 PATH_CREATE_MODERATION = 'create_moderation.py'
+PATH_DISCORD = 'discord.py'
 PATH_DRAW_FINGERPRINT = 'draw_fingerprint.py'
 PATH_DRAW_WATERMARKED_MOLECULE = 'draw_watermarked_molecule.py'
 PATH_FORMAT_ERROR_CHECK = 'format_error_check.py'
@@ -45,12 +49,14 @@ PATH_GET_PROXIMITY = 'get_proximity.py'
 PATH_GET_SCRIPTURE = 'get_scripture.py'
 PATH_GOOGLE = 'google.py'
 PATH_GSRS = 'gsrs.py'
+PATH_HELPERS = 'helpers.py'
+PATH_INCREMENT_VERSION = 'increment_version.py'
 PATH_LOAD_CONTENTS = 'load_contents.py'
 PATH_LOAD_YAML = 'load_yaml.py'
+PATH_PROMPT_FOR_VALUES = 'prompt_for_values.py'
 PATH_SETUP_LOGGING = 'setup_logging.py'
 PATH_STABLE_CASCADE = 'stable_cascade.py'
 PATH_UNIQUE_PAIRS = 'unique_pairs.py'
-PATH_VYRTUOUS = 'vyrtuous.py'
 
 # OpenAI
 OPENAI_ENDPOINT_URLs = {
