@@ -20,60 +20,62 @@ class Config:
                     key = f'api_key_{i}'
                     current_key = config['api_keys'].get(key, '')
                     config['api_keys'][key] = prompt_for_values(f'Enter API key {i}', current_key)
-                config['database_url'] = prompt_for_values('Enter the database URL', config.get('database_url', ''))
-                config['discord_cogs'] = prompt_for_values('Enter the cogs.', config.get('cogs', [
-                    'bot.cogs.hybrid',
-                    'bot.cogs.indica',
-                    'bot.cogs.sativa'
-                ]))
-                config['discord_command_prefix'] = prompt_for_values('Enter the command prefix', config.get('discord_command_prefix', '!'))
-                config['discord_intents'] = prompt_for_values('Enter the intents', config.get('discord_intents', 'discord.Intents.all()'))
-                config['discord_owner_id'] = prompt_for_values('Enter the owner ID', config.get('discord_owner_id', '154749533429956608'))
-                config['discord_testing_guild_id'] = prompt_for_values('Enter the testing guild ID', config.get('discord_testing_guild_id', '1286307083976835103'))
+                config['database_url'] = prompt_for_values('Enter the database URL', config.get('database_url', helpers.DATABASE_URL))
+                config['discord_cogs'] = prompt_for_values('Enter the cogs.', config.get('cogs', helpers.DISCORD_COGS))
+                config['discord_command_prefix'] = prompt_for_values('Enter the command prefix', config.get('discord_command_prefix', helpers.DISCORD_COMMAND_PREFIX))
+                config['discord_intents'] = prompt_for_values('Enter the intents', config.get('discord_intents', helpers.DISCORD_INTENTS))
+                config['discord_owner_id'] = prompt_for_values('Enter the owner ID', config.get('discord_owner_id', helpers.DISCORD_OWNER_ID))
+                config['discord_testing_guild_id'] = prompt_for_values('Enter the testing guild ID', config.get('discord_testing_guild_id', helpers.DISCORD_TESTING_GUILD_ID))
                 config['discord_token'] = prompt_for_values('Enter the bot token', config.get('discord_token', ''))
-                config['logging_level'] = prompt_for_values('Enter the logging level', config.get('logging_level', 'INFO'))
-                config['openai_model'] = prompt_for_values(f'Enter the model: {helpers.OPENAI_MODELS}', config.get('openai_model', 'gpt-4o-mini'))
-                config['openai_n'] = prompt_for_values(f'Enter the response number', config.get('openai_n', '1'))
-                config['openai_organization'] = prompt_for_values(f'Enter the organization ID', config.get('openai_organization', helpers.OPENAI_HEADERS['OpenAI-Organization']))
-                config['openai_project'] = prompt_for_values(f'Enter the project ID', config.get('openai_project', helpers.OPENAI_HEADERS['OpenAI-Project']))
-                config['openai_store'] = prompt_for_values(f'Enter the storage preference (True/False)?', config.get('openai_store', 'True'))
-                config['openai_stream'] = prompt_for_values(f'Enter the stream preference (True/False)?', config.get('openai_stream', 'True'))
-                config['openai_stop'] = prompt_for_values(f'Enter the stop criteria?', config.get('openai_stop', ''))
-                config['openai_temperature'] = prompt_for_values(f'Enter from 0.0 to 2.0 tje temperature?', config.get('openai_temperature', '1.0'))
-                config['openai_user'] = prompt_for_values(f'Enter your name?', config.get('openai_user', 'Brandon Graham Cobb'))
-                config['user_agent'] = prompt_for_values('Enter the User-Agent header', config.get('user_agent', 'Vyrtuous'))
-                config['version'] = prompt_for_values('Enter the bot version', config.get('version', '1.0.0'))
-                if config['openai_model'] in helpers.OPENAI_MODELS['deprecated']:
-                    config['openai_system_input'] = prompt_for_values(f'What is the system_input?', config.get('openai_system_input', ''))
+                config['logging_level'] = prompt_for_values('Enter the logging level', config.get('logging_level', helpers.LOGGING_LEVEL))
+                config['openai_chat_moderation_model'] = prompt_for_values(f'Enter the chat model for moderation: {helpers.OPENAI_CHAT_MODELS}', config.get('openai_chat_moderation_model', helpers.OPENAI_CHAT_MODERATION_MODEL))
+                config['openai_chat_model'] = prompt_for_values(f'Enter the chat model for ChatGPT: {helpers.OPENAI_CHAT_MODELS}', config.get('openai_chat_model', helpers.OPENAI_CHAT_MODEL))
+                config['openai_chat_moderation'] = prompt_for_values(f'Enable or disable text moderation (True/False)', config.get('openai_moderation_text', helpers.OPENAI_CHAT_MODERATION))
+                config['openai_chat_moderation_sys_input'] = prompt_for_values(f'Enter the text moderation system input', config.get('openai_chat_moderation_sys_input', helpers.OPENAI_CHAT_MODERATION_SYS_INPUT))
+                config['openai_chat_n'] = prompt_for_values(f'Enter the chat response count', config.get('openai_n', helpers.OPENAI_CHAT_N))
+                config['openai_chat_store'] = prompt_for_values(f'Enable or disable chat storage (True/False)', config.get('openai_chat_store', helpers.OPENAI_CHAT_STORE))
+                config['openai_chat_stream'] = prompt_for_values(f'Enable or disable chat streaming (True/False)', config.get('openai_chat_stream', helpers.OPENAI_CHAT_STREAM))
+                config['openai_chat_stop'] = prompt_for_values(f'Enter the stop chat criteria', config.get('openai_chat_stop', helpers.OPENAI_CHAT_STOP))
+                default_chat_sys_input = helpers.OPENAI_CHAT_SYS_INPUT if helpers.OPENAI_CHAT_MODEL in helpers.OPENAI_CHAT_MODELS['deprecated'] else ''
+                config['openai_chat_sys_input'] = prompt_for_values('Enter the chat system input', config.get('openai_chat_sys_input', default_chat_sys_input))
+                config['openai_chat_temperature'] = prompt_for_values(f'Enter the chat temperature from 0.0 to 2.0', config.get('openai_chat_temperature', helpers.OPENAI_CHAT_TEMPERATURE))
+                config['openai_chat_user'] = prompt_for_values(f'Enter your chat name', config.get('openai_chat_user', helpers.OPENAI_CHAT_USER))
+                config['openai_moderation_image'] = prompt_for_values(f'Enable or disable image moderation (True/False)', config.get('openai_moderation_image', helpers.OPENAI_MODERATION_IMAGE))
+                config['openai_moderation_image_model'] = prompt_for_values(f'Enter the image moderation model: {helpers.OPENAI_MODERATION_IMAGE_MODEL}', config.get('openai_moderation_image_model', helpers.OPENAI_MODERATION_IMAGE_MODEL))
+                config['openai_moderation_warning'] = prompt_for_values(f'Enter the moderation warning', config.get('openai_moderation_warning', helpers.OPENAI_MODERATION_WARNING))
+                config['openai_organization'] = prompt_for_values(f'Enter the organization ID', config.get('openai_organization', helpers.OPENAI_CHAT_HEADERS['OpenAI-Organization']))
+                config['openai_project'] = prompt_for_values(f'Enter the project ID', config.get('openai_project', helpers.OPENAI_CHAT_HEADERS['OpenAI-Project']))
+                config['user_agent'] = prompt_for_values('Enter the User-Agent header', config.get('user_agent', helpers.USER_AGENT))
+                config['version'] = prompt_for_values('Enter the bot version', config.get('version', helpers.VERSION))
             else:
                 makedirs(dirname(helpers.PATH_CONFIG_YAML), exist_ok=True)
-                for i in range(1, 21):
-                    config['api_keys'][f'api_key_{i}'] = prompt_for_values(f'Enter API key {i}', '')
                 config = {
-                    'database_url': prompt_for_values('Enter the database URL', ''),
-                    'discord_cogs': prompt_for_values('Enter the cogs.', [
-                        'bot.cogs.hybrid',
-                        'bot.cogs.indica',
-                        'bot.cogs.sativa'
-                    ]),
-                    'discord_command_prefix': prompt_for_values('Enter the command prefix', '!'),
-                    'discord_intents': prompt_for_values('Enter the intents', 'discord.Intents.all()'),
-                    'discord_owner_id': prompt_for_values('Enter the owner ID', '154749533429956608'),
-                    'discord_testing_guild_id': prompt_for_values('Enter the testing guild ID', '1286307083976835103'),
+                    'api_keys': {f'api_key_{i}': prompt_for_values(f'Enter API key {i}', '') for i in range(1, 21)},
+                    'database_url': prompt_for_values('Enter the database URL', helpers.DATABASE_URL),
+                    'discord_cogs': prompt_for_values('Enter the cogs.', helpers.DISCORD_COGS),
+                    'discord_command_prefix': prompt_for_values('Enter the command prefix', helpers.DISCORD_COMMAND_PREFIX),
+                    'discord_intents': prompt_for_values('Enter the intents', helpers.DISCORD_INTENTS),
+                    'discord_owner_id': prompt_for_values('Enter the owner ID', helpers.DISCORD_OWNER_ID),
+                    'discord_testing_guild_id': prompt_for_values('Enter the testing guild ID', helpers.DISCORD_TESTING_GUILD_ID),
                     'discord_token': prompt_for_values('Enter the bot token', ''),
-                    'logging_level': prompt_for_values('Enter the logging level', 'INFO'),
-                    'openai_model': prompt_for_values(f'Enter the model', 'gpt-4o-mini'),
-                    'openai_n': prompt_for_values(f'Enter the response number', '1'),
-                    'openai_organization': prompt_for_values(f'Enter the organization ID', helpers.OPENAI_HEADERS['OpenAI-Organization']),
-                    'openai_project': prompt_for_values('Enter the project ID', helpers.OPENAI_HEADERS['OpenAI-Project']),
-                    'openai_store': prompt_for_values(f'Enter the storage preference (True/False)', 'True'),
-                    'openai_stream': prompt_for_values(f'Enter the stream preference (True/False)', 'True'),
-                    'openai_stop': prompt_for_values(f'Enter the stop criteria?', ''),
-                    'openai_temperature': prompt_for_values(f'Enter the temperature (0.0 to 2.0)', '1.0'),
-                    'openai_user': prompt_for_values(f'Enter your name', 'Brandon Graham Cobb'),
-                    'user_agent': prompt_for_values('Enter the User-Agent header', 'Vyrtuous'),
-                    'version': prompt_for_values('Enter the bot version', '1.0.0'),
-                    'openai_system_input': prompt_for_values('What is the system_input?', ''),
+                    'logging_level': prompt_for_values('Enter the logging level', helpers.LOGGING_LEVEL),
+                    'openai_chat_model': prompt_for_values(f'Enter the chat model for ChatGPT: {helpers.OPENAI_CHAT_MODELS}', helpers.OPENAI_CHAT_MODEL),
+                    'openai_chat_moderation_model': prompt_for_values(f'Enter the chat model for moderation: {helpers.OPENAI_CHAT_MODELS}', helpers.OPENAI_CHAT_MODERATION_MODEL),
+                    'openai_chat_moderation': prompt_for_values('Enable or disable text moderation (True/False)', helpers.OPENAI_CHAT_MODERATION),
+                    'openai_chat_n': prompt_for_values('Enter the response count', helpers.OPENAI_CHAT_N),
+                    'openai_chat_store': prompt_for_values('Enable or disable storage (True/False)', helpers.OPENAI_CHAT_STORE),
+                    'openai_chat_stream': prompt_for_values('Enable or disable streaming (True/False)', helpers.OPENAI_CHAT_STREAM),
+                    'openai_chat_stop': prompt_for_values('Enter the stop criteria', helpers.OPENAI_CHAT_STOP),
+                    'openai_chat_sys_input': prompt_for_values('What is the system_input?', helpers.OPENAI_CHAT_SYS_INPUT) if helpers.OPENAI_CHAT_MODEL in helpers.OPENAI_CHAT_MODELS['deprecated'] else '',
+                    'openai_chat_temperature': prompt_for_values('Enter the temperature (0.0 to 2.0)', helpers.OPENAI_CHAT_TEMPERATURE),
+                    'openai_chat_user': prompt_for_values('Enter your name', helpers.OPENAI_CHAT_USER),
+                    'openai_moderation_image': prompt_for_values('Enable or disable image moderation (True/False)', helpers.OPENAI_MODERATION_IMAGE),
+                    'openai_moderation_image_model': prompt_for_values(f'Enter the image moderation model: {helpers.OPENAI_MODERATION_MODEL}', helpers.OPENAI_MODERATION_MODEL),
+                    'openai_moderation_warning': prompt_for_values('Enter the moderation warning', helpers.OPENAI_CMODERATION_WARNING),
+                    'openai_organization': prompt_for_values('Enter the organization ID', helpers.OPENAI_CHAT_HEADERS['OpenAI-Organization']),
+                    'openai_project': prompt_for_values('Enter the project ID', helpers.OPENAI_CHAT_HEADERS['OpenAI-Project']),
+                    'user_agent': prompt_for_values('Enter the User-Agent header', helpers.USER_AGENT),
+                    'version': prompt_for_values('Enter the bot version', helpers.VERSION)
                 }
             with open(helpers.PATH_CONFIG_YAML, 'w') as file:
                 yaml.dump(config, file)

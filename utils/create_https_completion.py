@@ -1,32 +1,29 @@
+from datetime import datetime
+from utils.load_yaml import load_yaml
 from openai import AsyncOpenAI
 
-import load_yaml
+import datetime
 import openai
 
-async def create_https_completion(completions, conversation_id, input_text, max_tokens, model, stop, store, stream, sys_input, temperature, top_p):
+async def create_https_completion(completions, custom_id, input_text, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
     try:
-        config = load_yaml(helpers.path_config_yaml)
+        config = load_yaml(helpers.PATH_CONFIG_YAML)
         api_key = config['api_keys']['api_key_1']
         ai_client = AsyncOpenAI(api_key=api_key)
-        url = "https://api.openai.com/v1/chat/completions"
         headers = helpers.OPENAI_HEADERS
-        headers.update({'Authorization': f'Bearer {api_key}'
+        headers.update({'Authorization': f'Bearer {api_key}'})
         request_data = {
-            "max_tokens": int(max_tokens),  # Set maximum tokens
             "messages": [
                 {
                     "role": "user",
                     "content": input_text  # User prompt content
-                },
-                {
-                    "role": "system",
-                    "content": sys_input  # User prompt content
                 },
             ],
             "model": model,  # Specify the model you want to use
             "temperature": float(temperature),  # Set temperature for randomness
             "top_p": float(top_p),  # Set top_p for nucleus sampling
             "n": int(completions),  # Number of completions
+            "response_format": response_format,  # Define stopping criteria if necessary
             "stop": stop,  # Define stopping criteria if necessary
             "store": store,  # 
             "stream": bool(stream),  # If you want streaming responses
@@ -34,10 +31,16 @@ async def create_https_completion(completions, conversation_id, input_text, max_
         if model in {"o1-mini", "o1-preview"}:
             request_data["max_completion_tokens"] = int(max_tokens)
             request_data['temperature'] = 1.0
+            request_data['messages'].append({'role': 'system', 'content': sys_input})
         else:
             request_data["max_tokens"] = int(max_tokens)
         if store:
-            return
+            request_data.update({
+                'custom_id': f'{custom_id}-{uuid.uuid4().hex}',
+                'method': 'POST',
+                'url': '/v1/chat/completions',
+                'metadata': {'user': str(custom_id), 'timestamp': str(datetime.now(datetime.UTC))}
+            })
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(url, headers=headers, json=request_data) as response:

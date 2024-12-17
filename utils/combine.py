@@ -1,8 +1,9 @@
 from io import BytesIO
 from PIL import Image
+from utils.add_watermark import add_watermark
+from utils.adjust_hue_and_saturation import adjust_hue_and_saturation
 
-import add_watermark
-import adjust_hue_and_saturation
+import math
 
 def combine(images: list, names: list) -> BytesIO:
     combined_images = []

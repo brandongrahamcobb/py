@@ -1,7 +1,9 @@
 from openai import AsyncOpenAI
+from utils.load_yaml import load_yaml
 
-import load_yaml
+import json
 import openai
+import traceback
 
 async def create_moderation(input_text):
     try:
@@ -12,6 +14,9 @@ async def create_moderation(input_text):
             model='omni-moderation-latest',
             input=input_text,
         )
-        yield response.to_dict() if hasattr(response, 'to_dict') else response
+        moderation = response.to_dict() if hasattr(response, 'to_dict') else response
+        moderation_dict = json.loads(moderation)
+        flagged = moderation_dict.get('results', [{}])[0].get('flagged', False)
+        yield flagged
     except Exception as e:
         yield {'error': traceback.format_exc()}

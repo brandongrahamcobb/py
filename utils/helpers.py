@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+
 from os.path import dirname, abspath, expanduser, join
 
 # Base and Home Paths
@@ -28,56 +29,57 @@ PATH_CONFIG_JSON = join(PATH_HOME, '.config', 'spawd', 'config.json')
 PATH_LOG = join(PATH_HOME, '.log', 'spawd', 'discord.log')
 
 # Script Paths
-PATH_ADD_WATERMARK= 'add_watermark.py'
-PATH_ADJUST_HUE_AND_SATURATION = 'adjust_hue_and_saturation.py'
-PATH_ARPP = 'api_request_parallel_processor.py'
-PATH_CLEAR_SCREEN = 'clearn_screen.py'
-PATH_COMBINE = 'combine.py'
-PATH_CONFIG = 'config.py'
-PATH_CREATE_BATCH_COMPLETION = 'create_batch_completion.py'
-PATH_CREATE_COMPLETION_DEPRECATED = 'create_completion_deprecated.py'
-PATH_CREATE_COMPLETION = 'create_completion.py'
-PATH_CREATE_HTTPS_COMPLETION = 'create_https_completion.py'
-PATH_CREATE_MODERATION = 'create_moderation.py'
-PATH_DISCORD = 'discord.py'
-PATH_DRAW_FINGERPRINT = 'draw_fingerprint.py'
-PATH_DRAW_WATERMARKED_MOLECULE = 'draw_watermarked_molecule.py'
-PATH_FORMAT_ERROR_CHECK = 'format_error_check.py'
-PATH_GET_MOLECULE_NAME = 'get_molecule_name.py'
-PATH_GET_MOL = 'get_mol.py'
-PATH_GET_PROXIMITY = 'get_proximity.py'
-PATH_GET_SCRIPTURE = 'get_scripture.py'
-PATH_GOOGLE = 'google.py'
-PATH_GSRS = 'gsrs.py'
-PATH_HELPERS = 'helpers.py'
-PATH_INCREMENT_VERSION = 'increment_version.py'
-PATH_LOAD_CONTENTS = 'load_contents.py'
-PATH_LOAD_YAML = 'load_yaml.py'
-PATH_PROMPT_FOR_VALUES = 'prompt_for_values.py'
-PATH_SETUP_LOGGING = 'setup_logging.py'
-PATH_STABLE_CASCADE = 'stable_cascade.py'
-PATH_UNIQUE_PAIRS = 'unique_pairs.py'
+PATH_ADD_WATERMARK = join(DIR_BASE, 'add_watermark.py')
+PATH_ADJUST_HUE_AND_SATURATION = join(DIR_BASE, 'adjust_hue_and_saturation.py')
+PATH_ARPP = join(DIR_BASE, 'api_request_parallel_processor.py')
+PATH_CLEAR_SCREEN = join(DIR_BASE, 'clear_screen.py')
+PATH_COMBINE = join(DIR_BASE, 'combine.py')
+PATH_CONFIG = join(DIR_BASE, 'config.py')
+PATH_CREATE_BATCH_COMPLETION = join(DIR_BASE, 'create_batch_completion.py')
+PATH_CREATE_COMPLETION_DEPRECATED = join(DIR_BASE, 'create_completion_deprecated.py')
+PATH_CREATE_COMPLETION = join(DIR_BASE, 'create_completion.py')
+PATH_CREATE_HTTPS_COMPLETION = join(DIR_BASE, 'create_https_completion.py')
+PATH_CREATE_MODERATION = join(DIR_BASE, 'create_moderation.py')
+PATH_DISCORD = join(DIR_BASE, 'discord.py')
+PATH_DRAW_FINGERPRINT = join(DIR_BASE, 'draw_fingerprint.py')
+PATH_DRAW_WATERMARKED_MOLECULE = join(DIR_BASE, 'draw_watermarked_molecule.py')
+PATH_FORMAT_ERROR_CHECK = join(DIR_BASE, 'format_error_check.py')
+PATH_GET_MOLECULE_NAME = join(DIR_BASE, 'get_molecule_name.py')
+PATH_GET_MOL = join(DIR_BASE, 'get_mol.py')
+PATH_GET_PROXIMITY = join(DIR_BASE, 'get_proximity.py')
+PATH_GET_SCRIPTURE = join(DIR_BASE, 'get_scripture.py')
+PATH_GOOGLE = join(DIR_BASE, 'google.py')
+PATH_GSRS = join(DIR_BASE, 'gsrs.py')
+PATH_HELPERS = join(DIR_BASE, 'helpers.py')
+PATH_INCREMENT_VERSION = join(DIR_BASE, 'increment_version.py')
+PATH_LOAD_CONTENTS = join(DIR_BASE, 'load_contents.py')
+PATH_LOAD_YAML = join(DIR_BASE, 'load_yaml.py')
+PATH_PROMPT_FOR_VALUES = join(DIR_BASE, 'prompt_for_values.py')
+PATH_SETUP_LOGGING = join(DIR_BASE, 'setup_logging.py')
+PATH_STABLE_CASCADE = join(DIR_BASE, 'stable_cascade.py')
+PATH_UNIQUE_PAIRS = join(DIR_BASE, 'unique_pairs.py')
 
-# OpenAI
-OPENAI_ENDPOINT_URLs = {
-    'audio': 'https://api.openai.com/v1/audio/speech',
-    'batch': 'https://api.openai.com/v1/audio/batches',
-    'chat': 'https://api.openai.com/v1/chat/completions',
-    'embeddings': 'https://api.openai.com/v1/embeddings',
-    'files': 'https://api.openai.com/v1/files',
-    'fine-tuning': 'https://api.openai.com/v1/fine_tuning/jobs',
-    'images': 'https://api.openai.com/v1/images/generations',
-    'models': 'https://api.openai.com/v1/models',
-    'moderations': 'https://api.openai.com/v1/moderations',
-    'uploads': 'https://api.openai.com/v1/uploads',
-}
-OPENAI_HEADERS = {
+# Discord
+DISCORD_COGS = [
+    'bot.cogs.hybrid',
+    'bot.cogs.indica',
+    'bot.cogs.sativa',
+]
+DISCORD_COMMAND_PREFIX = '!'
+DISCORD_INTENTS = 'discord.Intents.all()'
+DISCORD_OWNER_ID = 154749533429956608
+DISCORD_TESTING_GUILD_ID = 1300517536001036348
+
+LOGGING_LEVEL = 'INFO'
+
+# OpenAI Chat
+OPENAI_CHAT_HEADERS = {
     'Content-Type': 'application/json',
     'OpenAI-Organization': 'org-3LYwtg7DSFJ7RLn9bfk4hATf',
     'User-Agent': 'brandongrahamcobb@icloud.com',
     'OpenAI-Project': 'proj_u5htBCWX0LSHxkw45po1Vfz9',
 }
-OPENAI_MODEL_OUTPUT_LIMITS = {
+OPENAI_CHAT_MODEL_OUTPUT_LIMITS = {
     "gpt-3.5-turbo": 4096,
     "gpt-4": 8192,
     "gpt-4-32k": 32768,
@@ -97,7 +99,57 @@ OPENAI_MODEL_CONTEXT_LIMITS = {
     "o1-preview": 128000,
     "o1-mini": 128000,
 }
-OPENAI_MODELS = {
+OPENAI_CHAT_MODELS = {
     'current': ['o1-preview', 'o1-mini'],
     'deprecated': ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
 }
+# OpenAI
+OPENAI_ENDPOINT_URLs = {
+    'audio': 'https://api.openai.com/v1/audio/speech',
+    'batch': 'https://api.openai.com/v1/audio/batches',
+    'chat': 'https://api.openai.com/v1/chat/completions',
+    'embeddings': 'https://api.openai.com/v1/embeddings',
+    'files': 'https://api.openai.com/v1/files',
+    'fine-tuning': 'https://api.openai.com/v1/fine_tuning/jobs',
+    'images': 'https://api.openai.com/v1/images/generations',
+    'models': 'https://api.openai.com/v1/models',
+    'moderations': 'https://api.openai.com/v1/moderations',
+    'uploads': 'https://api.openai.com/v1/uploads',
+}
+
+#OpenAI Moderations
+OPENAI_CHAT_MAX_TOKENS = 2000
+OPENAI_CHAT_MODERATION = False
+OPENAI_CHAT_MODERATION_COMPLETIONS = 1
+OPENAI_CHAT_MODERATION_MAX_TOKENS = 2000
+OPENAI_CHAT_MODERATION_MODEL = 'gpt-3.5-turbo'
+OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = { 'type': 'json_object' }
+OPENAI_CHAT_MODERATION_STOP = False
+OPENAI_CHAT_MODERATION_STORE = False
+OPENAI_CHAT_MODERATION_STREAM = True
+OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a moderation assistant.'
+OPENAI_CHAT_MODERATION_TEMPERATURE = 1.0
+OPENAI_CHAT_MODERATION_TOP_P = 1.0
+OPENAI_CHAT_MODEL = 'gpt-4o-mini'
+OPENAI_CHAT_N = 1
+OPENAI_CHAT_RESPONSE_FORMAT = None
+OPENAI_CHAT_STOP = ''
+OPENAI_CHAT_STORE = True
+OPENAI_CHAT_STREAM = True
+OPENAI_CHAT_SYS_INPUT = ''
+OPENAI_CHAT_TEMPERATURE = 0.7
+OPENAI_CHAT_USER = 'Brandon Graham Cobb'
+OPENAI_CHAT_USER = 'Brandon Graham Cobb'
+OPENAI_CHAT_USER = 'Brandon Graham Cobb'
+OPENAI_CHAT_USER = 'Brandon Graham Cobb'
+OPENAI_CHAT_USER = 'Brandon Graham Cobb'
+OPENAI_CHAT_USER = 'Brandon Graham Cobb'
+OPENAI_MODERATION_IMAGE_MODEL = 'omni-moderation-latest'
+OPENAI_MODERATION_IMAGE = False
+OPENAI_MODERATION_WARNING = 'You have been warned.'
+
+# MySQL
+DATABASE_URL = ''
+
+USER_AGENT = 'https://github.com/brandongrahamcobb/py.git'
+VERSION = '1.0.0'

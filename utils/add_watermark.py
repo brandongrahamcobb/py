@@ -1,6 +1,8 @@
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 
+import math
+
 def add_watermark(image: BytesIO, watermark_text: str = 'Discord') -> BytesIO:
     RGB_image = Image.open(image)
     RGBA_image = RGB_image.convert('RGBA')
