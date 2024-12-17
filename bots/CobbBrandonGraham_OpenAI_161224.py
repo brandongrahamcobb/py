@@ -173,7 +173,7 @@ class ChatWindow(QWidget):
         }
 
         # Model settings
-        self.MODEL = self.config.get('model', 'gpt-4o-mini')
+        self.MODEL = self.config.get('model', 'o1-preview')
 
         self.MODEL_OUTPUT_LIMITS = {
             "gpt-3.5-turbo": 4096,
