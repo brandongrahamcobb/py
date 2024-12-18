@@ -1,8 +1,12 @@
-from utils.add_watermark import add_watermark
+import requests
+
+from io import BytesIO
+from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from utils.add_watermark import add_watermark
 from webdriver_manager.chrome import ChromeDriverManager
 
 def gsrs(arg):

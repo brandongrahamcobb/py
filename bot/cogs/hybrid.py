@@ -25,12 +25,13 @@ from utils.draw_watermarked_molecule import draw_watermarked_molecule
 from utils.get_mol import get_mol
 from utils.google import google
 from utils.gsrs import gsrs
-from utils.stable_cascade import stable_cascade
 from utils.unique_pairs import unique_pairs
 
 import asyncio
 import discord
 import io
+import os
+from random import randint
 import shlex
 import traceback
 
@@ -59,19 +60,6 @@ class Hybrid(commands.Cog):
         await newrole.edit(position=position)
         await ctx.author.add_roles(newrole)
         await ctx.send(f'I successfully changed your role color to {r}, {g}, {b}')
-
-    @commands.hybrid_command(name='get', description='Limited usage. Usage: !get <prompt-for-image>.')
-    async def get(self, ctx: commands.Context, *, argument: str = commands.parameter(default=None, description="Image prompt.")):
-        try:
-            if ctx.interaction:
-                await ctx.interaction.response.defer(ephemeral=True)
-            file = stable_cascade(argument)
-            if isinstance(file, discord.File):
-                await ctx.send(file=file)
-            else:
-                await ctx.send(f"Error generating image: {file}")
-        except Exception as e:
-            await ctx.send(traceback.format_exc())
 
     @commands.command(name='load', hidden=True)
     async def load(self, ctx: commands.Context, *, module: str):
