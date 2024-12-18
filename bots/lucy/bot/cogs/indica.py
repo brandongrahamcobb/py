@@ -116,7 +116,7 @@ class Indica(commands.Cog):
                                 'url': attachment.url
                             }
                         }
-                        array.append(input_image_dict)  # Add image moderation input
+                    array.append(input_image_dict)  # Add image moderation input
                 async for moderation in create_moderation(array):
                     results = moderation.get('results', [])
                     if results and results[0].get('flagged', False):
@@ -125,7 +125,7 @@ class Indica(commands.Cog):
                         await channel.send(self.config['openai_moderation_warning'])
                         break  # Stop further checks after first flagged content
             if self.bot.user in message.mentions:
-                self.conversations[message.author.id].append({'role': 'user', 'content': message.content})
+                self.conversations[message.author.id].append({'role': 'user', 'content': array})
                 async for completion in create_https_completion(
                     completions=self.config['openai_chat_n'],
                     conversations=self.conversations,
