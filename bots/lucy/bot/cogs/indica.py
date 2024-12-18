@@ -19,8 +19,8 @@ from discord.ext import commands, tasks
 from os.path import abspath, dirname, exists, expanduser, join
 from utils.create_https_completion import create_https_completion
 from utils.create_moderation import create_moderation
+from utils.fine_tuning import TrainingFileBuilder
 from utils.load_contents import load_contents
-from utils.fine_tuning import generate_training_file
 import asyncio
 import datetime
 import discord
@@ -192,9 +192,10 @@ class Indica(commands.Cog):
                         temperature=self.config['openai_chat_temperature'],
                         top_p=self.config['openai_chat_top_p']
                     ):
-                        flagged = bool(completion)
-                        if flagged:
-                            await generate_training_file(self.conversations)
+                        if 'true' in completion.lower():
+                            builder = TrainingFileBuilder()
+                            builder.add_responses([message.content])
+                            builder.save()
         except Exception as e:
             print(e)
 
