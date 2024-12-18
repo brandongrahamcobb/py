@@ -21,7 +21,8 @@ class Config:
                     current_key = config['api_keys'].get(key, '')
                     config['api_keys'][key] = prompt_for_values(f'Enter API key {i}', current_key)
                 config['database_url'] = prompt_for_values('Enter the database URL', config.get('database_url', helpers.DATABASE_URL))
-                config['discord_cogs'] = prompt_for_values('Enter the cogs.', config.get('cogs', helpers.DISCORD_COGS))
+                config['discord_character_limit'] = prompt_for_values('Enter the character limit', config.get('discord_character_limit', helpers.DISCORD_CHARACTER_LIMIT))
+                config['discord_cogs'] = prompt_for_values('Enter the cogs.', config.get('discord_cogs', helpers.DISCORD_COGS))
                 config['discord_command_prefix'] = prompt_for_values('Enter the command prefix', config.get('discord_command_prefix', helpers.DISCORD_COMMAND_PREFIX))
                 config['discord_intents'] = prompt_for_values('Enter the intents', config.get('discord_intents', helpers.DISCORD_INTENTS))
                 config['discord_owner_id'] = prompt_for_values('Enter the owner ID', config.get('discord_owner_id', helpers.DISCORD_OWNER_ID))
@@ -55,6 +56,7 @@ class Config:
                 config = {
                     'api_keys': {f'api_key_{i}': prompt_for_values(f'Enter API key {i}', '') for i in range(1, 21)},
                     'database_url': prompt_for_values('Enter the database URL', helpers.DATABASE_URL),
+                    'discord_character_limit': prompt_for_values('Enter the character limit', helpers.DISCORD_CHARACTER_LIMIT),
                     'discord_cogs': prompt_for_values('Enter the cogs.', helpers.DISCORD_COGS),
                     'discord_command_prefix': prompt_for_values('Enter the command prefix', helpers.DISCORD_COMMAND_PREFIX),
                     'discord_intents': prompt_for_values('Enter the intents', helpers.DISCORD_INTENTS),

@@ -114,7 +114,11 @@ class Indica(commands.Cog):
                     temperature=self.config['openai_chat_temperature'],
                     top_p=self.config['openai_chat_top_p']
                 ):
-                    await message.reply(completion)
+                    if len(completion) > self.config['discord_character_limit']:
+                        await message.reply('My reply was longer than Discord\'s minimum. Oops!')
+                    else:
+                        await message.reply(completion)
+                    
             if message.attachments:
                 if self.config['openai_moderation_image']:
                     for attachment in message.attachments:

@@ -51,7 +51,6 @@ async def create_https_completion(completions, custom_id, input_text, max_tokens
                 async with session.post(url=helpers.OPENAI_ENDPOINT_URLS['chat'], headers=headers, json=request_data) as response:
                     if bool(stream):
                         if response.status != 200:
-                            print(f"HTTP Error {response.status}: {await response.text()}")
                             return
                         full_response = ''
                         async for line in response.content:
@@ -64,13 +63,10 @@ async def create_https_completion(completions, custom_id, input_text, max_tokens
                                     for choice in data_chunk["choices"]:
                                         content = choice["delta"].get("content", "")
                                         full_response += content
-                                        print(f"Chunk content: {content}")
                                         if choice.get("finish_reason") == "stop":
                                             break
                             except json.JSONDecodeError as e:
-                                print(f"Failed to parse JSON chunk: {decoded_line}")
                                 continue
-                        print(f"Full response: {full_response}")
                         yield full_response
                     else:
                         yield await response.json()

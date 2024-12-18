@@ -60,6 +60,8 @@ PATH_STABLE_CASCADE = join(DIR_BASE, 'stable_cascade.py')
 PATH_UNIQUE_PAIRS = join(DIR_BASE, 'unique_pairs.py')
 
 # Discord
+DISCORD_CHARACTER_LIMITS = [2000, 4000]
+DISCORD_CHARACTER_LIMIT = 2000
 DISCORD_COGS = [
     'bot.cogs.hybrid',
     'bot.cogs.indica',
