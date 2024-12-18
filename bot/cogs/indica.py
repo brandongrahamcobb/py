@@ -22,6 +22,7 @@ import utils.helpers as helpers
 import asyncio
 import datetime
 import discord
+import json
 import os
 import subprocess
 import traceback
@@ -98,26 +99,29 @@ class Indica(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         try:
-            if self.config['openai_moderation_image']:
-                for attachment in message.attachments:
-                    if attachment.content_type.startswith('image/'):
-                        input_text = [
-                            {
-                                "type": "text",
-                                "text": message.content
-                            },
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    'url': attachment.url
+            if message.attachments:
+                if self.config['openai_moderation_image']:
+                    for attachment in message.attachments:
+                        if attachment.content_type.startswith('image/'):
+                            input_text = [
+                                {
+                                    "type": "text",
+                                    "text": message.content
                                 },
-                            },
-                        ]
-                        async for moderation in create_moderation(input_text):
-                            if moderation:
-                                await message.delete()
-                                channel = await message.author.create_dm()
-                                await channel.send(self.config['openai_moderation_warning'])
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        'url': attachment.url
+                                    },
+                                },
+                            ]
+                            async for moderation in create_moderation(input_text):
+                                if moderation['choices'][0]['message']['content']:
+                                    await message.delete()
+                                    channel = await message.author.create_dm()
+                                    await channel.send(self.config['openai_moderation_warning'])
+            if self.bot.user == message.author:
+                return
             if self.config['openai_chat_moderation']:
                 async for moderation in create_https_completion(
                     completions=helpers.OPENAI_CHAT_MODERATION_COMPLETIONS,
@@ -133,10 +137,13 @@ class Indica(commands.Cog):
                     temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
                     top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
                 ):
-                    if moderation:
-                        await message.delete()
+                   print(moderation)
+                   content = json.loads(moderation['choices'][0]['message']['content'])
+                   flagged = content['results'][0]['flagged']
+                   if flagged:
                         channel = await message.author.create_dm()
                         await channel.send(self.config['openai_moderation_warning'])
+                        await message.delete()
         except Exception as e:
             print(e)
 

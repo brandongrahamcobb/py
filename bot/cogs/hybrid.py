@@ -23,7 +23,9 @@ from utils.combine import combine
 from utils.draw_fingerprint import draw_fingerprint
 from utils.draw_watermarked_molecule import draw_watermarked_molecule
 from utils.get_mol import get_mol
+from utils.google import google
 from utils.gsrs import gsrs
+from utils.stable_cascade import stable_cascade
 from utils.unique_pairs import unique_pairs
 
 import asyncio
@@ -57,6 +59,19 @@ class Hybrid(commands.Cog):
         await newrole.edit(position=position)
         await ctx.author.add_roles(newrole)
         await ctx.send(f'I successfully changed your role color to {r}, {g}, {b}')
+
+    @commands.hybrid_command(name='get', description='Limited usage. Usage: !get <prompt-for-image>.')
+    async def get(self, ctx: commands.Context, *, argument: str = commands.parameter(default=None, description="Image prompt.")):
+        try:
+            if ctx.interaction:
+                await ctx.interaction.response.defer(ephemeral=True)
+            file = stable_cascade(argument)
+            if isinstance(file, discord.File):
+                await ctx.send(file=file)
+            else:
+                await ctx.send(f"Error generating image: {file}")
+        except Exception as e:
+            await ctx.send(traceback.format_exc())
 
     @commands.command(name='load', hidden=True)
     async def load(self, ctx: commands.Context, *, module: str):
@@ -149,6 +164,16 @@ class Hybrid(commands.Cog):
             await ctx.send(f'{e.__class__.__name__}: {e}')
         else:
             await ctx.send('\N{OK HAND SIGN}')
+
+    @commands.hybrid_command(name='search', description='Usage: !search <query>. Search Google.')
+    async def search(self, ctx: commands.Context, *, query: str = commands.parameter(default=None, description="Google search a query.")):
+        if ctx.interaction:
+            await ctx.interaction.response.defer(ephemeral=True)
+        results = google(query)
+        embed = discord.Embed(title=f"Search Results for '{query}'", color=discord.Color.blue())
+        for result in results:
+            embed.add_field(name=result["title"], value=result["link"], inline=False)
+        await ctx.send(embed=embed)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Hybrid(bot))

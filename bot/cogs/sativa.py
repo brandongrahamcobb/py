@@ -21,6 +21,11 @@ import utils.helpers as helpers
 import discord
 
 
+def is_owner():
+    async def predicate(ctx):
+        return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
+    return commands.check(predicate)
+
 class Sativa(commands.Cog):
 
     def __init__(self, bot):
@@ -53,6 +58,24 @@ class Sativa(commands.Cog):
             else:
                 ret += 1
         await ctx.send(f'Synced the tree to {ret}/{len(guilds)}.')
+
+
+    @commands.command(name='wipe', hidden=True)
+    @is_owner()
+    async def wipe(self, ctx, option=None, limit: int = 100):
+        if limit <= 0 or limit > 100:
+            await ctx.send('Please provide a limit between 1 and 100.')
+            return
+        if option == 'bot':
+            def is_bot_message(message):
+                return message.author == self.bot.user
+            deleted = await self.purge_messages(ctx, limit, is_bot_message)
+            await ctx.send(f'Deleted {deleted} bot messages.')
+        elif option == 'all':
+            deleted = await ctx.channel.purge(limit=limit)
+            await ctx.send(f'Deleted all messages.')
+        else:
+            await ctx.send('Invalid option. Use `bot`, `all`, `user`, or `commands`.')
 
 async def setup(bot: commands.bot):
     await bot.add_cog(Sativa(bot))
