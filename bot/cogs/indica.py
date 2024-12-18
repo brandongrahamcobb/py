@@ -125,9 +125,10 @@ class Indica(commands.Cog):
                         await channel.send(self.config['openai_moderation_warning'])
                         break  # Stop further checks after first flagged content
             if self.bot.user in message.mentions:
+                self.conversations[message.author.id].append({'role': 'user', 'content': message.content})
                 async for completion in create_https_completion(
                     completions=self.config['openai_chat_n'],
-                    conversations=self.conversations[message.author.id],
+                    conversations=self.conversations,
                     custom_id=message.author.id,
                     input_text=array,
                     max_tokens=self.config['openai_chat_max_tokens'],

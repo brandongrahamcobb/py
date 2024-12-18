@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from utils.load_yaml import load_yaml
 from openai import AsyncOpenAI
