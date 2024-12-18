@@ -20,7 +20,7 @@ from os.path import abspath, dirname, exists, expanduser, join
 from utils.create_https_completion import create_https_completion
 from utils.create_moderation import create_moderation
 from utils.load_contents import load_contents
-
+from utils.fine_tuning import generate_training_file
 import asyncio
 import datetime
 import discord
@@ -46,6 +46,7 @@ class Indica(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.conversations = defaultdict(list)
+        self.lock = asyncio.Lock()
         self.hybrid = self.bot.get_cog('Hybrid')
         self.sativa = self.bot.get_cog('Sativa')
         self.add_watermark = load_contents(helpers.PATH_ADD_WATERMARK)
@@ -101,73 +102,99 @@ class Indica(commands.Cog):
         try:
             if self.bot.user == message.author:
                 return
-            array = []  # Initialize array to avoid 'undefined' errors
-            input_text_dict = {
-                "type": "text",
-                "text": message.content
-            }
-            array.append(input_text_dict)  # Add text moderation input
-            if message.attachments:
-                for attachment in message.attachments:
-                    if attachment.content_type and attachment.content_type.startswith('image/'):
-                        input_image_dict = {
-                            'type': 'image_url',
-                            'image_url': {
-                                'url': attachment.url
+            async with self.lock:
+                # Input Image/Text
+                array = []
+                input_text_dict = {
+                    "type": "text",
+                    "text": message.content
+                }
+                array.append(input_text_dict)
+                if message.attachments:
+                    for attachment in message.attachments:
+                        if attachment.content_type and attachment.content_type.startswith('image/'):
+                            input_image_dict = {
+                                'type': 'image_url',
+                                'image_url': {
+                                    'url': attachment.url
+                                }
                             }
-                        }
-                    array.append(input_image_dict)  # Add image moderation input
-                async for moderation in create_moderation(array):
-                    results = moderation.get('results', [])
-                    if results and results[0].get('flagged', False):
-                        await message.delete()
-                        channel = await message.author.create_dm()
-                        await channel.send(self.config['openai_moderation_warning'])
-                        break  # Stop further checks after first flagged content
-            if self.bot.user in message.mentions:
-                self.conversations[message.author.id].append({'role': 'user', 'content': array})
-                async for completion in create_https_completion(
-                    completions=self.config['openai_chat_n'],
-                    conversations=self.conversations,
-                    custom_id=message.author.id,
-                    input_text=array,
-                    max_tokens=self.config['openai_chat_max_tokens'],
-                    model=self.config['openai_chat_model'],
-                    response_format=self.config['openai_chat_response_format'],
-                    stop=self.config['openai_chat_stop'],
-                    store=self.config['openai_chat_store'],
-                    stream=self.config['openai_chat_stream'],
-                    sys_input=self.config['openai_chat_sys_input'],
-                    temperature=self.config['openai_chat_temperature'],
-                    top_p=self.config['openai_chat_top_p']
-                ):
-                    self.conversations[message.author.id].append({'role': 'assistant', 'content': completion})
-                    if len(completion) > self.config['discord_character_limit']:
-                        await message.reply('My reply was longer than Discord\'s minimum. Oops!')
-                    else:
-                        await message.reply(completion)
-            if self.config['openai_chat_moderation']:
-                async for moderation in create_https_completion(
-                    completions=helpers.OPENAI_CHAT_MODERATION_N,
-                    conversations=self.conversations,
-                    custom_id=message.author.id,
-                    input_text=message.content,
-                    max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
-                    model=self.config['openai_chat_moderation_model'],
-                    response_format=helpers.OPENAI_CHAT_MODERATION_RESPONSE_FORMAT,
-                    stop=helpers.OPENAI_CHAT_MODERATION_STOP,
-                    store=helpers.OPENAI_CHAT_MODERATION_STORE,
-                    stream=helpers.OPENAI_CHAT_MODERATION_STREAM,
-                    sys_input=helpers.OPENAI_CHAT_MODERATION_SYS_INPUT,
-                    temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
-                    top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
-                ):
-                   content = json.loads(moderation['choices'][0]['message']['content'])
-                   flagged = content['results'][0]['flagged']
-                   if flagged:
-                        channel = await message.author.create_dm()
-                        await channel.send(self.config['openai_moderation_warning'])
-                        await message.delete()
+                        array.append(input_image_dict)
+                    # Image Moderation
+                    async for moderation in create_moderation(array):
+                        results = moderation.get('results', [])
+                        if results and results[0].get('flagged', False):
+                            await message.delete()
+                            channel = await message.author.create_dm()
+                            await channel.send(self.config['openai_moderation_warning'])
+                            break
+                # Chat Completion
+                if self.bot.user in message.mentions:
+                    self.conversations[message.author.id].append({'role': 'user', 'content': array})
+                    async for completion in create_https_completion(
+                        completions=self.config['openai_chat_n'],
+                        conversations=self.conversations,
+                        custom_id=message.author.id,
+                        input_text=array,
+                        max_tokens=self.config['openai_chat_max_tokens'],
+                        model=self.config['openai_chat_model'],
+                        response_format=self.config['openai_chat_response_format'],
+                        stop=self.config['openai_chat_stop'],
+                        store=self.config['openai_chat_store'],
+                        stream=self.config['openai_chat_stream'],
+                        sys_input=self.config['openai_chat_sys_input'],
+                        temperature=self.config['openai_chat_temperature'],
+                        top_p=self.config['openai_chat_top_p']
+                    ):
+                        self.conversations[message.author.id].append({'role': 'assistant', 'content': completion})
+                        if len(completion) > self.config['discord_character_limit']:
+                            await message.reply('My reply was longer than Discord\'s minimum. Oops!')
+                        else:
+                            await message.reply(completion)
+                # Chat Moderation
+                if self.config['openai_chat_moderation']:
+                    async for moderation in create_https_completion(
+                        completions=helpers.OPENAI_CHAT_MODERATION_N,
+                        conversations=self.conversations,
+                        custom_id=message.author.id,
+                        input_text=message.content,
+                        max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
+                        model=self.config['openai_chat_moderation_model'],
+                        response_format=helpers.OPENAI_CHAT_MODERATION_RESPONSE_FORMAT,
+                        stop=helpers.OPENAI_CHAT_MODERATION_STOP,
+                        store=helpers.OPENAI_CHAT_MODERATION_STORE,
+                        stream=helpers.OPENAI_CHAT_MODERATION_STREAM,
+                        sys_input=helpers.OPENAI_CHAT_MODERATION_SYS_INPUT,
+                        temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
+                        top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
+                    ):
+                       content = json.loads(moderation['choices'][0]['message']['content'])
+                       flagged = content['results'][0]['flagged']
+                       if flagged:
+                            channel = await message.author.create_dm()
+                            await channel.send(self.config['openai_moderation_warning'])
+                            await message.delete()
+                # Fine-tuning
+                if True:
+                    self.conversations[message.author.id].append({'role': 'assistant', 'content': array})
+                    async for completion in create_https_completion(
+                        completions=self.config['openai_chat_n'],
+                        conversations=self.conversations,
+                        custom_id=message.author.id,
+                        input_text=array,
+                        max_tokens=self.config['openai_chat_max_tokens'],
+                        model=self.config['openai_chat_model'],
+                        response_format=self.config['openai_fine_tuning_response_format'],
+                        stop=self.config['openai_chat_stop'],
+                        store=self.config['openai_chat_store'],
+                        stream=self.config['openai_chat_stream'],
+                        sys_input='False by default, True if about animal activism',
+                        temperature=self.config['openai_chat_temperature'],
+                        top_p=self.config['openai_chat_top_p']
+                    ):
+                        flagged = bool(completion)
+                        if flagged:
+                            await generate_training_file(self.conversations)
         except Exception as e:
             print(e)
 

@@ -35,6 +35,7 @@ class Config:
                 config['openai_chat_moderation'] = prompt_for_values(f'Enable or disable text moderation (True/False)', config.get('openai_moderation_text', helpers.OPENAI_CHAT_MODERATION))
                 config['openai_chat_moderation_sys_input'] = prompt_for_values(f'Enter the text moderation system input', config.get('openai_chat_moderation_sys_input', helpers.OPENAI_CHAT_MODERATION_SYS_INPUT))
                 config['openai_chat_n'] = prompt_for_values(f'Enter the chat response count', config.get('openai_n', helpers.OPENAI_CHAT_N))
+                config['openai_fine_tuning_response_format'] = prompt_for_values(f'Enter the fine_tuning response format', config.get('openai_fine_tuning_response_format', helpers.OPENAI_FINE_TUNING_RESPONSE_FORMAT))
                 config['openai_chat_response_format'] = prompt_for_values(f'Enter the chat response format', config.get('openai_chat_response_format', helpers.OPENAI_CHAT_RESPONSE_FORMAT))
                 config['openai_chat_store'] = prompt_for_values(f'Enable or disable chat storage (True/False)', config.get('openai_chat_store', helpers.OPENAI_CHAT_STORE))
                 config['openai_chat_stream'] = prompt_for_values(f'Enable or disable chat streaming (True/False)', config.get('openai_chat_stream', helpers.OPENAI_CHAT_STREAM))
@@ -69,6 +70,7 @@ class Config:
                     'openai_chat_moderation_model': prompt_for_values(f'Enter the chat model for moderation: {helpers.OPENAI_CHAT_MODELS}', helpers.OPENAI_CHAT_MODERATION_MODEL),
                     'openai_chat_moderation': prompt_for_values('Enable or disable text moderation (True/False)', helpers.OPENAI_CHAT_MODERATION),
                     'openai_chat_n': prompt_for_values('Enter the response count', helpers.OPENAI_CHAT_N),
+                    'openai_fine_tuning_response_format': prompt_for_values(f'Enter the fine_tuning response format', helpers.OPENAI_FINE_TUNING_RESPONSE_FORMAT),
                     'openai_chat_response_format': prompt_for_values(f'Enter the chat response format', helpers.OPENAI_CHAT_RESPONSE_FORMAT),
                     'openai_chat_store': prompt_for_values('Enable or disable storage (True/False)', helpers.OPENAI_CHAT_STORE),
                     'openai_chat_stream': prompt_for_values('Enable or disable streaming (True/False)', helpers.OPENAI_CHAT_STREAM),

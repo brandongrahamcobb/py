@@ -104,19 +104,6 @@ OPENAI_CHAT_MODELS = {
     'current': ['o1-preview', 'o1-mini'],
     'deprecated': ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
 }
-# OpenAI
-OPENAI_ENDPOINT_URLS = {
-    'audio': 'https://api.openai.com/v1/audio/speech',
-    'batch': 'https://api.openai.com/v1/audio/batches',
-    'chat': 'https://api.openai.com/v1/chat/completions',
-    'embeddings': 'https://api.openai.com/v1/embeddings',
-    'files': 'https://api.openai.com/v1/files',
-    'fine-tuning': 'https://api.openai.com/v1/fine_tuning/jobs',
-    'images': 'https://api.openai.com/v1/images/generations',
-    'models': 'https://api.openai.com/v1/models',
-    'moderations': 'https://api.openai.com/v1/moderations',
-    'uploads': 'https://api.openai.com/v1/uploads',
-}
 
 #OpenAI Moderations
 OPENAI_CHAT_MAX_TOKENS = 2000
@@ -224,6 +211,44 @@ OPENAI_CHAT_SYS_INPUT = ''
 OPENAI_CHAT_TOP_P = 1
 OPENAI_CHAT_TEMPERATURE = 0.7
 OPENAI_CHAT_USER = 'Brandon Graham Cobb'
+
+OPENAI_FINE_TUNING_RESPONSE_FORMAT = {
+  "type": "json_schema",
+  "json_schema": {
+    "name": "animal_rights_identification",
+    "description": "A schema to identify if content qualifies as animal rights activism",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the content being evaluated"
+        },
+        "results": {
+          "type": "boolean",
+          "description": "Indicates whether the content qualifies as animal rights activism",
+          "enum": [True]
+        }
+      },
+      "required": ["id", "results"]
+    }
+  }
+}
+
+# OpenAI
+OPENAI_ENDPOINT_URLS = {
+    'audio': 'https://api.openai.com/v1/audio/speech',
+    'batch': 'https://api.openai.com/v1/audio/batches',
+    'chat': 'https://api.openai.com/v1/chat/completions',
+    'embeddings': 'https://api.openai.com/v1/embeddings',
+    'files': 'https://api.openai.com/v1/files',
+    'fine-tuning': 'https://api.openai.com/v1/fine_tuning/jobs',
+    'images': 'https://api.openai.com/v1/images/generations',
+    'models': 'https://api.openai.com/v1/models',
+    'moderations': 'https://api.openai.com/v1/moderations',
+    'uploads': 'https://api.openai.com/v1/uploads',
+}
+
 OPENAI_MODERATION_IMAGE_MODEL = 'omni-moderation-latest'
 OPENAI_MODERATION_IMAGE = False
 OPENAI_MODERATION_WARNING = 'You have been warned.'
