@@ -17,8 +17,10 @@
 from collections import defaultdict
 from discord.ext import commands, tasks
 from os.path import abspath, dirname, exists, expanduser, join
+from utils.create_https_completion import create_https_completion
+from utils.create_moderation import create_moderation
 from utils.load_contents import load_contents
-import utils.helpers as helpers
+
 import asyncio
 import datetime
 import discord
@@ -26,9 +28,8 @@ import json
 import os
 import subprocess
 import traceback
+import utils.helpers as helpers
 
-from utils.create_https_completion import create_https_completion
-from utils.create_moderation import create_moderation
 
 CHECKMARK_EMOJI = '✅'
 CROSS_EMOJI = '❌'
@@ -72,7 +73,6 @@ class Indica(commands.Cog):
         self.load_contents = load_contents(helpers.PATH_LOAD_CONTENTS)
         self.load_yaml = load_contents(helpers.PATH_LOAD_YAML)
         self.setup_logging = load_contents(helpers.PATH_SETUP_LOGGING)
-        self.stable_cascade = load_contents(helpers.PATH_STABLE_CASCADE)
         self.unique_pairs = load_contents(helpers.PATH_UNIQUE_PAIRS)
         self.sum_of_paths = """
             self.adjust_hue_and_saturation + self.arpp + self.bot + self.combine +
@@ -99,11 +99,37 @@ class Indica(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         try:
+            if self.bot.user == message.author:
+                return
+            array = []  # Initialize array to avoid 'undefined' errors
+            input_text_dict = {
+                "type": "text",
+                "text": message.content
+            }
+            array.append(input_text_dict)  # Add text moderation input
+            if message.attachments:
+                for attachment in message.attachments:
+                    if attachment.content_type and attachment.content_type.startswith('image/'):
+                        input_image_dict = {
+                            'type': 'image_url',
+                            'image_url': {
+                                'url': attachment.url
+                            }
+                        }
+                        array.append(input_image_dict)  # Add image moderation input
+            async for moderation in create_moderation(array):
+                results = moderation.get('results', [])
+                if results and results[0].get('flagged', False):
+                    await message.delete()
+                    channel = await message.author.create_dm()
+                    await channel.send(self.config['openai_moderation_warning'])
+                    break  # Stop further checks after first flagged content
+
             if self.bot.user in message.mentions:
                 async for completion in create_https_completion(
                     completions=self.config['openai_chat_n'],
                     custom_id=message.author.id,
-                    input_text=message.content,
+                    input_text=array,
                     max_tokens=self.config['openai_chat_max_tokens'],
                     model=self.config['openai_chat_model'],
                     response_format=self.config['openai_chat_response_format'],
@@ -118,31 +144,6 @@ class Indica(commands.Cog):
                         await message.reply('My reply was longer than Discord\'s minimum. Oops!')
                     else:
                         await message.reply(completion)
-                    
-            if message.attachments:
-                if self.config['openai_moderation_image']:
-                    for attachment in message.attachments:
-                        if attachment.content_type.startswith('image/'):
-                            input_text = [
-                                {
-                                    "type": "text",
-                                    "text": message.content
-                                },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        'url': attachment.url
-                                    },
-                                },
-                            ]
-                            async for moderation in create_moderation(input_text):
-                                moderation_dict = json.loads(moderation)
-                                if moderation_dict['choices'][0]['message']['content']:
-                                    await message.delete()
-                                    channel = await message.author.create_dm()
-                                    await channel.send(self.config['openai_moderation_warning'])
-            if self.bot.user == message.author:
-                return
             if self.config['openai_chat_moderation']:
                 async for moderation in create_https_completion(
                     completions=helpers.OPENAI_CHAT_MODERATION_N,
