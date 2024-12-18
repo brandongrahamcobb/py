@@ -99,6 +99,22 @@ class Indica(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         try:
+            if self.bot.user in message.mentions:
+                async for completion in create_https_completion(
+                    completions=self.config['openai_chat_n'],
+                    custom_id=message.author.id,
+                    input_text=message.content,
+                    max_tokens=self.config['openai_chat_max_tokens'],
+                    model=self.config['openai_chat_model'],
+                    response_format=self.config['openai_chat_response_format'],
+                    stop=self.config['openai_chat_stop'],
+                    store=self.config['openai_chat_store'],
+                    stream=self.config['openai_chat_stream'],
+                    sys_input=self.config['openai_chat_sys_input'],
+                    temperature=self.config['openai_chat_temperature'],
+                    top_p=self.config['openai_chat_top_p']
+                ):
+                    await message.reply(completion)
             if message.attachments:
                 if self.config['openai_moderation_image']:
                     for attachment in message.attachments:
@@ -116,7 +132,8 @@ class Indica(commands.Cog):
                                 },
                             ]
                             async for moderation in create_moderation(input_text):
-                                if moderation['choices'][0]['message']['content']:
+                                moderation_dict = json.loads(moderation)
+                                if moderation_dict['choices'][0]['message']['content']:
                                     await message.delete()
                                     channel = await message.author.create_dm()
                                     await channel.send(self.config['openai_moderation_warning'])
@@ -124,7 +141,7 @@ class Indica(commands.Cog):
                 return
             if self.config['openai_chat_moderation']:
                 async for moderation in create_https_completion(
-                    completions=helpers.OPENAI_CHAT_MODERATION_COMPLETIONS,
+                    completions=helpers.OPENAI_CHAT_MODERATION_N,
                     custom_id=message.author.id,
                     input_text=message.content,
                     max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
@@ -137,7 +154,6 @@ class Indica(commands.Cog):
                     temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
                     top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
                 ):
-                   print(moderation)
                    content = json.loads(moderation['choices'][0]['message']['content'])
                    flagged = content['results'][0]['flagged']
                    if flagged:

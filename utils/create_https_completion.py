@@ -8,6 +8,7 @@ import json
 import openai
 import traceback
 import utils.helpers as helpers
+import uuid
 
 async def create_https_completion(completions, custom_id, input_text, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
     try:
@@ -29,7 +30,7 @@ async def create_https_completion(completions, custom_id, input_text, max_tokens
             "n": int(completions),  # Number of completions
             "response_format": response_format,  # Define stopping criteria if necessary
             "stop": stop,  # Define stopping criteria if necessary
-            "store": store,  # 
+            "store": bool(store),  # 
             "stream": bool(stream),  # If you want streaming responses
         }
         if model in {"o1-mini", "o1-preview"}:
@@ -38,12 +39,12 @@ async def create_https_completion(completions, custom_id, input_text, max_tokens
         else:
             request_data["messages"].insert(0, {"role": "system", "content": sys_input})
             request_data["max_tokens"] = int(max_tokens)
-        if store:
+        if bool(store):
             request_data.update({
-               'custom_id': f'{custom_id}-{uuid.uuid4().hex}',
-                'method': 'POST',
-                'url': '/v1/chat/completions',
-                'metadata': {'user': str(custom_id), 'timestamp': str(datetime.now(datetime.UTC))}
+#               'custom_id': f'{custom_id}-{uuid.uuid4().hex}',
+ #               'method': 'POST',
+  #              'url': '/v1/chat/completions',
+                'metadata': {'user': str(custom_id), 'timestamp': str(datetime.datetime.now(datetime.timezone.utc))}
             })
         async with aiohttp.ClientSession() as session:
             try:
