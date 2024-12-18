@@ -3,6 +3,7 @@ from utils.load_yaml import load_yaml
 
 import openai
 import traceback
+import utils.helpers as helpers
 
 async def create_moderation(input_text):
     try:

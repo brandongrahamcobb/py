@@ -117,17 +117,17 @@ class Indica(commands.Cog):
                             }
                         }
                         array.append(input_image_dict)  # Add image moderation input
-            async for moderation in create_moderation(array):
-                results = moderation.get('results', [])
-                if results and results[0].get('flagged', False):
-                    await message.delete()
-                    channel = await message.author.create_dm()
-                    await channel.send(self.config['openai_moderation_warning'])
-                    break  # Stop further checks after first flagged content
-
+                async for moderation in create_moderation(array):
+                    results = moderation.get('results', [])
+                    if results and results[0].get('flagged', False):
+                        await message.delete()
+                        channel = await message.author.create_dm()
+                        await channel.send(self.config['openai_moderation_warning'])
+                        break  # Stop further checks after first flagged content
             if self.bot.user in message.mentions:
                 async for completion in create_https_completion(
                     completions=self.config['openai_chat_n'],
+                    conversations=self.conversations[message.author.id],
                     custom_id=message.author.id,
                     input_text=array,
                     max_tokens=self.config['openai_chat_max_tokens'],
@@ -140,6 +140,7 @@ class Indica(commands.Cog):
                     temperature=self.config['openai_chat_temperature'],
                     top_p=self.config['openai_chat_top_p']
                 ):
+                    self.conversations[message.author.id].append({'role': 'assistant', 'content': completion})
                     if len(completion) > self.config['discord_character_limit']:
                         await message.reply('My reply was longer than Discord\'s minimum. Oops!')
                     else:
@@ -147,6 +148,7 @@ class Indica(commands.Cog):
             if self.config['openai_chat_moderation']:
                 async for moderation in create_https_completion(
                     completions=helpers.OPENAI_CHAT_MODERATION_N,
+                    conversations=self.conversations,
                     custom_id=message.author.id,
                     input_text=message.content,
                     max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,

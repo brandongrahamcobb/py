@@ -10,7 +10,7 @@ import traceback
 import utils.helpers as helpers
 import uuid
 
-async def create_https_completion(completions, custom_id, input_text, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
+async def create_https_completion(completions, conversations, custom_id, input_text, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
     try:
         config = load_yaml(helpers.PATH_CONFIG_YAML)
         api_key = config['api_keys']['api_key_1']
@@ -18,12 +18,7 @@ async def create_https_completion(completions, custom_id, input_text, max_tokens
         headers = {}
         headers.update({'Authorization': f'Bearer {api_key}'})
         request_data = {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": input_text  # User prompt content
-                },
-            ],
+            "messages": conversations[custom_id],
             "model": model,  # Specify the model you want to use
             "temperature": float(temperature),  # Set temperature for randomness
             "top_p": float(top_p),  # Set top_p for nucleus sampling

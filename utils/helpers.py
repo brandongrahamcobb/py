@@ -56,7 +56,6 @@ PATH_LOAD_CONTENTS = join(DIR_BASE, 'load_contents.py')
 PATH_LOAD_YAML = join(DIR_BASE, 'load_yaml.py')
 PATH_PROMPT_FOR_VALUES = join(DIR_BASE, 'prompt_for_values.py')
 PATH_SETUP_LOGGING = join(DIR_BASE, 'setup_logging.py')
-PATH_STABLE_CASCADE = join(DIR_BASE, 'stable_cascade.py')
 PATH_UNIQUE_PAIRS = join(DIR_BASE, 'unique_pairs.py')
 
 # Discord
