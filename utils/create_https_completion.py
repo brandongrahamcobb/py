@@ -48,37 +48,31 @@ async def create_https_completion(completions, custom_id, input_text, max_tokens
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(url=helpers.OPENAI_ENDPOINT_URLS['chat'], headers=headers, json=request_data) as response:
-                    if response.status != 200:
-                        yield f"HTTP error {response.status}: {await response.text()}"
-                        return
-                    if stream:
-                        full_response = ''  # Initialize outside the loop
+                    if bool(stream):
+                        if response.status != 200:
+                            print(f"HTTP Error {response.status}: {await response.text()}")
+                            return
+                        full_response = ''
                         async for line in response.content:
                             decoded_line = line.decode("utf-8").strip()
-                            if decoded_line.startswith("data: "):
-                                data = decoded_line[6:]
-                                if data == "[DONE]":
-                                    break
-                                try:
-                                    json_data = json.loads(data)
-                                    if "choices" in json_data:
-                                        for choice in json_data["choices"]:
-                                            content = choice["delta"].get("content", "")
-                                            if content:
-                                                full_response += content
-                                except json.JSONDecodeError as e:
-                                    yield f"JSON decode error: {e} - Line: {decoded_line}"
-                        if full_response:
-                            yield full_response
-                    else:
-                        data = await response.json()
-                        full_response = ''
-                        if "choices" in data:
-                            for choice in data["choices"]:
-                                message = choice.get("message", {}).get("content")
-                                if message:
-                                    full_response += message
+                            if not decoded_line.startswith("data: ") or len(decoded_line) <= 6:
+                                continue
+                            try:
+                                data_chunk = json.loads(decoded_line[6:])  # Remove the "data: " prefix
+                                if "choices" in data_chunk:
+                                    for choice in data_chunk["choices"]:
+                                        content = choice["delta"].get("content", "")
+                                        full_response += content
+                                        print(f"Chunk content: {content}")
+                                        if choice.get("finish_reason") == "stop":
+                                            break
+                            except json.JSONDecodeError as e:
+                                print(f"Failed to parse JSON chunk: {decoded_line}")
+                                continue
+                        print(f"Full response: {full_response}")
                         yield full_response
+                    else:
+                        yield await response.json()
             except Exception as e:
                 yield traceback.format_exc()
     except Exception as e:

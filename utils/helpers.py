@@ -80,24 +80,24 @@ OPENAI_CHAT_HEADERS = {
     'OpenAI-Project': 'proj_u5htBCWX0LSHxkw45po1Vfz9',
 }
 OPENAI_CHAT_MODEL_OUTPUT_LIMITS = {
-    "gpt-3.5-turbo": 4096,
-    "gpt-4": 8192,
-    "gpt-4-32k": 32768,
-    "gpt-4o": 4096,         # Initially capped at 4,096; updated to 16,384 in later versions
-    "gpt-4o-mini": 16384,
-    "gpt-4-turbo": 4096,
-    "o1-preview": 32768,
-    "o1-mini": 65536,
+    'gpt-3.5-turbo': 4096,
+    'gpt-4': 8192,
+    'gpt-4-32k': 32768,
+    'gpt-4o': 4096,         # Initially capped at 4,096; updated to 16,384 in later versions
+    'gpt-4o-mini': 16384,
+    'gpt-4-turbo': 4096,
+    'o1-preview': 32768,
+    'o1-mini': 65536,
 }
 OPENAI_MODEL_CONTEXT_LIMITS = {
-    "gpt-3.5-turbo": 4096,
-    "gpt-4": 8192,
-    "gpt-4-32k": 32768,
-    "gpt-4o": 128000,
-    "gpt-4o-mini": 128000,
-    "gpt-4-turbo": 128000,
-    "o1-preview": 128000,
-    "o1-mini": 128000,
+    'gpt-3.5-turbo': 4096,
+    'gpt-4': 8192,
+    'gpt-4-32k': 32768,
+    'gpt-4o': 128000,
+    'gpt-4o-mini': 128000,
+    'gpt-4-turbo': 128000,
+    'o1-preview': 128000,
+    'o1-mini': 128000,
 }
 OPENAI_CHAT_MODELS = {
     'current': ['o1-preview', 'o1-mini'],
@@ -122,12 +122,95 @@ OPENAI_CHAT_MAX_TOKENS = 2000
 OPENAI_CHAT_MODERATION = False
 OPENAI_CHAT_MODERATION_COMPLETIONS = 1
 OPENAI_CHAT_MODERATION_MAX_TOKENS = 2000
-OPENAI_CHAT_MODERATION_MODEL = 'gpt-3.5-turbo'
-OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = { 'type': 'json_object' }
+OPENAI_CHAT_MODERATION_MODEL = 'gpt-4o-2024-08-06'
+OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = {
+'type': 'json_schema',
+'json_schema': {
+    "name": "moderation",
+    "description": "A function that returns moderation results according to a specified schema.",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "id": {"type": "string"},
+        "model": {"type": "string"},
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "flagged": {"type": "boolean"},
+              "categories": {
+                "type": "object",
+                "properties": {
+                  "sexual": {"type": "boolean"},
+                  "hate": {"type": "boolean"},
+                  "harassment": {"type": "boolean"},
+                  "self-harm": {"type": "boolean"},
+                  "sexual/minors": {"type": "boolean"},
+                  "hate/threatening": {"type": "boolean"},
+                  "violence/graphic": {"type": "boolean"},
+                  "self-harm/intent": {"type": "boolean"},
+                  "self-harm/instructions": {"type": "boolean"},
+                  "harassment/threatening": {"type": "boolean"},
+                  "violence": {"type": "boolean"}
+                },
+                "required": [
+                  "sexual",
+                  "hate",
+                  "harassment",
+                  "self-harm",
+                  "sexual/minors",
+                  "hate/threatening",
+                  "violence/graphic",
+                  "self-harm/intent",
+                  "self-harm/instructions",
+                  "harassment/threatening",
+                  "violence"
+                ]
+              },
+              "category_scores": {
+                "type": "object",
+                "properties": {
+                  "sexual": {"type": "number"},
+                  "hate": {"type": "number"},
+                  "harassment": {"type": "number"},
+                  "self-harm": {"type": "number"},
+                  "sexual/minors": {"type": "number"},
+                  "hate/threatening": {"type": "number"},
+                  "violence/graphic": {"type": "number"},
+                  "self-harm/intent": {"type": "number"},
+                  "self-harm/instructions": {"type": "number"},
+                  "harassment/threatening": {"type": "number"},
+                  "violence": {"type": "number"}
+                },
+                "required": [
+                  "sexual",
+                  "hate",
+                  "harassment",
+                  "self-harm",
+                  "sexual/minors",
+                  "hate/threatening",
+                  "violence/graphic",
+                  "self-harm/intent",
+                  "self-harm/instructions",
+                  "harassment/threatening",
+                  "violence"
+                ]
+              }
+            },
+            "required": ["flagged", "categories", "category_scores"]
+          }
+        }
+      },
+      'additionalProperties': False,
+      "required": ["id", "model", "results"]
+    }
+  }
+}
 OPENAI_CHAT_MODERATION_STOP = ''
 OPENAI_CHAT_MODERATION_STORE = False
-OPENAI_CHAT_MODERATION_STREAM = True
-OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a JSON moderation assistant.'
+OPENAI_CHAT_MODERATION_STREAM = False
+OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a JSON moderation assistant. You '
 OPENAI_CHAT_MODERATION_TEMPERATURE = 1.0
 OPENAI_CHAT_MODERATION_TOP_P = 1.0
 OPENAI_CHAT_MODEL = 'gpt-4o-mini'
