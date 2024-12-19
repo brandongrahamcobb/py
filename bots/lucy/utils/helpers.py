@@ -253,6 +253,11 @@ OPENAI_MODERATION_MODEL = 'omni-moderation-latest'
 OPENAI_MODERATION_IMAGE = False
 OPENAI_MODERATION_WARNING = 'You have been warned.'
 
+# Scripture Headers
+SCRIPTURE_HEADERS = {
+    'User-Agent': 'brandongrahamcobb@icloud.com',
+    'api-key': '2eb327f99245cd3d68da55370656d6e2'
+}
 # MySQL
 DATABASE_URL = ''
 

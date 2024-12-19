@@ -25,6 +25,7 @@ from utils.draw_watermarked_molecule import draw_watermarked_molecule
 from utils.get_mol import get_mol
 from utils.google import google
 from utils.gsrs import gsrs
+from utils.script import script
 from utils.unique_pairs import unique_pairs
 
 import asyncio
@@ -60,6 +61,13 @@ class Hybrid(commands.Cog):
         await newrole.edit(position=position)
         await ctx.author.add_roles(newrole)
         await ctx.send(f'I successfully changed your role color to {r}, {g}, {b}')
+
+    @commands.command(name='script', description='Usage !script <NIV/ESV> <Book>.<Chapter>.<Verse>')
+    async def script(self, ctx: commands.Context, version: str, *, reference: str):
+         try:
+             await ctx.send(script(version, reference))
+         except Exception as e:
+             print(traceback.format_exc())
 
     @commands.command(name='load', hidden=True)
     async def load(self, ctx: commands.Context, *, module: str):
