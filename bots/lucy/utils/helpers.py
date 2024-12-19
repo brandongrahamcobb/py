@@ -249,7 +249,7 @@ OPENAI_ENDPOINT_URLS = {
     'uploads': 'https://api.openai.com/v1/uploads',
 }
 
-OPENAI_MODERATION_IMAGE_MODEL = 'omni-moderation-latest'
+OPENAI_MODERATION_MODEL = 'omni-moderation-latest'
 OPENAI_MODERATION_IMAGE = False
 OPENAI_MODERATION_WARNING = 'You have been warned.'
 
