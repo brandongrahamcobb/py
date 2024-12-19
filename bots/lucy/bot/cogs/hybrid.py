@@ -97,10 +97,10 @@ class Hybrid(commands.Cog):
 #            await ctx.send(f'{ctx.author.mention}, please specify "on" or "off".')
 
     @commands.hybrid_command(name="tag", description="Get, add, update, or remove a tag.")
-    async def tag(self, ctx: commands.Context, action: str, name: str, content: Optional[str] = None):
-        if action.lower() == 'get':
+    async def tag(self, ctx: commands.Context, action: str, *, name: str = None, content: Optional[str] = None):
+        if name is None:
             try:
-                tag = await self.tag_manager.get_tag(ctx.guild.id, name)
+                tag = await self.tag_manager.get_tag(ctx.guild.id, action)
                 if tag['attachment_url']:
                     await ctx.send(tag['attachment_url'])
                 else:
