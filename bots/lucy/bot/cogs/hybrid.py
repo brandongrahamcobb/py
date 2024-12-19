@@ -27,15 +27,18 @@ from utils.google import google
 from utils.gsrs import gsrs
 from utils.script import script
 from utils.unique_pairs import unique_pairs
+from utils.tag import TagManager
 
+import aiomysql
 import asyncio
 import discord
+#from googletrans import Translator, LANGUAGES
 import io
 import os
 from random import randint
+from typing import Optional
 import shlex
 import traceback
-
 
 class Hybrid(commands.Cog):
     def __init__(self, bot):
@@ -43,6 +46,9 @@ class Hybrid(commands.Cog):
         self.config = bot.config
         self.indica = self.bot.get_cog('Indica')
         self.sativa = self.bot.get_cog('Sativa')
+        self.tag_manager = TagManager(bot.db_pool)
+        #self.translator = Translator()
+        #self.user_translation_preferences = {}
 
     @commands.command(description='Change your role color using RGB values. Usage: between `!colorize 0 0 0` and `!colorize 255 255 255`')
     async def colorize(self, ctx: commands.Context, r: int = commands.parameter(default="149", description="Anything between 0 and 255."), g: int = commands.parameter(default="165", description="Anything betwen 0 and 255."), b: int = commands.parameter(default="165", description="Anything between 0 and 255.")):
@@ -61,6 +67,76 @@ class Hybrid(commands.Cog):
         await newrole.edit(position=position)
         await ctx.author.add_roles(newrole)
         await ctx.send(f'I successfully changed your role color to {r}, {g}, {b}')
+
+    def get_language_code(self, language_name):
+        language_name = language_name.lower()
+        for lang_code, lang_name in LANGUAGES.items():
+            if lang_name.lower() == language_name:
+                return lang_code
+        return None
+
+#    @commands.command()
+#    async def languages(self, ctx):
+#        supported_languages = ', '.join(LANGUAGES.values())
+#        await ctx.send(f'Supported languages are:\n{supported_languages}')
+#
+#    @commands.command()
+#    async def translate(self, ctx, toggle: str, target_lang: str = 'english', source_lang: str = 'auto'):
+#        if toggle.lower() == 'on':
+#            target_lang_code = self.get_language_code(target_lang)
+#            source_lang_code = self.get_language_code(source_lang)
+#            if target_lang_code is None or source_lang_code is None:
+#                await ctx.send(f'{ctx.author.mention}, please specify valid language names.')
+#                return
+#            self.user_translation_preferences[ctx.author.id] = (target_lang_code, source_lang_code)
+#            await ctx.send(f'{ctx.author.mention}, translation enabled from {source_lang} to {target_lang}.')
+#        elif toggle.lower() == 'off':
+#            self.user_translation_preferences[ctx.author.id] = None
+#            await ctx.send(f'{ctx.author.mention}, translation disabled.')
+#        else:
+#            await ctx.send(f'{ctx.author.mention}, please specify "on" or "off".')
+
+    @commands.hybrid_command(name="tag", description="Get, add, update, or remove a tag.")
+    async def tag(self, ctx: commands.Context, action: str, name: str, content: Optional[str] = None):
+        if action.lower() == 'get':
+            try:
+                tag = await self.tag_manager.get_tag(ctx.guild.id, name)
+                if tag['attachment_url']:
+                    await ctx.send(tag['attachment_url'])
+                else:
+                    await ctx.send(tag['content'], reference=ctx.message.reference)
+            except RuntimeError as e:
+                await ctx.send(str(e))
+        elif action.lower() == 'add':
+            if not content:
+                await ctx.send("Please provide the content for the tag.")
+                return
+            await self.tag_manager.add_tag(name, ctx.guild.id, ctx.author.id, content, None)
+            await ctx.send(f'Tag "{name}" added successfully.')
+        elif action.lower() == 'update':
+            if not content:
+                await ctx.send("Please provide the updated content for the tag.")
+                return
+            result = await self.tag_manager.update_tag(name, ctx.guild.id, ctx.author.id, content, None)
+            if result > 0:
+                await ctx.send(f'Tag "{name}" updated successfully.')
+            else:
+                await ctx.send(f'Tag "{name}" not found or you do not own this tag.')
+        elif action.lower() == 'remove':
+            result = await self.tag_manager.delete_tag(name, ctx.guild.id, ctx.author.id)
+            if result > 0:
+                await ctx.send(f'Tag "{name}" removed successfully.')
+            else:
+                await ctx.send(f'Tag "{name}" not found or you do not own this tag.')
+        elif action.lower() == 'list':
+            tags = await self.tag_manager.list_tags(ctx.guild.id, ctx.author.id)
+            if not tags:
+                await ctx.send('You have no tags.')
+            else:
+                tag_list = '\n'.join(f'{tag["name"]}: {tag["content"] if tag["content"] else tag["attachment_url"]}' for tag in tags)
+                await ctx.send(f'Your tags:\n{tag_list}')
+        else:
+            await ctx.send("Invalid action. Use 'get', 'add', 'update', 'remove', or 'list'.")
 
     @commands.command(name='script', description='Usage !script <NIV/ESV> <Book>.<Chapter>.<Verse>')
     async def script(self, ctx: commands.Context, version: str, *, reference: str):

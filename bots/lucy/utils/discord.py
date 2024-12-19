@@ -1,6 +1,7 @@
 from discord.ext import commands
 from typing import List, Optional
 
+import asyncpg
 import discord
 
 class Discord(commands.Bot):
@@ -9,10 +10,12 @@ class Discord(commands.Bot):
         self,
         *args,
         initial_extensions: List[str],
+        db_pool: asyncpg.Pool,
         testing_guild_id: Optional[int] = None,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
+        self.db_pool = db_pool
         self.testing_guild_id = testing_guild_id
         self.initial_extensions = initial_extensions
 
