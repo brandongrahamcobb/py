@@ -1,0 +1,9 @@
+bs4
+discord
+openai
+pubchempy
+pyyaml
+rdkit
+requests
+selenium
+webdriver_manager

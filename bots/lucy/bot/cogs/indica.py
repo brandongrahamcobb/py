@@ -107,7 +107,7 @@ class Indica(commands.Cog):
                 array = []
                 input_text_dict = {
                     "type": "text",
-                    "text": message.content
+                    "text": message.content.replace('<@Lucille#3183>', '')
                 }
                 array.append(input_text_dict)
                 if message.attachments:
@@ -138,7 +138,7 @@ class Indica(commands.Cog):
                         input_text=array,
                         max_tokens=self.config['openai_chat_max_tokens'],
                         model=self.config['openai_chat_model'],
-                        response_format=self.config['openai_chat_response_format'],
+                        response_format=None,
                         stop=self.config['openai_chat_stop'],
                         store=self.config['openai_chat_store'],
                         stream=self.config['openai_chat_stream'],
@@ -146,11 +146,12 @@ class Indica(commands.Cog):
                         temperature=self.config['openai_chat_temperature'],
                         top_p=self.config['openai_chat_top_p']
                     ):
-                        self.conversations[message.author.id].append({'role': 'assistant', 'content': completion})
-                        if len(completion) > self.config['discord_character_limit']:
+                        response = completion['choices'][0]['message']['content']
+                        self.conversations[message.author.id].append({'role': 'assistant', 'content': response})
+                        if len(response) > self.config['discord_character_limit']:
                             await message.reply('My reply was longer than Discord\'s minimum. Oops!')
                         else:
-                            await message.reply(completion)
+                            await message.reply(response)
                 # Chat Moderation
                 if self.config['openai_chat_moderation']:
                     async for moderation in create_https_completion(
