@@ -1,4 +1,5 @@
 import requests
+import os
 
 from io import BytesIO
 from PIL import Image
@@ -9,12 +10,17 @@ from selenium.webdriver.chrome.options import Options
 from utils.add_watermark import add_watermark
 from webdriver_manager.chrome import ChromeDriverManager
 
+
+
+path = os.path.dirname(os.path.abspath(__file__))
+
 def gsrs(arg):
     chrome_options = Options()
     chrome_options.add_argument('--headless')  # Run headless Chrome (no UI)
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(service=Service(executable_path='chromedriver'), options=chrome_options)
+    executable_path = os.path.join(path, 'chromedriver')
+    driver = webdriver.Chrome(service=Service(executable_path=executable_path), options=chrome_options)
     try:
         search_url = f'https://gsrs.ncats.nih.gov/ginas/app/beta/browse-substance?search={arg}'
         driver.get(search_url)

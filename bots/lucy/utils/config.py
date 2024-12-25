@@ -46,7 +46,7 @@ class Config:
                 config['openai_chat_top_p'] = prompt_for_values(f'Enter the chat top p', config.get('openai_chat_top_p', helpers.OPENAI_CHAT_TOP_P))
                 config['openai_chat_user'] = prompt_for_values(f'Enter your chat name', config.get('openai_chat_user', helpers.OPENAI_CHAT_USER))
                 config['openai_moderation_image'] = prompt_for_values(f'Enable or disable image moderation (True/False)', config.get('openai_moderation_image', helpers.OPENAI_MODERATION_IMAGE))
-                config['openai_moderation_model'] = prompt_for_values(f'Enter the image moderation model: {helpers.OPENAI_MODERATION_MODEL}', config.get('openai_moderation_image', helpers.OPENAI_MODERATION_MODEL))
+                config['openai_moderation_model'] = prompt_for_values(f'Enter the image moderation model: {helpers.OPENAI_MODERATION_MODEL}', config.get('openai_moderation_model', helpers.OPENAI_MODERATION_MODEL))
                 config['openai_moderation_warning'] = prompt_for_values(f'Enter the moderation warning', config.get('openai_moderation_warning', helpers.OPENAI_MODERATION_WARNING))
                 config['openai_organization'] = prompt_for_values(f'Enter the organization ID', config.get('openai_organization', helpers.OPENAI_CHAT_HEADERS['OpenAI-Organization']))
                 config['openai_project'] = prompt_for_values(f'Enter the project ID', config.get('openai_project', helpers.OPENAI_CHAT_HEADERS['OpenAI-Project']))

@@ -11,7 +11,7 @@ import traceback
 import utils.helpers as helpers
 import uuid
 
-async def create_https_completion(completions, conversations, custom_id, input_text, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
+async def create_https_completion(completions, conversations, custom_id, input_array, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
     try:
         config = load_yaml(helpers.PATH_CONFIG_YAML)
         api_key = config['api_keys']['api_key_1']
@@ -24,11 +24,14 @@ async def create_https_completion(completions, conversations, custom_id, input_t
             "temperature": float(temperature),  # Set temperature for randomness
             "top_p": float(top_p),  # Set top_p for nucleus sampling
             "n": int(completions),  # Number of completions
-            "response_format": response_format,  # Define stopping criteria if necessary
             "stop": stop,  # Define stopping criteria if necessary
             "store": bool(store),  # 
             "stream": bool(stream),  # If you want streaming responses
         }
+        last = len(request_data['messages']) - 1
+        request_data["messages"].insert(last, {'role': 'user', 'content': input_array})
+        if response_format:
+            request_data["response_format"] = response_format
         if model in {"o1-mini", "o1-preview"}:
             request_data["max_completion_tokens"] = int(max_tokens)
             request_data['temperature'] = 1.0

@@ -1,4 +1,5 @@
 from rdkit import Chem
+import pubchempy as pcp
 
 def get_molecule_name(molecule) -> str:
     smiles = Chem.MolToSmiles(molecule)

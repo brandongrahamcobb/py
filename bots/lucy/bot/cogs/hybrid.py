@@ -18,18 +18,19 @@ from discord.utils import get
 from discord import Embed
 from discord.ext import commands
 from PIL import Image
+from utils.frames import extract_random_frames
 from utils.add_watermark import add_watermark
-from utils.combine import combine
-from utils.draw_fingerprint import draw_fingerprint
-from utils.draw_watermarked_molecule import draw_watermarked_molecule
-from utils.get_mol import get_mol
+#from utils.combine import combine
+#from utils.draw_fingerprint import draw_fingerprint
+#from utils.draw_watermarked_molecule import draw_watermarked_molecule
+#from utils.get_mol import get_mol
 from utils.google import google
 from utils.gsrs import gsrs
 from utils.script import script
-from utils.unique_pairs import unique_pairs
+#from utils.unique_pairs import unique_pairs
 from utils.tag import TagManager
 
-import aiomysql
+#import aiomysql
 import asyncio
 import discord
 #from googletrans import Translator, LANGUAGES
@@ -155,46 +156,10 @@ class Hybrid(commands.Cog):
             await ctx.send('\N{OK HAND SIGN}')
 
     @commands.hybrid_command(name='draw', description='Usage: !draw glow <molecule> or !draw gsrs <molecule> or !draw shadow <molecule>')
-    async def molecule(self, ctx: commands.Context, option: str = commands.parameter(default="glow"), *, molecules: str = commands.parameter(default=None, description="Any molecule"), quantity: int = commands.parameter(default=1, description="Quantity of glows")):
+    async def molecule(self, ctx: commands.Context, option: str = commands.parameter(default="gsrs"), *, molecules: str = commands.parameter(default=None, description="Any molecule"), quantity: int = commands.parameter(default=1, description="Quantity of glows")):
         try:
             if ctx.interaction:
                 await ctx.interaction.response.defer(ephemeral=True)
-            if option == 'compare':
-                if not molecules:
-                    await ctx.send('No molecules provided.')
-                    return
-                args = shlex.split(molecules)
-                pairs = unique_pairs(args)
-                if not pairs:
-                    embed = discord.Embed(description='No valid pairs found.')
-                    await ctx.send(embed=embed)
-                    return
-                for pair in pairs:
-                    mol = get_mol(pair[0])
-                    refmol = get_mol(pair[1])
-                    if mol is None or refmol is None:
-                        embed = discord.Embed(description=f'One or both of the molecules {pair[0]} or {pair[1]} are invalid.')
-                        await ctx.send(embed=embed)
-                        continue
-                    fingerprints = [
-                        draw_fingerprint([mol, refmol]),
-                        draw_fingerprint([refmol, mol])
-                    ]
-                    combined_image = combine(fingerprints, reversed(pair))
-                    await ctx.send(file=discord.File(combined_image, f'molecule_comparison.png'))
-            elif option == 'glow':
-                if not molecules:
-                    await ctx.send('No molecules provided.')
-                    return
-                args = shlex.split(molecules)
-                fingerprints = []
-                names = []
-                molecule = get_mol(args[0])
-                for _ in range(quantity.default):
-                    names.append(args[0])
-                    fingerprints.append(draw_fingerprint([molecule, molecule]))
-                combined_image = combine(fingerprints, names)
-                await ctx.send(file=discord.File(combined_image, f'molecule_comparison.png'))
             elif option == 'gsrs':
                 if not molecules:
                     await ctx.send('No molecules provided.')
@@ -209,18 +174,6 @@ class Hybrid(commands.Cog):
                         watermarked_image.save(image_binary, format='PNG')
                         image_binary.seek(0)
                         await ctx.send(file=discord.File(fp=image_binary, filename='watermarked_image.png'))
-            elif option == 'shadow':
-                if not molecules:
-                    await ctx.send('No molecules provided.')
-                    return
-                args = shlex.split(molecules)
-                mol = get_mol(args[0])
-                if mol is None:
-                    embed = discord.Embed(description='Invalid molecule name or structure.')
-                    await ctx.send(embed=embed)
-                    return
-                image = draw_watermarked_molecule(mol)
-                await ctx.send(file=discord.File(image, f'{args[0]}.png'))
             else:
                 await ctx.send('Invalid option. Use `compare`, `glow`, `gsrs`, or `shadow`.')
         except Exception as e:
@@ -246,6 +199,14 @@ class Hybrid(commands.Cog):
         for result in results:
             embed.add_field(name=result["title"], value=result["link"], inline=False)
         await ctx.send(embed=embed)
+
+    @commands.hybrid_command(name='frame', description='')
+    async def frame(self, ctx: commands.Context):
+        video_path = 'frogs.mov'
+        output_dir = 'frames'
+        frames = extract_random_frames(video_path, output_dir)
+        for frame in frames:
+            await ctx.send(file=discord.File(frame))
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Hybrid(bot))

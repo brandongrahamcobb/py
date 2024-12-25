@@ -3,7 +3,7 @@ discord
 openai
 pubchempy
 pyyaml
-rdkit
+#rdkit
 requests
 selenium
 webdriver_manager

@@ -1,0 +1,22 @@
+import cv2
+import random
+import os
+
+def extract_random_frames(video_path, output_dir, num_frames=1):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    cap = cv2.VideoCapture(video_path)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_indices = random.sample(range(frame_count), num_frames)
+
+    extracted_frames = []
+    for i, frame_idx in enumerate(frame_indices):
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        ret, frame = cap.read()
+        if ret:
+            frame_path = os.path.join(output_dir, f"frame_{i + 1}.jpg")
+            cv2.imwrite(frame_path, frame)
+            extracted_frames.append(frame_path)
+    cap.release()
+    return extracted_frames

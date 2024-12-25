@@ -32,6 +32,7 @@ PATH_LOG = join(PATH_HOME, '.log', 'spawd', 'discord.log')
 PATH_ADD_WATERMARK = join(DIR_BASE, 'add_watermark.py')
 PATH_ADJUST_HUE_AND_SATURATION = join(DIR_BASE, 'adjust_hue_and_saturation.py')
 PATH_ARPP = join(DIR_BASE, 'api_request_parallel_processor.py')
+PATH_BENCHMARK = join(DIR_BASE, 'benchmark.py')
 PATH_CLEAR_SCREEN = join(DIR_BASE, 'clear_screen.py')
 PATH_COMBINE = join(DIR_BASE, 'combine.py')
 PATH_CONFIG = join(DIR_BASE, 'config.py')
@@ -43,6 +44,7 @@ PATH_CREATE_MODERATION = join(DIR_BASE, 'create_moderation.py')
 PATH_DISCORD = join(DIR_BASE, 'discord.py')
 PATH_DRAW_FINGERPRINT = join(DIR_BASE, 'draw_fingerprint.py')
 PATH_DRAW_WATERMARKED_MOLECULE = join(DIR_BASE, 'draw_watermarked_molecule.py')
+PATH_FINE_TUNING = join(DIR_BASE, 'fine_tuning.py')
 PATH_FORMAT_ERROR_CHECK = join(DIR_BASE, 'format_error_check.py')
 PATH_GET_MOLECULE_NAME = join(DIR_BASE, 'get_molecule_name.py')
 PATH_GET_MOL = join(DIR_BASE, 'get_mol.py')
@@ -55,7 +57,9 @@ PATH_INCREMENT_VERSION = join(DIR_BASE, 'increment_version.py')
 PATH_LOAD_CONTENTS = join(DIR_BASE, 'load_contents.py')
 PATH_LOAD_YAML = join(DIR_BASE, 'load_yaml.py')
 PATH_PROMPT_FOR_VALUES = join(DIR_BASE, 'prompt_for_values.py')
+PATH_SCRIPT = join(DIR_BASE, 'script.py')
 PATH_SETUP_LOGGING = join(DIR_BASE, 'setup_logging.py')
+PATH_TAG = join(DIR_BASE, 'tag.py')
 PATH_UNIQUE_PAIRS = join(DIR_BASE, 'unique_pairs.py')
 
 # Discord
@@ -107,7 +111,7 @@ OPENAI_CHAT_MODELS = {
 
 #OpenAI Moderations
 OPENAI_CHAT_MAX_TOKENS = 2000
-OPENAI_CHAT_MODERATION = False
+OPENAI_CHAT_MODERATION = True
 OPENAI_CHAT_MODERATION_N = 1
 OPENAI_CHAT_MODERATION_MAX_TOKENS = 2000
 OPENAI_CHAT_MODERATION_MODEL = 'gpt-4o-mini'
@@ -198,7 +202,7 @@ OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = {
 OPENAI_CHAT_MODERATION_STOP = ''
 OPENAI_CHAT_MODERATION_STORE = False
 OPENAI_CHAT_MODERATION_STREAM = False
-OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a JSON moderation assistant. You '
+OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a JSON moderation assistant.'
 OPENAI_CHAT_MODERATION_TEMPERATURE = 1.0
 OPENAI_CHAT_MODERATION_TOP_P = 1.0
 OPENAI_CHAT_MODEL = 'gpt-4o-mini'
@@ -250,7 +254,7 @@ OPENAI_ENDPOINT_URLS = {
 }
 
 OPENAI_MODERATION_MODEL = 'omni-moderation-latest'
-OPENAI_MODERATION_IMAGE = False
+OPENAI_MODERATION_IMAGE = True
 OPENAI_MODERATION_WARNING = 'You have been warned.'
 
 # Scripture Headers

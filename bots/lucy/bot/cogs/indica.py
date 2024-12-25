@@ -46,12 +46,15 @@ class Indica(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.conversations = defaultdict(list)
+        self.temp_conversations = defaultdict(list)
         self.lock = asyncio.Lock()
         self.hybrid = self.bot.get_cog('Hybrid')
         self.sativa = self.bot.get_cog('Sativa')
         self.add_watermark = load_contents(helpers.PATH_ADD_WATERMARK)
         self.adjust_hue_and_saturation = load_contents(helpers.PATH_ADJUST_HUE_AND_SATURATION)
         self.arpp = load_contents(helpers.PATH_ARPP)
+        self.benchmark = load_contents(helpers.PATH_BENCHMARK)
+        self.clear_screen = load_contents(helpers.PATH_CLEAR_SCREEN)
         self.combine = load_contents(helpers.PATH_COMBINE)
         self.create_batch_completion = load_contents(helpers.PATH_CREATE_BATCH_COMPLETION)
         self.create_completion_deprecated = load_contents(helpers.PATH_CREATE_COMPLETION_DEPRECATED)
@@ -61,6 +64,7 @@ class Indica(commands.Cog):
         self.discord = load_contents(helpers.PATH_DISCORD)
         self.draw_fingerprint = load_contents(helpers.PATH_DRAW_FINGERPRINT)
         self.draw_watermarked_molecule = load_contents(helpers.PATH_DRAW_WATERMARKED_MOLECULE)
+        self.fine_tuning = load_contents(helpers.PATH_FINE_TUNING)
         self.format_error_check = load_contents(helpers.PATH_FORMAT_ERROR_CHECK)
         self.get_molecule_name = load_contents(helpers.PATH_GET_MOLECULE_NAME)
         self.get_mol = load_contents(helpers.PATH_GET_MOL)
@@ -71,19 +75,16 @@ class Indica(commands.Cog):
         self.helpers = load_contents(helpers.PATH_HELPERS)
         self.hybrid = join(dir_base, '..', 'cogs', 'hybrid.py')
         self.indica = join(dir_base, '..', 'cogs', 'indica.py')
+        self.increment_version = load_contents(helpers.PATH_INCREMENT_VERSION)
         self.load_contents = load_contents(helpers.PATH_LOAD_CONTENTS)
         self.load_yaml = load_contents(helpers.PATH_LOAD_YAML)
+        self.prompt_for_values = load_contents(helpers.PATH_PROMPT_FOR_VALUES)
+        self.script = load_contents(helpers.PATH_SCRIPT)
         self.setup_logging = load_contents(helpers.PATH_SETUP_LOGGING)
+        self.tag = load_contents(helpers.PATH_TAG)
         self.unique_pairs = load_contents(helpers.PATH_UNIQUE_PAIRS)
-        self.sum_of_paths = """
-            self.adjust_hue_and_saturation + self.arpp + self.bot + self.combine +
-            self.create_batch_completion + self.create_completion +
-            self.create_https_completion + self.create_moderation +
-            self.draw_fingerprint + self.draw_watermarked_molecule +
-            self.format_error_check + self.get_molecule_name + self.get_mol +
-            self.get_proximity + self.get_scripture + self.google + self.gsrs +
-            self.load_contents + self.load_yaml + self.setup_logging +
-            self.stable_cascade + self.unique_pairs + self.vyrtuous
+        self.sum_of_paths = f"""
+            {self.adjust_hue_and_saturation} and {self.arpp} and {self.benchmark} and {self.bot} and {self.clear_screen} and {self.combine} and {self.create_batch_completion} and {self.create_completion} and {self.create_https_completion} and {self.create_moderation} and {self.discord} and {self.draw_fingerprint} and {self.draw_watermarked_molecule} and {self.fine_tuning} and {self.format_error_check} and {self.get_molecule_name} and {self.get_mol} and {self.get_proximity} and {self.get_scripture} and {self.google} and {self.gsrs} and {self.helpers} and {self.increment_version} and {self.load_contents} and {self.load_yaml} and {self.setup_logging} and {self.tag} and {self.unique_pairs}
         """
         self.sys_input = f"""
             Your utilities are {self.sum_of_paths}.
@@ -107,7 +108,7 @@ class Indica(commands.Cog):
                 array = []
                 input_text_dict = {
                     "type": "text",
-                    "text": message.content.replace('<@Lucille#3183>', '')
+                    "text": message.content.replace('<@1315609784216719370> ', '')
                 }
                 array.append(input_text_dict)
                 if message.attachments:
@@ -129,20 +130,21 @@ class Indica(commands.Cog):
                             await channel.send(self.config['openai_moderation_warning'])
                             break
                 # Chat Completion
+                if self.bot.user in message.raw_mentions and not isinstance(message.type, MessageType.reply):
+                    self.conversations.clear()
                 if self.bot.user in message.mentions:
-                    self.conversations[message.author.id].append({'role': 'user', 'content': array})
                     async for completion in create_https_completion(
                         completions=self.config['openai_chat_n'],
                         conversations=self.conversations,
                         custom_id=message.author.id,
-                        input_text=array,
+                        input_array=array,
                         max_tokens=self.config['openai_chat_max_tokens'],
                         model=self.config['openai_chat_model'],
-                        response_format=None,
+                        response_format=self.config['openai_chat_response_format'],
                         stop=self.config['openai_chat_stop'],
                         store=self.config['openai_chat_store'],
                         stream=self.config['openai_chat_stream'],
-                        sys_input=self.config['openai_chat_sys_input'],
+                        sys_input=self.config['openai_chat_sys_input'], # self.sys_input, 
                         temperature=self.config['openai_chat_temperature'],
                         top_p=self.config['openai_chat_top_p']
                     ):
@@ -154,11 +156,11 @@ class Indica(commands.Cog):
                             await message.reply(response)
                 # Chat Moderation
                 if self.config['openai_chat_moderation']:
-                    async for moderation in create_https_completion(
+                    async for completion in create_https_completion(
                         completions=helpers.OPENAI_CHAT_MODERATION_N,
-                        conversations=self.conversations,
+                        conversations=self.temp_conversations,
                         custom_id=message.author.id,
-                        input_text=message.content,
+                        input_array=input_text_dict,
                         max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
                         model=self.config['openai_chat_moderation_model'],
                         response_format=helpers.OPENAI_CHAT_MODERATION_RESPONSE_FORMAT,
@@ -169,34 +171,13 @@ class Indica(commands.Cog):
                         temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
                         top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
                     ):
-                       content = json.loads(moderation['choices'][0]['message']['content'])
-                       flagged = content['results'][0]['flagged']
-                       if flagged:
-                            channel = await message.author.create_dm()
-                            await channel.send(self.config['openai_moderation_warning'])
-                            await message.delete()
+                        content = json.loads(completion['choices'][0]['message']['content'])
+                        flagged = content['results'][0]['flagged']
+                        if flagged:
+                             channel = await message.author.create_dm()
+                             await channel.send(self.config['openai_moderation_warning'])
+                             await message.delete()
                 # Fine-tuning
-                if True:
-                    self.conversations[message.author.id].append({'role': 'assistant', 'content': array})
-                    async for completion in create_https_completion(
-                        completions=self.config['openai_chat_n'],
-                        conversations=self.conversations,
-                        custom_id=message.author.id,
-                        input_text=array,
-                        max_tokens=self.config['openai_chat_max_tokens'],
-                        model=self.config['openai_chat_model'],
-                        response_format=self.config['openai_fine_tuning_response_format'],
-                        stop=self.config['openai_chat_stop'],
-                        store=self.config['openai_chat_store'],
-                        stream=self.config['openai_chat_stream'],
-                        sys_input='False by default, True if about animal activism',
-                        temperature=self.config['openai_chat_temperature'],
-                        top_p=self.config['openai_chat_top_p']
-                    ):
-                        if 'true' in completion.lower():
-                            builder = TrainingFileBuilder()
-                            builder.add_responses([message.content])
-                            builder.save()
         except Exception as e:
             print(e)
 
