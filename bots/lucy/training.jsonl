@@ -7,7 +7,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9997437596321106. Placeholder for a generic vegan misconception."
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9997437596321106,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -23,7 +27,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.5862376093864441. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.5862376093864441,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -39,7 +47,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.995589017868042. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.995589017868042,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -55,7 +67,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9979209303855896. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9979209303855896,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -71,7 +87,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9979209303855896. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9979209303855896,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -87,7 +107,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9988263249397278. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9988263249397278,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -103,7 +127,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9988263249397278. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9988263249397278,
+                    "prompt": null
+               }
             },
             {
                 "role": "assistant",
@@ -119,7 +147,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9998552799224854. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9998552799224854,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -135,7 +167,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9998552799224854. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9998552799224854,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -151,7 +187,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.999846339225769. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.999846339225769,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -167,7 +207,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9806591272354126. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9806591272354126,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -183,7 +227,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9996067881584167. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9996067881584167,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -199,7 +247,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9987982511520386. Non-vegan: "
+                "content": {
+                     "sentiment_label": "positive",
+                     "sentiment_score": 0.9987982511520386,
+                     "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -215,7 +267,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9806591272354126. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9806591272354126,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -231,7 +287,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9997846484184265. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9997846484184265,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -247,7 +307,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9978419542312622. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9978419542312622,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -263,7 +327,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9989349246025085. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9989349246025085,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -279,7 +347,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9974908828735352. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9974908828735352,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -295,7 +367,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9997777342796326. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9997777342796326,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -311,7 +387,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9917181730270386. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9917181730270386,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -327,7 +407,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.999528169631958. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.999528169631958,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -343,7 +427,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9995703101158142. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9995703101158142,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -359,7 +447,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9979007244110107. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9979007244110107,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -375,7 +467,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9647091031074524. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9647091031074524,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -391,7 +487,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9938353300094604. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9938353300094604,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -407,7 +507,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.914097785949707. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.914097785949707,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -423,7 +527,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9987579584121704. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9987579584121704,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -439,7 +547,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9995519518852234. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9995519518852234,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -455,7 +567,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9994658827781677. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9994658827781677,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -471,7 +587,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9939470291137695. Non-vegan: "
+                "content": {
+                     "sentiment_label": "positive",
+                     "sentiment_score": 0.9939470291137695,
+                     "prompt": null
+                }
             },
             {
                 "role": "assistant",
@@ -487,7 +607,11 @@
             },
             {
                 "role": "user",
-                "content": "Sentiment: POSITIVE, Score: 0.9997779726982117. Non-vegan: "
+                "content": {
+                    "sentiment_label": "positive",
+                    "sentiment_score": 0.9997779726982117,
+                    "prompt": null
+                }
             },
             {
                 "role": "assistant",
