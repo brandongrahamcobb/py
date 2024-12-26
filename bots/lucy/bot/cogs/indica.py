@@ -64,8 +64,6 @@ class Indica(commands.Cog):
         self.google = load_contents(helpers.PATH_GOOGLE)
         self.gsrs = load_contents(helpers.PATH_GSRS)
         self.helpers = load_contents(helpers.PATH_HELPERS)
-        self.hybrid = join(dir_base, '..', 'cogs', 'hybrid.py')
-        self.indica = join(dir_base, '..', 'cogs', 'indica.py')
         self.increment_version = load_contents(helpers.PATH_INCREMENT_VERSION)
         self.load_contents = load_contents(helpers.PATH_LOAD_CONTENTS)
         self.load_yaml = load_contents(helpers.PATH_LOAD_YAML)
