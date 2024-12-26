@@ -76,9 +76,12 @@ class NLPUtils:
         try:
             print(f'Preparing to append entry to {file_path}')
             print(f'Entry Content: {entry}')
-            with open(file_path, 'a') as file:
+            with open(file_path, 'r') as file:
+                list_obj = json.load(file)
+                list_obj.append(entry)
+            with open(file_path, 'w') as json_file:
                 print(f'Opening file: {file_path}')
-                file.write(json.dumps(entry) + '\n')
+                json.dump(list_obj, json_file, indent=4, separators=(',',': '))
                 print('Successfully appended entry.')
         except Exception as e:
             print(f'Error occurred while appending entry: {e}')
