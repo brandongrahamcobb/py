@@ -1,4 +1,4 @@
-''' sativa.py  The purpose of this program is to provide permission-restricted commands to OpenAIBot.
+''' sativa.py  The purpose of this program is to provide permission-restricted commands to a Discord bot from cd ../../..
     Copyright (C) 2024  github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@ from typing import Literal, Optional
 
 import utils.helpers as helpers
 import discord
-
 
 def is_owner():
     async def predicate(ctx):

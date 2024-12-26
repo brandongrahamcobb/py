@@ -1,4 +1,4 @@
-''' helpers.py  The purpose of this program is to provide generic directiories.
+''' helpers.py  The purpose of this program is to provide generic parameters.
     Copyright (C) 2024 github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -106,7 +106,7 @@ OPENAI_MODEL_CONTEXT_LIMITS = {
 }
 OPENAI_CHAT_MODELS = {
     'current': ['o1-preview', 'o1-mini'],
-    'deprecated': ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+    'deprecated': ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'chatgpt-4o-latest'],
 }
 
 #OpenAI Moderations

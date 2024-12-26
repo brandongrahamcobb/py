@@ -1,4 +1,4 @@
-''' hybrid.py The purpose of this program is to provide the core functionality to Vyrtuous.
+''' hybrid.py The purpose of this program is to be an extension to a Discord bot to provide the command functionality from cd ../../.
     Copyright (C) 2024  github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -18,16 +18,18 @@ from discord.utils import get
 from discord import Embed
 from discord.ext import commands
 from PIL import Image
+from random import randint
+from typing import Optional
 from utils.frames import extract_random_frames
 from utils.add_watermark import add_watermark
-#from utils.combine import combine
-#from utils.draw_fingerprint import draw_fingerprint
-#from utils.draw_watermarked_molecule import draw_watermarked_molecule
-#from utils.get_mol import get_mol
+from utils.combine import combine
+from utils.draw_fingerprint import draw_fingerprint
+from utils.draw_watermarked_molecule import draw_watermarked_molecule
+from utils.get_mol import get_mol
 from utils.google import google
 from utils.gsrs import gsrs
 from utils.script import script
-#from utils.unique_pairs import unique_pairs
+from utils.unique_pairs import unique_pairs
 from utils.tag import TagManager
 
 #import aiomysql
@@ -36,8 +38,6 @@ import discord
 #from googletrans import Translator, LANGUAGES
 import io
 import os
-from random import randint
-from typing import Optional
 import shlex
 import traceback
 
