@@ -95,7 +95,10 @@ class Indica(commands.Cog):
                 # Input Image/Text
                 array = []
                 result = NLPUtils.combined_analysis(message.content)
-                NLPUtils.append_to_jsonl('training.jsonl', result['sentiment'], message.content, )
+                if result['sentiment']['label'].lower() == 'negative':
+                    pass
+                else:
+                    NLPUtils.append_to_jsonl('training.jsonl', result['sentiment'], message.content, )
                 input_text_dict = {
                     'type': 'text',
                     'text': message.content.replace('<@1315609784216719370>', '')
