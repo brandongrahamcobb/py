@@ -8,7 +8,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9997437596321106,
                     "prompt": null
                 }
@@ -28,7 +28,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.5862376093864441,
                     "prompt": null
                 }
@@ -48,7 +48,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.995589017868042,
                     "prompt": null
                 }
@@ -68,7 +68,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9979209303855896,
                     "prompt": null
                 }
@@ -88,7 +88,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9979209303855896,
                     "prompt": null
                 }
@@ -108,7 +108,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9988263249397278,
                     "prompt": null
                 }
@@ -128,10 +128,10 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9988263249397278,
                     "prompt": null
-               }
+                }
             },
             {
                 "role": "assistant",
@@ -148,7 +148,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9998552799224854,
                     "prompt": null
                 }
@@ -168,7 +168,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9998552799224854,
                     "prompt": null
                 }
@@ -188,7 +188,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.999846339225769,
                     "prompt": null
                 }
@@ -208,7 +208,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9806591272354126,
                     "prompt": null
                 }
@@ -228,14 +228,14 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9996067881584167,
                     "prompt": null
                 }
             },
             {
                 "role": "assistant",
-                "content": "If you talk in a way where the sentiment is positive it records it"
+                "content": "If you talk in a way where the sentiment is POSITIVE it records it"
             }
         ]
     },
@@ -248,9 +248,9 @@
             {
                 "role": "user",
                 "content": {
-                     "sentiment_label": "positive",
-                     "sentiment_score": 0.9987982511520386,
-                     "prompt": null
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9987982511520386,
+                    "prompt": null
                 }
             },
             {
@@ -268,7 +268,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9806591272354126,
                     "prompt": null
                 }
@@ -288,7 +288,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9997846484184265,
                     "prompt": null
                 }
@@ -308,7 +308,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9978419542312622,
                     "prompt": null
                 }
@@ -328,7 +328,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9989349246025085,
                     "prompt": null
                 }
@@ -348,7 +348,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9974908828735352,
                     "prompt": null
                 }
@@ -368,7 +368,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9997777342796326,
                     "prompt": null
                 }
@@ -388,7 +388,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9917181730270386,
                     "prompt": null
                 }
@@ -408,7 +408,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.999528169631958,
                     "prompt": null
                 }
@@ -428,7 +428,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9995703101158142,
                     "prompt": null
                 }
@@ -448,7 +448,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9979007244110107,
                     "prompt": null
                 }
@@ -468,7 +468,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9647091031074524,
                     "prompt": null
                 }
@@ -488,7 +488,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9938353300094604,
                     "prompt": null
                 }
@@ -508,7 +508,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.914097785949707,
                     "prompt": null
                 }
@@ -528,7 +528,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9987579584121704,
                     "prompt": null
                 }
@@ -548,7 +548,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9995519518852234,
                     "prompt": null
                 }
@@ -568,7 +568,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9994658827781677,
                     "prompt": null
                 }
@@ -588,9 +588,9 @@
             {
                 "role": "user",
                 "content": {
-                     "sentiment_label": "positive",
-                     "sentiment_score": 0.9939470291137695,
-                     "prompt": null
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9939470291137695,
+                    "prompt": null
                 }
             },
             {
@@ -608,7 +608,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment_label": "positive",
+                    "sentiment_label": "POSITIVE",
                     "sentiment_score": 0.9997779726982117,
                     "prompt": null
                 }
@@ -616,6 +616,46 @@
             {
                 "role": "assistant",
                 "content": "I love coffee"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment": "POSITIVE",
+                    "score": 0.907198429107666,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "!draw gsrs taar-1"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment": "POSITIVE",
+                    "score": 0.9510995745658875,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "!help"
             }
         ]
     }
