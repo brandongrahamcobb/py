@@ -15,7 +15,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from io import BytesIO
+from rdkit.Chem import rdDepictor
 from rdkit.Chem.Draw import rdMolDraw2D
+rdDepictor.SetPreferCoordGen(True)
 
 from utils.add_watermark import add_watermark
 from utils.get_molecule_name import get_molecule_name
