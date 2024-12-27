@@ -628,8 +628,7 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment": "POSITIVE",
-                    "score": 0.907198429107666,
+                    "sentiment_score": 0.907198429107666,
                     "prompt": null
                 }
             },
@@ -648,14 +647,294 @@
             {
                 "role": "user",
                 "content": {
-                    "sentiment": "POSITIVE",
-                    "score": 0.9510995745658875,
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9997709393501282,
                     "prompt": null
                 }
             },
             {
                 "role": "assistant",
-                "content": "!help"
+                "content": "Okay"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9952495098114014,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "But it\u2019s working as intended"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9994783997535706,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "Let\u2019s see"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9998648166656494,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "True"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9974719882011414,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "Let\u2019s enable it"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9993269443511963,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "Yeah"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9966350197792053,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "Yo"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9966350197792053,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "Yo"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9991840720176697,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "Chilling"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9418155550956726,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "8PM"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9980641007423401,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "!training"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9158186912536621,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "Depends"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9980641007423401,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "!training"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9980641007423401,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "!training"
+            }
+        ]
+    },
+    {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism."
+            },
+            {
+                "role": "user",
+                "content": {
+                    "sentiment_label": "POSITIVE",
+                    "sentiment_score": 0.9990841150283813,
+                    "prompt": null
+                }
+            },
+            {
+                "role": "assistant",
+                "content": "This is how positively persuaded she is"
             }
         ]
     }
