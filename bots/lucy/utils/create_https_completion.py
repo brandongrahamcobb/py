@@ -40,7 +40,7 @@ class Conversations:
         while total_tokens > max_context_length:
             removed_message = self.conversations[custom_id].pop(0)
             total_tokens -= len(removed_message['content'])
-        
+
     async def create_https_completion(self, completions, custom_id, input_array, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
         try:
             logger.info("Loading configuration file.")
@@ -51,6 +51,13 @@ class Conversations:
             ai_client = AsyncOpenAI(api_key=api_key)
             headers = {'Authorization': f'Bearer {api_key}'}
             logger.info("Headers prepared for the request.")
+    
+            # Add the user message to the conversation history
+            self.conversations[custom_id].append({'role': 'user', 'content': input_array})
+            logger.info(f"Added user input to conversation history for user: {custom_id}.")
+    
+            # Trim the conversation history if it exceeds the model's context limit
+            self.trim_conversation_history(model, custom_id)
     
             request_data = {
                 'messages': self.conversations[custom_id],
@@ -64,15 +71,11 @@ class Conversations:
             }
             logger.info(f"Request data initialized for model: {model}.")
     
-            last = len(request_data['messages']) - 1
-            request_data['messages'].insert(last, {'role': 'user', 'content': input_array})
-            logger.info("User input added to the messages.")
-    
             if response_format:
                 request_data['response_format'] = response_format
                 logger.info(f"Response format set: {response_format}.")
     
-            if model in {'chatgpt-4o-latest, o1-mini', 'o1-preview'}:
+            if model in {'chatgpt-4o-latest', 'o1-mini', 'o1-preview'}:
                 request_data['max_completion_tokens'] = int(max_tokens)
                 request_data['temperature'] = 1.0
                 logger.info("Special settings applied for model: o1-mini or o1-preview.")
@@ -93,11 +96,11 @@ class Conversations:
                     async with session.post(url=helpers.OPENAI_ENDPOINT_URLS['chat'], headers=headers, json=request_data) as response:
                         logger.info(f"Received response with status: {response.status}.")
     
+                        full_response = ''
                         if bool(stream):
                             if response.status != 200:
                                 logger.error("Streaming response status not 200. Exiting.")
                                 return
-                            full_response = ''
                             async for line in response.content:
                                 decoded_line = line.decode('utf-8').strip()
                                 if not decoded_line.startswith('data: ') or len(decoded_line) <= 6:
@@ -119,6 +122,11 @@ class Conversations:
                             logger.info("Processing non-streaming response.")
                             full_response_json = await response.json()
                             full_response = full_response_json['choices'][0]['message']['content']
+    
+                        # Add the assistant message to the conversation history
+                        self.conversations[custom_id].append({'role': 'assistant', 'content': full_response})
+                        logger.info(f"Added assistant response to conversation history for user: {custom_id}.")
+    
                         if len(full_response) > helpers.DISCORD_CHARACTER_LIMIT:
                             char_limit = helpers.DISCORD_CHARACTER_LIMIT
                             is_code_block = False
@@ -127,10 +135,7 @@ class Conversations:
                                 if is_code_block:
                                     code_block_chunks = [parts[i][j:j+char_limit] for j in range(0, len(parts[i]), char_limit)]
                                     for chunk in code_block_chunks:
-                                        if self.is_replying_all == "True" or has_followed_up:
-                                            yield f'```{chunk}```'
-                                        else:
-                                            yield f'```{chunk}```'
+                                        yield f'```{chunk}```'
                                     is_code_block = False
                                 else:
                                     non_code_chunks = [parts[i][j:j+char_limit] for j in range(0, len(parts[i]), char_limit)]
@@ -144,4 +149,3 @@ class Conversations:
         except Exception as e:
             logger.error("An error occurred in create_https_completion.", exc_info=True)
             yield traceback.format_exc()
-        self.trim_conversation_history(model, custom_id)
