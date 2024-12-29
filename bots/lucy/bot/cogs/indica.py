@@ -100,7 +100,7 @@ class Indica(commands.Cog):
     #                NLPUtils.append_to_jsonl('training.jsonl', result['sentiment'], message.content)
                 input_text_dict = {
                     'type': 'text',
-                    'text': message.content.replace('<@1315609784216719370>', '')
+                    'text': message.content.replace('<@1318597210119864385>', '')
                 }
                 array.append(input_text_dict)
                 for attachment in message.attachments:
@@ -145,25 +145,29 @@ class Indica(commands.Cog):
                         stream=self.config['openai_chat_stream'],
                         sys_input=self.sys_input, #self.cwonfig['openai_chat_sys_input'], # self.sys_input, 
                         temperature=self.config['openai_chat_temperature'],
-                        top_p=self.config['openai_chat_top_p']
+                        top_p=self.config['openai_chat_top_p'],
+                        use_history=self.config['openai_chat_use_history'],
+                        add_completion_to_history=self.config['openai_chat_add_completion_to_history']
                     ):
                         await message.reply(response)
 #                # Chat Moderation
                 role = message.guild.get_role(1308689505158565918)
                 if self.config['openai_chat_moderation'] and role not in message.author.roles:
-                    async for moderation in Conversations.create_https_completion(
+                    async for moderation in self.create_https_completion(
                         completions=helpers.OPENAI_CHAT_MODERATION_N,
                         custom_id=message.author.id,
                         input_array=array,
                         max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
-                        model=self.config['openai_chat_moderation_model'],
+                        model=helpers.OPENAI_CHAT_MODERATION_MODEL,
                         response_format=helpers.OPENAI_CHAT_MODERATION_RESPONSE_FORMAT,
                         stop=helpers.OPENAI_CHAT_MODERATION_STOP,
                         store=helpers.OPENAI_CHAT_MODERATION_STORE,
                         stream=helpers.OPENAI_CHAT_MODERATION_STREAM,
                         sys_input=helpers.OPENAI_CHAT_MODERATION_SYS_INPUT,
                         temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
-                        top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
+                        top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P,
+                        use_history=helpers.OPENAI_CHAT_MODERATION_USE_HISTORY,
+                        add_completion_to_history=helpers.OPENAI_CHAT_MODERATION_ADD_COMPLETION_TO_HISTORY,
                     ):
                         full_response = json.loads(moderation)
                         results = full_response.get('results', [])

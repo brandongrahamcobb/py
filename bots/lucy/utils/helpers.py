@@ -86,6 +86,7 @@ DISCORD_TESTING_GUILD_ID = 1300517536001036348
 LOGGING_LEVEL = 'INFO'
 
 # OpenAI Chat
+OPENAI_CHAT_ADD_COMPLETION_TO_HISTORY = True
 OPENAI_CHAT_HEADERS = {
     'Content-Type': 'application/json',
     'OpenAI-Organization': 'org-3LYwtg7DSFJ7RLn9bfk4hATf',
@@ -219,13 +220,44 @@ OPENAI_CHAT_MODERATION_TEMPERATURE = 1.0
 OPENAI_CHAT_MODERATION_TOP_P = 1.0
 OPENAI_CHAT_MODEL = 'gpt-4o-mini'
 OPENAI_CHAT_N = 1
-OPENAI_CHAT_RESPONSE_FORMAT = None
+OPENAI_CHAT_RESPONSE_FORMAT = {
+'type': 'json_schema',
+'json_schema': {
+    "name": "colorize",
+    "description": "A function that returns color values for a given request.",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "r": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "g": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "b": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      },
+      "required": ["r", "g", "b"],
+      "additionalProperties": False
+    }
+  }
+}
+OPENAI_CHAT_MODERATION_USE_HISTORY = False
+OPENAI_CHAT_MODERATION_ADD_COMPLETION_TO_HISTORY = False
 OPENAI_CHAT_STOP = ''
 OPENAI_CHAT_STORE = False
 OPENAI_CHAT_STREAM = False
 OPENAI_CHAT_SYS_INPUT = ''
 OPENAI_CHAT_TOP_P = 1
 OPENAI_CHAT_TEMPERATURE = 0.7
+OPENAI_CHAT_USE_HISTORY = True
 OPENAI_CHAT_USER = 'Brandon Graham Cobb'
 
 OPENAI_FINE_TUNING_RESPONSE_FORMAT = {

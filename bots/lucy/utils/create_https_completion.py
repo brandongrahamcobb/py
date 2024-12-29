@@ -41,26 +41,39 @@ class Conversations:
             removed_message = self.conversations[custom_id].pop(0)
             total_tokens -= len(removed_message['content'])
 
-    async def create_https_completion(self, completions, custom_id, input_array, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
+    async def create_https_completion(
+        self,
+        completions,
+        custom_id,
+        input_array,
+        max_tokens,
+        model,
+        response_format,
+        stop,
+        store,
+        stream,
+        sys_input,
+        temperature,
+        top_p,
+        use_history=True,
+        add_completion_to_history=True
+    ):
         try:
             logger.info("Loading configuration file.")
             config = load_yaml(helpers.PATH_CONFIG_YAML)
             api_key = config['api_keys']['api_key_1']['api_key']
             logger.info("API key loaded successfully.")
-    
             ai_client = AsyncOpenAI(api_key=api_key)
             headers = {'Authorization': f'Bearer {api_key}'}
             logger.info("Headers prepared for the request.")
-    
-            # Add the user message to the conversation history
+            messages = [{'role': 'user', 'content': input_array}]
+            if use_history and custom_id in self.conversations:
+                messages = self.conversations[custom_id] + messages
+                logger.info(f"Conversation history included for user: {custom_id}.")
             self.conversations[custom_id].append({'role': 'user', 'content': input_array})
-            logger.info(f"Added user input to conversation history for user: {custom_id}.")
-    
-            # Trim the conversation history if it exceeds the model's context limit
             self.trim_conversation_history(model, custom_id)
-    
             request_data = {
-                'messages': self.conversations[custom_id],
+                'messages': messages,
                 'model': model,
                 'temperature': float(temperature),
                 'top_p': float(top_p),
@@ -70,34 +83,30 @@ class Conversations:
                 'stream': bool(stream),
             }
             logger.info(f"Request data initialized for model: {model}.")
-    
             if response_format:
                 request_data['response_format'] = response_format
                 logger.info(f"Response format set: {response_format}.")
-    
             if model in {'chatgpt-4o-latest', 'o1-mini', 'o1-preview'}:
                 request_data['max_completion_tokens'] = int(max_tokens)
                 request_data['temperature'] = 1.0
                 logger.info("Special settings applied for model: o1-mini or o1-preview.")
             else:
-                request_data['messages'].insert(0, {'role': 'system', 'content': sys_input})
+                if sys_input:
+                    request_data['messages'].insert(0, {'role': 'system', 'content': sys_input})
                 request_data['max_tokens'] = int(max_tokens)
                 logger.info("System input and max tokens added to the request data.")
-    
-            if bool(store):
+            if store:
                 request_data.update({
                     'metadata': {'user': str(custom_id), 'timestamp': str(datetime.datetime.now(datetime.timezone.utc))}
                 })
                 logger.info("Store option enabled, metadata added to request data.")
-    
             async with aiohttp.ClientSession() as session:
                 try:
                     logger.info("Sending request to OpenAI chat endpoint.")
                     async with session.post(url=helpers.OPENAI_ENDPOINT_URLS['chat'], headers=headers, json=request_data) as response:
                         logger.info(f"Received response with status: {response.status}.")
-    
                         full_response = ''
-                        if bool(stream):
+                        if stream:
                             if response.status != 200:
                                 logger.error("Streaming response status not 200. Exiting.")
                                 return
@@ -106,7 +115,7 @@ class Conversations:
                                 if not decoded_line.startswith('data: ') or len(decoded_line) <= 6:
                                     continue
                                 try:
-                                    data_chunk = json.loads(decoded_line[6:])  # Remove the 'data: ' prefix
+                                    data_chunk = json.loads(decoded_line[6:])
                                     if 'choices' in data_chunk:
                                         for choice in data_chunk['choices']:
                                             content = choice['delta'].get('content', '')
@@ -114,40 +123,34 @@ class Conversations:
                                             if choice.get('finish_reason') == 'stop':
                                                 logger.info("Completion streaming stopped.")
                                                 break
-                                except json.JSONDecodeError as e:
-                                    logger.warning("Failed to decode JSON chunk during streaming.")
+                                except json.JSONDecodeError:
+                                    logger.warning("Skipping invalid JSON chunk during streaming.")
                                     continue
                             logger.info("Streaming response processed successfully.")
                         else:
                             logger.info("Processing non-streaming response.")
                             full_response_json = await response.json()
                             full_response = full_response_json['choices'][0]['message']['content']
-    
-                        # Add the assistant message to the conversation history
-                        self.conversations[custom_id].append({'role': 'assistant', 'content': full_response})
-                        logger.info(f"Added assistant response to conversation history for user: {custom_id}.")
-    
-                        if len(full_response) > helpers.DISCORD_CHARACTER_LIMIT:
-                            char_limit = helpers.DISCORD_CHARACTER_LIMIT
-                            parts = full_response.split("```")
-                            output_chunks = []
-                            for i, part in enumerate(parts):
-                                if i % 2 == 0:
-                                    non_code_chunks = [part[j:j + char_limit] for j in range(0, len(part), char_limit)]
-                                    output_chunks.extend(non_code_chunks)
-                                else:
-                                    output_chunks.append("```" + part + "```")
-                            for chunk in output_chunks:
-                                if len(chunk) > helpers.DISCORD_CHARACTER_LIMIT:
-                                    for i in range(0, len(chunk), helpers.DISCORD_CHARACTER_LIMIT):
-                                        yield chunk[i:i + helpers.DISCORD_CHARACTER_LIMIT]
-                                else:
-                                    yield chunk
-                        else:
-                            yield full_response
+                        if add_completion_to_history:
+                            self.conversations[custom_id].append({'role': 'assistant', 'content': full_response})
+                            logger.info(f"Added assistant response to conversation history for user: {custom_id}.")
+                        for chunk in self.split_long_response(full_response, helpers.DISCORD_CHARACTER_LIMIT):
+                            yield chunk
                 except Exception as e:
-                    logger.error("An error occurred while making the HTTP request.", exc_info=True)
+                    logger.error("Error during OpenAI request.", exc_info=True)
                     yield traceback.format_exc()
         except Exception as e:
-            logger.error("An error occurred in create_https_completion.", exc_info=True)
+            logger.error("Error in create_https_completion.", exc_info=True)
             yield traceback.format_exc()
+
+    def split_long_response(self, response, limit):
+        """Split response into manageable chunks."""
+        parts = response.split("```")
+        output_chunks = []
+        for i, part in enumerate(parts):
+            if i % 2 == 0:
+                non_code_chunks = [part[j:j + limit] for j in range(0, len(part), limit)]
+                output_chunks.extend(non_code_chunks)
+            else:
+                output_chunks.append(f"```{part}```")
+        return output_chunks
