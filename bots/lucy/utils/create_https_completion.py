@@ -114,28 +114,30 @@ class Conversations:
                                 except json.JSONDecodeError as e:
                                     logger.warning("Failed to decode JSON chunk during streaming.")
                                     continue
-                            if len(full_response) > helpers.DISCORD_CHARACTER_LIMIT:
-                                char_limit = helpers.DISCORD_CHARACTER_LIMIT
-                                is_code_block = False
-                                parts = full_response.split("```")
-                                for i in range(len(parts)):
-                                    if is_code_block:
-                                        code_block_chunks = [parts[i][j:j+char_limit] for j in range(0, len(parts[i]), char_limit)]
-                                        for chunk in code_block_chunks:
-                                            if self.is_replying_all == "True" or has_followed_up:
-                                                yield f'```{chunk}```'
-                                            else:
-                                                yield f'```{chunk}```'
-                                        is_code_block = False
-                                    else:
-                                        non_code_chunks = [parts[i][j:j+char_limit] for j in range(0, len(parts[i]), char_limit)]
-                                        for chunk in non_code_chunks:
-                                           yield chunk
                             logger.info("Streaming response processed successfully.")
                         else:
                             logger.info("Processing non-streaming response.")
                             full_response_json = await response.json()
-                            yield full_response_json['choices'][0]['message']['content']
+                            full_response = full_response_json['choices'][0]['message']['content']
+                        if len(full_response) > helpers.DISCORD_CHARACTER_LIMIT:
+                            char_limit = helpers.DISCORD_CHARACTER_LIMIT
+                            is_code_block = False
+                            parts = full_response.split("```")
+                            for i in range(len(parts)):
+                                if is_code_block:
+                                    code_block_chunks = [parts[i][j:j+char_limit] for j in range(0, len(parts[i]), char_limit)]
+                                    for chunk in code_block_chunks:
+                                        if self.is_replying_all == "True" or has_followed_up:
+                                            yield f'```{chunk}```'
+                                        else:
+                                            yield f'```{chunk}```'
+                                    is_code_block = False
+                                else:
+                                    non_code_chunks = [parts[i][j:j+char_limit] for j in range(0, len(parts[i]), char_limit)]
+                                    for chunk in non_code_chunks:
+                                       yield chunk
+                        else:
+                            yield full_response
                 except Exception as e:
                     logger.error("An error occurred while making the HTTP request.", exc_info=True)
                     yield traceback.format_exc()
