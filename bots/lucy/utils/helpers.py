@@ -64,6 +64,7 @@ PATH_PROMPT_FOR_VALUES = join(DIR_BASE, 'prompt_for_values.py')
 PATH_SCRIPT = join(DIR_BASE, 'script.py')
 PATH_SETUP_LOGGING = join(DIR_BASE, 'setup_logging.py')
 PATH_TAG = join(DIR_BASE, 'tag.py')
+PATH_TRAINING = join(DIR_BASE, '..', 'training.jsonl')
 PATH_UNIQUE_PAIRS = join(DIR_BASE, 'unique_pairs.py')
 
 # Discord

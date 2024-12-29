@@ -100,7 +100,8 @@ class Hybrid(commands.Cog):
 
     @commands.hybrid_command(name="training", description="Get, add, update, or remove a tag.")
     async def training(self, ctx: commands.Context):
-        await ctx.send(average_score())
+        file = discord.File(helpers.PATH_TRAINING)
+        await ctx.send(file=file)
 
     @commands.hybrid_command(name="tag", description="Get, add, update, or remove a tag.")
     async def tag(self, ctx: commands.Context, action: str, *, name: str = None, content: Optional[str] = None):
