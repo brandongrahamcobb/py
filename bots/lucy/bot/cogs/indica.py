@@ -38,8 +38,11 @@ class Indica(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.lock = asyncio.Lock()
-        self.hybrid = self.bot.get_cog('Hybrid')
-        self.sativa = self.bot.get_cog('Sativa')
+#        self.hybrid = self.bot.get_cog('Hybrid')
+ #       self.sativa = self.bot.get_cog('Sativa')
+        self.hybrid = load_contents(helpers.PATH_HYBRID)
+        self.indica = load_contents(helpers.PATH_INDICA)
+        self.sativa = load_contents(helpers.PATH_SATIVA)
         self.add_watermark = load_contents(helpers.PATH_ADD_WATERMARK)
         self.adjust_hue_and_saturation = load_contents(helpers.PATH_ADJUST_HUE_AND_SATURATION)
         self.arpp = load_contents(helpers.PATH_ARPP)
@@ -69,7 +72,7 @@ class Indica(commands.Cog):
         self.tag = load_contents(helpers.PATH_TAG)
         self.unique_pairs = load_contents(helpers.PATH_UNIQUE_PAIRS)
         self.sum_of_paths = f'''
-            {self.adjust_hue_and_saturation} and {self.arpp} and {self.benchmark} and {self.bot} and {self.clear_screen} and {self.combine} and {self.create_batch_completion} and and {self.create_https_completion} and {self.create_moderation} and {self.discord} and {self.draw_fingerprint} and {self.draw_watermarked_molecule} and {self.fine_tuning} and {self.format_error_check} and {self.get_molecule_name} and {self.get_mol} and {self.get_proximity} and {self.google} and {self.gsrs} and {self.helpers} and {self.increment_version} and {self.load_contents} and {self.load_yaml} and {self.setup_logging} and {self.tag} and {self.unique_pairs}
+            {self.adjust_hue_and_saturation} and {self.arpp} and {self.benchmark} and {self.bot} and {self.clear_screen} and {self.combine} and {self.create_batch_completion} and and {self.create_https_completion} and {self.create_moderation} and {self.discord} and {self.draw_fingerprint} and {self.draw_watermarked_molecule} and {self.fine_tuning} and {self.format_error_check} and {self.get_molecule_name} and {self.get_mol} and {self.get_proximity} and {self.google} and {self.gsrs} and {self.helpers} and {self.hybrid} and {self.increment_version} and {self.indica} and {self.load_contents} and {self.load_yaml} and {self.sativa} and {self.setup_logging} and {self.tag} and {self.unique_pairs}
         '''
         self.sys_input = f'''
             Your utilities are {self.sum_of_paths}.
@@ -146,8 +149,9 @@ class Indica(commands.Cog):
                     ):
                         await message.reply(response)
 #                # Chat Moderation
-                if self.config['openai_chat_moderation']:
-                    async for moderation in self.bot.conversations.create_https_completion(
+                role = message.guild.get_role(1308689505158565918)
+                if self.config['openai_chat_moderation'] and role not in message.author.roles:
+                    async for moderation in Conversations.create_https_completion(
                         completions=helpers.OPENAI_CHAT_MODERATION_N,
                         custom_id=message.author.id,
                         input_array=array,
@@ -161,12 +165,13 @@ class Indica(commands.Cog):
                         temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
                         top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
                     ):
-                        response = json.loads(moderation)
-                        results = response.get('results', [])
+                        full_response = json.loads(moderation)
+                        results = full_response.get('results', [])
+                        flagged = results[0].get('flagged', False)
                         carnism_flagged = results[0]['categories'].get('carnism', False)
                         carnism_score = results[0]['category_scores'].get('carnism', 0)
                         total_carnism_score = sum(arg['category_scores'].get('carnism', 0) for arg in results)
-                        if carnism_flagged:  # If carnism is flagged
+                        if carnism_flagged or flagged:  # If carnism is flagged
                             channel = await message.author.create_dm()
                             await channel.send(f'Your message: {message.content} was flagged for promoting carnism.')
                             NLPUtils.append_to_other_jsonl('training.jsonl', carnism_score, message.content, message.author.id) #results[0].get('flagged', False), message.content)

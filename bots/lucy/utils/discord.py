@@ -25,7 +25,7 @@ import discord
 
 conversations = Conversations()
 
-class Discord(commands.Bot):
+class Vyrtuous(commands.Bot):
 
     def __init__(
         self,

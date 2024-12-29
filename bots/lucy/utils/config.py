@@ -37,7 +37,7 @@ class Config:
                     key = f'api_key_{i}'
                     config['api_keys'][key] = config['api_keys'].get(key, {})
                     config['api_keys'][key]['api_key'] = prompt_for_values(f'Enter API key {i}', config['api_keys'][key].get('api_key', ''))
-#                    onfig['api_keys'][key]['client_id'] = prompt_for_values(f'Enter client ID for API key {i}', config['api_keys'][key].get('client_id', ''))
+#                    config['api_keys'][key]['client_id'] = prompt_for_values(f'Enter client ID for API key {i}', config['api_keys'][key].get('client_id', ''))
                     #config['api_keys'][key]['client_secret'] = prompt_for_values(f'Enter client secret for API key {i}', config['api_keys'][key].get('client_secret', ''))
 #                    config['api_keys'][key]['redirect_uri'] = prompt_for_values(f'Enter redirect URI for API key {i}', config['api_keys'][key].get('redirect_uri', ''))
 #                config['database_url'] = prompt_for_values('Enter the database URL', config.get('database_url', helpers.DATABASE_URL))
@@ -47,7 +47,7 @@ class Config:
 #                config['discord_intents'] = prompt_for_values('Enter the intents', config.get('discord_intents', helpers.DISCORD_INTENTS))
 #                config['discord_owner_id'] = prompt_for_values('Enter the owner ID', config.get('discord_owner_id', helpers.DISCORD_OWNER_ID))
 #                config['discord_testing_guild_id'] = prompt_for_values('Enter the testing guild ID', config.get('discord_testing_guild_id', helpers.DISCORD_TESTING_GUILD_ID))
-#                config['discord_token'] = prompt_for_values('Enter the bot token', config.get('discord_token', ''))
+                config['discord_token'] = prompt_for_values('Enter the bot token', config.get('discord_token', ''))
 #                config['logging_level'] = prompt_for_values('Enter the logging level', config.get('logging_level', helpers.LOGGING_LEVEL))
 #                config['openai_chat_max_tokens'] = prompt_for_values(f'Enter max tokens for completion', config.get('openai_chat_max_tokens', helpers.OPENAI_CHAT_MAX_TOKENS))
 #                config['openai_chat_moderation_model'] = prompt_for_values(f'Enter the chat model for moderation: {helpers.OPENAI_CHAT_MODELS}', config.get('openai_chat_moderation_model', helpers.OPENAI_CHAT_MODERATION_MODEL))
@@ -89,7 +89,7 @@ class Config:
 #                    'discord_intents': prompt_for_values('Enter the intents', helpers.DISCORD_INTENTS),
 #                    'discord_owner_id': prompt_for_values('Enter the owner ID', helpers.DISCORD_OWNER_ID),
 #                    'discord_testing_guild_id': prompt_for_values('Enter the testing guild ID', helpers.DISCORD_TESTING_GUILD_ID),
-#                    'discord_token': prompt_for_values('Enter the bot token', ''),
+                    'discord_token': prompt_for_values('Enter the bot token', ''),
 #                    'logging_level': prompt_for_values('Enter the logging level', helpers.LOGGING_LEVEL),
 #                    'openai_chat_max_tokens': prompt_for_values(f'Enter max tokens for completion', helpers.OPENAI_CHAT_MAX_TOKENS),
 #                    'openai_chat_model': prompt_for_values(f'Enter the chat model for ChatGPT: {helpers.OPENAI_CHAT_MODELS}', helpers.OPENAI_CHAT_MODEL),
