@@ -18,9 +18,12 @@
 from discord.ext import commands
 from typing import List, Optional
 from utils.setup_logging import logger
+from utils.create_https_completion import Conversations
 
 import asyncpg
 import discord
+
+conversations = Conversations()
 
 class Discord(commands.Bot):
 
@@ -30,12 +33,14 @@ class Discord(commands.Bot):
         initial_extensions: List[str],
         db_pool: asyncpg.Pool,
         testing_guild_id: Optional[int] = None,
+        conversations: Conversations = None,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
         self.testing_guild_id = testing_guild_id
         self.initial_extensions = initial_extensions
+        self.conversations = conversations
 
     async def setup_hook(self) -> None:
         for cog in self.initial_extensions:

@@ -17,7 +17,7 @@
 from collections import defaultdict
 from discord.ext import commands, tasks
 from os.path import abspath, dirname, exists, expanduser, join
-from utils.create_https_completion import create_https_completion
+from utils.create_https_completion import Conversations
 from utils.create_https_moderation import create_https_moderation
 from utils.create_moderation import create_moderation
 from utils.nlp_utils import NLPUtils
@@ -37,7 +37,6 @@ class Indica(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        self.conversations = defaultdict(list)
         self.lock = asyncio.Lock()
         self.hybrid = self.bot.get_cog('Hybrid')
         self.sativa = self.bot.get_cog('Sativa')
@@ -131,9 +130,8 @@ class Indica(commands.Cog):
 #                if self.bot.user in message.raw_mentions and not isinstance(message.type, MessageType.reply):
  #                   self.conversations.clear()
                 if self.bot.user in message.mentions:
-                    async for response in create_https_completion(
+                    async for response in self.bot.conversations.create_https_completion(
                         completions=self.config['openai_chat_n'],
-                        conversations=self.conversations,
                         custom_id=message.author.id,
                         input_array=array,
                         max_tokens=self.config['openai_chat_max_tokens'],
@@ -146,12 +144,7 @@ class Indica(commands.Cog):
                         temperature=self.config['openai_chat_temperature'],
                         top_p=self.config['openai_chat_top_p']
                     ):
-                            #response = completion['choices'][0]['message']['content']
-                        self.conversations[message.author.id].append({'role': 'assistant', 'content': response})
-                        if len(response) > self.config['discord_character_limit']:
-                            await message.reply('My reply was longer than Discord\'s minimum. Oops!')
-                        else:
-                            await message.reply(response)
+                        await message.reply(response)
 #                # Chat Moderation
 #                if self.config['openai_chat_moderation']:
 #                    async for completion in create_https_completion(
