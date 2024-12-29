@@ -48,8 +48,6 @@ class Indica(commands.Cog):
         self.clear_screen = load_contents(helpers.PATH_CLEAR_SCREEN)
         self.combine = load_contents(helpers.PATH_COMBINE)
         self.create_batch_completion = load_contents(helpers.PATH_CREATE_BATCH_COMPLETION)
-        self.create_completion_deprecated = load_contents(helpers.PATH_CREATE_COMPLETION_DEPRECATED)
-        self.create_completion = load_contents(helpers.PATH_CREATE_COMPLETION)
         self.create_https_completion = load_contents(helpers.PATH_CREATE_HTTPS_COMPLETION)
         self.create_moderation = load_contents(helpers.PATH_CREATE_MODERATION)
         self.discord = load_contents(helpers.PATH_DISCORD)
@@ -60,7 +58,6 @@ class Indica(commands.Cog):
         self.get_molecule_name = load_contents(helpers.PATH_GET_MOLECULE_NAME)
         self.get_mol = load_contents(helpers.PATH_GET_MOL)
         self.get_proximity = load_contents(helpers.PATH_GET_PROXIMITY)
-        self.get_scripture = load_contents(helpers.PATH_GET_SCRIPTURE)
         self.google = load_contents(helpers.PATH_GOOGLE)
         self.gsrs = load_contents(helpers.PATH_GSRS)
         self.helpers = load_contents(helpers.PATH_HELPERS)
@@ -73,7 +70,7 @@ class Indica(commands.Cog):
         self.tag = load_contents(helpers.PATH_TAG)
         self.unique_pairs = load_contents(helpers.PATH_UNIQUE_PAIRS)
         self.sum_of_paths = f'''
-            {self.adjust_hue_and_saturation} and {self.arpp} and {self.benchmark} and {self.bot} and {self.clear_screen} and {self.combine} and {self.create_batch_completion} and {self.create_completion} and {self.create_https_completion} and {self.create_moderation} and {self.discord} and {self.draw_fingerprint} and {self.draw_watermarked_molecule} and {self.fine_tuning} and {self.format_error_check} and {self.get_molecule_name} and {self.get_mol} and {self.get_proximity} and {self.get_scripture} and {self.google} and {self.gsrs} and {self.helpers} and {self.increment_version} and {self.load_contents} and {self.load_yaml} and {self.setup_logging} and {self.tag} and {self.unique_pairs}
+            {self.adjust_hue_and_saturation} and {self.arpp} and {self.benchmark} and {self.bot} and {self.clear_screen} and {self.combine} and {self.create_batch_completion} and and {self.create_https_completion} and {self.create_moderation} and {self.discord} and {self.draw_fingerprint} and {self.draw_watermarked_molecule} and {self.fine_tuning} and {self.format_error_check} and {self.get_molecule_name} and {self.get_mol} and {self.get_proximity} and {self.google} and {self.gsrs} and {self.helpers} and {self.increment_version} and {self.load_contents} and {self.load_yaml} and {self.setup_logging} and {self.tag} and {self.unique_pairs}
         '''
         self.sys_input = f'''
             Your utilities are {self.sum_of_paths}.

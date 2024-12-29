@@ -32,11 +32,15 @@ import utils.helpers as helpers
 
 async def create_https_completion(completions, conversations, custom_id, input_array, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
     try:
+        logger.info("Loading configuration file.")
         config = load_yaml(helpers.PATH_CONFIG_YAML)
         api_key = config['api_keys']['api_key_1']['api_key']
+        logger.info("API key loaded successfully.")
+
         ai_client = AsyncOpenAI(api_key=api_key)
-        headers = {}
-        headers.update({'Authorization': f'Bearer {api_key}'})
+        headers = {'Authorization': f'Bearer {api_key}'}
+        logger.info("Headers prepared for the request.")
+
         request_data = {
             'messages': conversations[custom_id],
             'model': model,
@@ -47,28 +51,40 @@ async def create_https_completion(completions, conversations, custom_id, input_a
             'store': bool(store),
             'stream': bool(stream),
         }
+        logger.info(f"Request data initialized for model: {model}.")
+
         last = len(request_data['messages']) - 1
         request_data['messages'].insert(last, {'role': 'user', 'content': input_array})
+        logger.info("User input added to the messages.")
+
         if response_format:
             request_data['response_format'] = response_format
+            logger.info(f"Response format set: {response_format}.")
+
         if model in {'o1-mini', 'o1-preview'}:
             request_data['max_completion_tokens'] = int(max_tokens)
             request_data['temperature'] = 1.0
+            logger.info("Special settings applied for model: o1-mini or o1-preview.")
         else:
             request_data['messages'].insert(0, {'role': 'system', 'content': sys_input})
             request_data['max_tokens'] = int(max_tokens)
+            logger.info("System input and max tokens added to the request data.")
+
         if bool(store):
             request_data.update({
-#               'custom_id': f'{custom_id}-{uuid.uuid4().hex}',
- #               'method': 'POST',
-  #              'url': '/v1/chat/completions',
                 'metadata': {'user': str(custom_id), 'timestamp': str(datetime.datetime.now(datetime.timezone.utc))}
             })
+            logger.info("Store option enabled, metadata added to request data.")
+
         async with aiohttp.ClientSession() as session:
             try:
+                logger.info("Sending request to OpenAI chat endpoint.")
                 async with session.post(url=helpers.OPENAI_ENDPOINT_URLS['chat'], headers=headers, json=request_data) as response:
+                    logger.info(f"Received response with status: {response.status}.")
+
                     if bool(stream):
                         if response.status != 200:
+                            logger.error("Streaming response status not 200. Exiting.")
                             return
                         full_response = ''
                         async for line in response.content:
@@ -82,14 +98,35 @@ async def create_https_completion(completions, conversations, custom_id, input_a
                                         content = choice['delta'].get('content', '')
                                         full_response += content
                                         if choice.get('finish_reason') == 'stop':
+                                            logger.info("Completion streaming stopped.")
                                             break
                             except json.JSONDecodeError as e:
+                                logger.warning("Failed to decode JSON chunk during streaming.")
                                 continue
-                        yield full_response
+                        if len(full_response) > helpers.DISCORD_CHARACTER_LIMIT:
+                            char_limit = helpers.DISCORD_CHARACTER_LIMIT
+                            is_code_block = False
+                            parts = full_response.split("```")
+                            for i in range(len(parts)):
+                                if is_code_block:
+                                    code_block_chunks = [parts[i][j:j+char_limit] for j in range(0, len(parts[i]), char_limit)]
+                                    for chunk in code_block_chunks:
+                                        if self.is_replying_all == "True" or has_followed_up:
+                                            yield f'```{chunk}```'
+                                        else:
+                                            yield f'```{chunk}```'
+                                    is_code_block = False
+                                else:
+                                    non_code_chunks = [parts[i][j:j+char_limit] for j in range(0, len(parts[i]), char_limit)]
+                                    for chunk in non_code_chunks:
+                                       yield chunk
+                        logger.info("Streaming response processed successfully.")
                     else:
+                        logger.info("Processing non-streaming response.")
                         yield await response.json()
             except Exception as e:
+                logger.error("An error occurred while making the HTTP request.", exc_info=True)
                 yield traceback.format_exc()
     except Exception as e:
+        logger.error("An error occurred in create_https_completion.", exc_info=True)
         yield traceback.format_exc()
-
