@@ -90,11 +90,11 @@ class Indica(commands.Cog):
             async with self.lock:
                 # Input Image/Text
                 array = []
-                result = NLPUtils.combined_analysis(message.content)
-                if result['sentiment']['label'].lower() == 'negative':
-                    pass
-                else:
-                    NLPUtils.append_to_jsonl('training.jsonl', result['sentiment'], message.content)
+#                result = NLPUtils.combined_analysis(message.content)
+ #               if result['sentiment']['label'].lower() == 'negative':
+  #                  pass
+   #             else:
+    #                NLPUtils.append_to_jsonl('training.jsonl', result['sentiment'], message.content)
                 input_text_dict = {
                     'type': 'text',
                     'text': message.content.replace('<@1315609784216719370>', '')
@@ -116,8 +116,9 @@ class Indica(commands.Cog):
                         channel = await message.author.create_dm()
                         await channel.send(self.config['openai_moderation_warning'])
                         break
-                if message.channel.id == 1317987851593584651:
-                    NLPUtils.append_to_other_jsonl('training_temp.jsonl', True ,message.content) #results[0].get('flagged', False), message.content)
+      
+#                if message.channel.id == 1317987851593584651:
+ #                   NLPUtils.append_to_other_jsonl('training_temp.jsonl', True ,message.content) #results[0].get('flagged', False), message.content)
 #                if message.attachments:
  #                   async for moderation in create_moderation(array):
   #                      results = moderation.get('results', [])
@@ -146,28 +147,32 @@ class Indica(commands.Cog):
                     ):
                         await message.reply(response)
 #                # Chat Moderation
-#                if self.config['openai_chat_moderation']:
-#                    async for completion in create_https_completion(
-#                        completions=helpers.OPENAI_CHAT_MODERATION_N,
-#                        conversations=self.temp_conversations,
-#                        custom_id=message.author.id,
-#                        input_array=array,
-#                        max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
-#                        model=self.config['openai_chat_moderation_model'],
-#                        response_format=helpers.OPENAI_CHAT_MODERATION_RESPONSE_FORMAT,
-#                        stop=helpers.OPENAI_CHAT_MODERATION_STOP,
-#                        store=helpers.OPENAI_CHAT_MODERATION_STORE,
-#                        stream=helpers.OPENAI_CHAT_MODERATION_STREAM,
-#                        sys_input=helpers.OPENAI_CHAT_MODERATION_SYS_INPUT,
-#                        temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
-#                        top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
-#                    ):
-#                        content = json.loads(completion['choices'][0]['message']['content'])
-#                        flagged = content['results'][0]['flagged']
-#                        if flagged:
-#                             channel = await message.author.create_dm()
-#                             await channel.send(self.config['openai_moderation_warning'])
-#                             await message.delete()
+                if self.config['openai_chat_moderation']:
+                    async for moderation in self.bot.conversations.create_https_completion(
+                        completions=helpers.OPENAI_CHAT_MODERATION_N,
+                        custom_id=message.author.id,
+                        input_array=array,
+                        max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
+                        model=self.config['openai_chat_moderation_model'],
+                        response_format=helpers.OPENAI_CHAT_MODERATION_RESPONSE_FORMAT,
+                        stop=helpers.OPENAI_CHAT_MODERATION_STOP,
+                        store=helpers.OPENAI_CHAT_MODERATION_STORE,
+                        stream=helpers.OPENAI_CHAT_MODERATION_STREAM,
+                        sys_input=helpers.OPENAI_CHAT_MODERATION_SYS_INPUT,
+                        temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
+                        top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P
+                    ):
+                        response = json.loads(moderation)
+                        results = response.get('results', [])
+                        carnism_flagged = results[0]['categories'].get('carnism', False)
+                        carnism_score = results[0]['category_scores'].get('carnism', 0)
+                        total_carnism_score = sum(arg['category_scores'].get('carnism', 0) for arg in results)
+                        if carnism_flagged:  # If carnism is flagged
+                            await message.delete()
+                            channel = await message.author.create_dm()
+                            await channel.send(self.config['openai_moderation_warning'])
+                            break
+                            content = json.loads(completion['choices'][0]['message']['content'])
                 # Fine-tuning
         except Exception as e:
             print(e)

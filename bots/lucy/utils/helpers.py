@@ -109,7 +109,7 @@ OPENAI_MODEL_CONTEXT_LIMITS = {
     'o1-mini': 128000,
 }
 OPENAI_CHAT_MODELS = {
-    'current': ['o1-preview', 'o1-mini'],
+    'current': ['chatgpt-4o-mini-latest', 'o1-preview', 'o1-mini'],
     'deprecated': ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'chatgpt-4o-latest'],
 }
 
@@ -148,7 +148,8 @@ OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = {
                   "self-harm/intent": {"type": "boolean"},
                   "self-harm/instructions": {"type": "boolean"},
                   "harassment/threatening": {"type": "boolean"},
-                  "violence": {"type": "boolean"}
+                  "violence": {"type": "boolean"},
+                  "carnism": {"type": "boolean"}
                 },
                 "required": [
                   "sexual",
@@ -161,7 +162,8 @@ OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = {
                   "self-harm/intent",
                   "self-harm/instructions",
                   "harassment/threatening",
-                  "violence"
+                  "violence",
+                  "carnism"
                 ]
               },
               "category_scores": {
@@ -177,7 +179,8 @@ OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = {
                   "self-harm/intent": {"type": "number"},
                   "self-harm/instructions": {"type": "number"},
                   "harassment/threatening": {"type": "number"},
-                  "violence": {"type": "number"}
+                  "violence": {"type": "number"},
+                  "carnism": {"type": "number"}
                 },
                 "required": [
                   "sexual",
@@ -190,7 +193,8 @@ OPENAI_CHAT_MODERATION_RESPONSE_FORMAT = {
                   "self-harm/intent",
                   "self-harm/instructions",
                   "harassment/threatening",
-                  "violence"
+                  "violence",
+                  "carnism"
                 ]
               }
             },
@@ -209,7 +213,7 @@ OPENAI_CHAT_MODERATION_STREAM = False
 OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a JSON moderation assistant.'
 OPENAI_CHAT_MODERATION_TEMPERATURE = 1.0
 OPENAI_CHAT_MODERATION_TOP_P = 1.0
-OPENAI_CHAT_MODEL = 'ft:gpt-4o-mini-2024-07-18:spawd:vyrtuous:AjZpTNN2'
+OPENAI_CHAT_MODEL = 'gpt-4o-mini'
 OPENAI_CHAT_N = 1
 OPENAI_CHAT_RESPONSE_FORMAT = None
 OPENAI_CHAT_STOP = ''
