@@ -24,6 +24,7 @@ from utils.frames import extract_random_frames
 from utils.add_watermark import add_watermark
 from utils.average_score import average_score
 from utils.combine import combine
+from utils.create_completion import create_completion
 from utils.draw_fingerprint import draw_fingerprint
 from utils.draw_watermarked_molecule import draw_watermarked_molecule
 from utils.get_mol import get_mol
@@ -37,6 +38,7 @@ import asyncio
 import discord
 #from googletrans import Translator, LANGUAGES
 import io
+import json
 import os
 import shlex
 import traceback
@@ -53,7 +55,23 @@ class Hybrid(commands.Cog):
         #self.user_translation_preferences = {}
 
     @commands.command(description='Change your role color using RGB values. Usage: between `!colorize 0 0 0` and `!colorize 255 255 255`')
-    async def colorize(self, ctx: commands.Context, r: int = commands.parameter(default="149", description="Anything between 0 and 255."), g: int = commands.parameter(default="165", description="Anything betwen 0 and 255."), b: int = commands.parameter(default="165", description="Anything between 0 and 255.")):
+    async def colorize(self, ctx: commands.Context, r: Optional[str] = commands.parameter(default="149", description="Anything between 0 and 255."), g: int = commands.parameter(default="165", description="Anything betwen 0 and 255."), b: int = commands.parameter(default="165", description="Anything between 0 and 255.")):
+        if not r.isnumeric():
+            input_text_dict = {
+                'type': 'text',
+                'text': r
+            }
+            array = [
+                {
+                    'role': 'user',
+                    'content': json.dumps(input_text_dict)
+                }
+            ]
+            async for completion in create_completion(array):
+                color_values = json.loads(completion)
+                r = color_values['r']
+                g = color_values['g']
+                b = color_values['b']
         guildroles = await ctx.guild.fetch_roles()
         position = len(guildroles) - 1
         for arg in ctx.author.roles:
@@ -103,39 +121,38 @@ class Hybrid(commands.Cog):
         file = discord.File(helpers.PATH_TRAINING)
         await ctx.send(file=file)
 
-    @commands.hybrid_command(name="tag", description="Get, add, update, or remove a tag.")
-    async def tag(self, ctx: commands.Context, action: str, *, name: str = None, content: Optional[str] = None):
-        if name is None:
-            try:
-                tag = await self.tag_manager.get_tag(ctx.guild.id, action)
-                if tag['attachment_url']:
-                    await ctx.send(tag['attachment_url'])
-                else:
-                    await ctx.send(tag['content'], reference=ctx.message.reference)
-            except RuntimeError as e:
-                await ctx.send(str(e))
-        elif action.lower() == 'add':
-            if not content:
-                await ctx.send("Please provide the content for the tag.")
+    @commands.hybrid_command(name="tag", description="Manage your tags: add, update, remove, or list.")
+    async def tag(self, ctx: commands.Context, action: str, name: Optional[str] = None, content: Optional[str] = None):
+        if ctx.message.attachments:
+            attachment_url = ctx.message.attachments[0].url
+        else:
+            attachment_url = None
+        action = action.lower()
+        if action == 'add':
+            if name is None:
+                await ctx.send("Please provide a name for the tag.")
                 return
-            await self.tag_manager.add_tag(name, ctx.guild.id, ctx.author.id, content, None)
+            await self.tag_manager.add_tag(name, ctx.guild.id, ctx.author.id, content, attachment_url)
             await ctx.send(f'Tag "{name}" added successfully.')
-        elif action.lower() == 'update':
-            if not content:
-                await ctx.send("Please provide the updated content for the tag.")
+        elif action == 'update':
+            if name is None or content is None:
+                await ctx.send("Please provide both the name and updated content for the tag.")
                 return
-            result = await self.tag_manager.update_tag(name, ctx.guild.id, ctx.author.id, content, None)
+            result = await self.tag_manager.update_tag(name, ctx.guild.id, ctx.author.id, content, attachment_url)
             if result > 0:
                 await ctx.send(f'Tag "{name}" updated successfully.')
             else:
                 await ctx.send(f'Tag "{name}" not found or you do not own this tag.')
-        elif action.lower() == 'remove':
+        elif action == 'remove':
+            if name is None:
+                await ctx.send("Please provide the name of the tag to remove.")
+                return
             result = await self.tag_manager.delete_tag(name, ctx.guild.id, ctx.author.id)
             if result > 0:
                 await ctx.send(f'Tag "{name}" removed successfully.')
             else:
                 await ctx.send(f'Tag "{name}" not found or you do not own this tag.')
-        elif action.lower() == 'list':
+        elif action == 'list':
             tags = await self.tag_manager.list_tags(ctx.guild.id, ctx.author.id)
             if not tags:
                 await ctx.send('You have no tags.')
@@ -143,7 +160,12 @@ class Hybrid(commands.Cog):
                 tag_list = '\n'.join(f'{tag["name"]}: {tag["content"] if tag["content"] else tag["attachment_url"]}' for tag in tags)
                 await ctx.send(f'Your tags:\n{tag_list}')
         else:
-            await ctx.send("Invalid action. Use 'get', 'add', 'update', 'remove', or 'list'.")
+            try:
+                tag = await self.tag_manager.get_tag(ctx.guild.id, action)
+                response_content = tag['attachment_url'] if tag['attachment_url'] else tag['content']
+                await ctx.send(response_content)
+            except Exception as e:
+                print(traceback.format_exc())
 
     @commands.command(name='script', description='Usage !script <NIV/ESV> <Book>.<Chapter>.<Verse>')
     async def script(self, ctx: commands.Context, version: str, *, reference: str):

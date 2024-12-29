@@ -131,20 +131,18 @@ class Conversations:
                             char_limit = helpers.DISCORD_CHARACTER_LIMIT
                             parts = full_response.split("```")
                             output_chunks = []
-                            
                             for i, part in enumerate(parts):
-                                # If it's an even index, it's outside a code block (normal text)
                                 if i % 2 == 0:
-                                    # Split the normal text into chunks based on the character limit
                                     non_code_chunks = [part[j:j + char_limit] for j in range(0, len(part), char_limit)]
                                     output_chunks.extend(non_code_chunks)
                                 else:
-                                    # If it's an odd index, it's a code block, so we keep it intact
                                     output_chunks.append("```" + part + "```")
-                        
-                            # Yield each chunk as a response
                             for chunk in output_chunks:
-                                yield chunk
+                                if len(chunk) > helpers.DISCORD_CHARACTER_LIMIT:
+                                    for i in range(0, len(chunk), helpers.DISCORD_CHARACTER_LIMIT):
+                                        yield chunk[i:i + helpers.DISCORD_CHARACTER_LIMIT]
+                                else:
+                                    yield chunk
                         else:
                             yield full_response
                 except Exception as e:
