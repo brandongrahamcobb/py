@@ -15,10 +15,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from bs4 import BeautifulSoup
-import utils.helpers as helpers
+from utils.setup_logging import logger
 
 import json
 import requests
+import utils.helpers as helpers
 
 def script(version: str, reference: str):
     BIBLE_IDS = {

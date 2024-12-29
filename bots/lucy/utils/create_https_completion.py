@@ -21,6 +21,7 @@ from collections import defaultdict
 from datetime import datetime
 from openai import AsyncOpenAI
 from utils.load_yaml import load_yaml
+from utils.setup_logging import logger
 
 import aiohttp
 import datetime
@@ -32,7 +33,7 @@ import utils.helpers as helpers
 async def create_https_completion(completions, conversations, custom_id, input_array, max_tokens, model, response_format, stop, store, stream, sys_input, temperature, top_p):
     try:
         config = load_yaml(helpers.PATH_CONFIG_YAML)
-        api_key = config['api_keys']['api_key_1']
+        api_key = config['api_keys']['api_key_1']['api_key']
         ai_client = AsyncOpenAI(api_key=api_key)
         headers = {}
         headers.update({'Authorization': f'Bearer {api_key}'})

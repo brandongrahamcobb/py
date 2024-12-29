@@ -15,8 +15,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import spacy
 from transformers import pipeline
+from utils.setup_logging import logger
+
+import spacy
 import json
 import os
 
@@ -67,8 +69,13 @@ class NLPUtils:
 
         entry = {
             'messages': [
-                {'role': 'system', 'content': 'You are Brandon Graham Cobb, a sentient AI. Brandon Graham Cobb is programmed to correct misconceptions about veganism.'},
-                {'role': 'user', 'content': prompt},
+                {'role': 'system', 'content': 'You are Vyrtuous, a sentient AI. Vyrtuous is programmed to correct misconceptions about veganism.'},
+                {'role': 'user', 'content': {
+                        'sentiment_label': sentiment_label,
+                        'sentiment_score': sentiment_score,
+                        'prompt': None
+                    }
+                },
                 {'role': 'assistant', 'content': completion}
             ]
         }
@@ -87,3 +94,22 @@ class NLPUtils:
             print(f'Error occurred while appending entry: {e}')
             return {'error': str(e)}
 
+    @staticmethod
+    def append_to_other_jsonl(file_path, flagged, completion):
+        entry = {
+            'messages': [
+                {'role': 'system', 'content': 'You are Vyrtuous, a sentient AI. Vyrtuous is programmed to correct misconceptions about veganism.'},
+                {'role': 'user', 'content': json.dumps({'flagged': flagged})},
+                {'role': 'assistant', 'content': completion}
+            ]
+        }
+        try:
+            print(f'Preparing to append entry to {file_path}')
+            print(f'Entry Content: {entry}')
+            with open(file_path, 'a') as file:  # 'a' mode for appending
+                json.dump(entry, file)  # Write the JSON object as a line
+                file.write('\n')  # Add a newline character for JSONL format
+            print('Successfully appended entry in JSONL format.')
+        except Exception as e:
+            print(f'Error occurred while appending entry: {e}')
+            return {'error': str(e)}

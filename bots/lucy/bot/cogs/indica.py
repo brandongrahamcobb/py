@@ -17,9 +17,9 @@
 from collections import defaultdict
 from discord.ext import commands, tasks
 from os.path import abspath, dirname, exists, expanduser, join
+from utils.create_https_completion import create_https_completion
 from utils.create_https_moderation import create_https_moderation
 from utils.create_moderation import create_moderation
-from utils.fine_tuning import TrainingFileBuilder
 from utils.nlp_utils import NLPUtils
 from utils.load_contents import load_contents
 
@@ -98,7 +98,7 @@ class Indica(commands.Cog):
                 if result['sentiment']['label'].lower() == 'negative':
                     pass
                 else:
-                    NLPUtils.append_to_jsonl('training.jsonl', result['sentiment'], message.content, )
+                    NLPUtils.append_to_jsonl('training.jsonl', result['sentiment'], message.content)
                 input_text_dict = {
                     'type': 'text',
                     'text': message.content.replace('<@1315609784216719370>', '')
@@ -120,6 +120,8 @@ class Indica(commands.Cog):
                         channel = await message.author.create_dm()
                         await channel.send(self.config['openai_moderation_warning'])
                         break
+                if message.channel.id == 1317987851593584651:
+                    NLPUtils.append_to_other_jsonl('training_temp.jsonl', True ,message.content) #results[0].get('flagged', False), message.content)
 #                if message.attachments:
  #                   async for moderation in create_moderation(array):
   #                      results = moderation.get('results', [])
@@ -130,30 +132,29 @@ class Indica(commands.Cog):
        #                     break
                 # Chat Completion
 #                if self.bot.user in message.raw_mentions and not isinstance(message.type, MessageType.reply):
-#                    self.conversations.clear()
-#                if self.bot.user in message.mentions:
-#                    async for completion in create_https_completion(
-#                        completions=self.config['openai_chat_n'],
-#                        conversations=self.conversations,
-#                        custom_id=message.author.id,
-#                        input_array=array,
-#                        max_tokens=self.config['openai_chat_max_tokens'],
-#                        model=self.config['openai_chat_model'],
-#                        response_format=self.config['openai_chat_response_format'],
-#                        stop=self.config['openai_chat_stop'],
-#                        store=self.config['openai_chat_store'],
-#                        stream=self.config['openai_chat_stream'],
-#                        sys_input=self.sys_input, #self.cwonfig['openai_chat_sys_input'], # self.sys_input, 
-#                        temperature=self.config['openai_chat_temperature'],
-#                        top_p=self.config['openai_chat_top_p']
-#                    ):
-#                        print(completion)
-#                        response = completion['choices'][0]['message']['content']
-#                        self.conversations[message.author.id].append({'role': 'assistant', 'content': response})
-#                        if len(response) > self.config['discord_character_limit']:
-#                            await message.reply('My reply was longer than Discord\'s minimum. Oops!')
-#                        else:
-#                            await message.reply(response)
+ #                   self.conversations.clear()
+                if self.bot.user in message.mentions:
+                    async for response in create_https_completion(
+                        completions=self.config['openai_chat_n'],
+                        conversations=self.conversations,
+                        custom_id=message.author.id,
+                        input_array=array,
+                        max_tokens=self.config['openai_chat_max_tokens'],
+                        model=self.config['openai_chat_model'],
+                        response_format=self.config['openai_chat_response_format'],
+                        stop=self.config['openai_chat_stop'],
+                        store=self.config['openai_chat_store'],
+                        stream=self.config['openai_chat_stream'],
+                        sys_input=self.sys_input, #self.cwonfig['openai_chat_sys_input'], # self.sys_input, 
+                        temperature=self.config['openai_chat_temperature'],
+                        top_p=self.config['openai_chat_top_p']
+                    ):
+                            #response = completion['choices'][0]['message']['content']
+                        self.conversations[message.author.id].append({'role': 'assistant', 'content': response})
+                        if len(response) > self.config['discord_character_limit']:
+                            await message.reply('My reply was longer than Discord\'s minimum. Oops!')
+                        else:
+                            await message.reply(response)
 #                # Chat Moderation
 #                if self.config['openai_chat_moderation']:
 #                    async for completion in create_https_completion(

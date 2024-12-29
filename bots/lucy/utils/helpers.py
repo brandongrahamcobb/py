@@ -16,6 +16,7 @@
 '''
 
 from os.path import dirname, abspath, expanduser, join
+from utils.setup_logging import logger
 
 # Base and Home Paths
 DIR_BASE = dirname(abspath(__file__))
@@ -205,7 +206,7 @@ OPENAI_CHAT_MODERATION_STREAM = False
 OPENAI_CHAT_MODERATION_SYS_INPUT = 'You are a JSON moderation assistant.'
 OPENAI_CHAT_MODERATION_TEMPERATURE = 1.0
 OPENAI_CHAT_MODERATION_TOP_P = 1.0
-OPENAI_CHAT_MODEL = 'gpt-4o-mini'
+OPENAI_CHAT_MODEL = 'ft:gpt-4o-mini-2024-07-18:spawd:vyrtuous:AjZpTNN2'
 OPENAI_CHAT_N = 1
 OPENAI_CHAT_RESPONSE_FORMAT = None
 OPENAI_CHAT_STOP = ''
@@ -256,6 +257,8 @@ OPENAI_ENDPOINT_URLS = {
 OPENAI_MODERATION_MODEL = 'omni-moderation-latest'
 OPENAI_MODERATION_IMAGE = True
 OPENAI_MODERATION_WARNING = 'You have been warned.'
+
+OPENAI_TRAINING_FILE = join(PATH_HOME, 'Downloads', 'training_temp.jsonl')
 
 # Scripture Headers
 SCRIPTURE_HEADERS = {

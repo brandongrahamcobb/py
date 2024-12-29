@@ -14,6 +14,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from utils.setup_logging import logger
+
 import cv2
 import os
 import random
@@ -31,7 +33,7 @@ def extract_random_frames(video_path, output_dir, num_frames=1):
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
         ret, frame = cap.read()
         if ret:
-            frame_path = os.path.join(output_dir, fframe_{i + 1}.jpg)
+            frame_path = os.path.join(output_dir, f'frame_{i + 1}.jpg')
             cv2.imwrite(frame_path, frame)
             extracted_frames.append(frame_path)
     cap.release()

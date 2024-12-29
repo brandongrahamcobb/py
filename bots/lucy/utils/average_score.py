@@ -14,12 +14,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from utils.setup_logging import logger
 
 import asyncio
 import json
 import os
 
-async def main():
+def average_score():
 
     home = os.path.expanduser('~') 
  
@@ -31,10 +32,7 @@ async def main():
         for arg in training_data:
             sum += arg['messages'][1]['content']['sentiment_score']
         average = sum / len(training_data)
-        print(average)
+        return average
 
     file.close()
 
-if __name__ == '__main__':
-
-    asyncio.run(main())

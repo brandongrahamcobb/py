@@ -16,6 +16,8 @@
 '''
 
 from rdkit.Chem import AllChem, DataStructs
+from utils.setup_logging import logger
+
 
 def get_proximity(default, input) -> float:
     default_fp = AllChem.GetMorganFingerprintAsBitVect(default, 2)

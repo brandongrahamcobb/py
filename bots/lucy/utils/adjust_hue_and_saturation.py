@@ -16,6 +16,7 @@
 '''
 from io import BytesIO
 from PIL import Image
+from utils.setup_logging import logger
 
 import colorsys
 

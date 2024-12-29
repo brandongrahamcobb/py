@@ -21,9 +21,9 @@ from datetime import datetime
 from openai import AsyncOpenAI
 from utils.load_yaml import load_yaml
 from utils.nlp_utils import NLPUtils
+from utils.setup_logging import logger
 
 import aiohttp
-import datetime
 import json
 import openai
 import traceback
@@ -31,26 +31,41 @@ import utils.helpers as helpers
 
 async def create_https_moderation(custom_id, input_array, model):
     try:
+        logger.info("Loading configuration file.")
         config = load_yaml(helpers.PATH_CONFIG_YAML)
-        api_key = config['api_keys']['api_key_1']
+        api_key = config['api_keys']['api_key_1']['api_key']
+        logger.info("API key loaded successfully.")
+
         ai_client = AsyncOpenAI(api_key=api_key)
-        headers = {}
-        headers.update({'Authorization': f'Bearer {api_key}'})
+        headers = {'Authorization': f'Bearer {api_key}'}
+        logger.info("Headers set for the request.")
+
         request_data = {
             'input': input_array,
             'model': model,
         }
+        logger.info("Request data prepared.")
+
         async with aiohttp.ClientSession() as session:
             try:
+                logger.info("Sending request to OpenAI moderation endpoint.")
                 async with session.post(url=helpers.OPENAI_ENDPOINT_URLS['moderations'], headers=headers, json=request_data) as moderation_object:
+                    logger.info(f"Received response with status: {moderation_object.status}")
+
                     if moderation_object.status == 200:
                         response_data = await moderation_object.json()
+                        logger.info("Request successful. Returning response data.")
                         yield response_data
                     else:
-                        yield {'error': await moderation_object.text()}
-                    yield await moderation_object.json()
+                        error_message = await moderation_object.text()
+                        logger.error(f"Error in response: {error_message}")
+                        yield {'error': error_message}
+
             except Exception as e:
+                logger.error("An error occurred while making the HTTP request.")
+                logger.error(traceback.format_exc())
                 yield traceback.format_exc()
     except Exception as e:
+        logger.error("An error occurred in create_https_moderation.")
+        logger.error(traceback.format_exc())
         yield traceback.format_exc()
-

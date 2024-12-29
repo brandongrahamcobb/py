@@ -19,6 +19,7 @@ from io import BytesIO
 from PIL import Image
 from utils.add_watermark import add_watermark
 from utils.adjust_hue_and_saturation import adjust_hue_and_saturation
+from utils.setup_logging import logger
 
 import math
 

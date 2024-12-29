@@ -17,6 +17,7 @@
 
 from discord.ext import commands
 from typing import List, Optional
+from utils.setup_logging import logger
 
 import asyncpg
 import discord

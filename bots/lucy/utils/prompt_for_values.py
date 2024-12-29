@@ -15,6 +15,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
+from utils.setup_logging import logger
+
 def prompt_for_values(prompt: str, default_value: str) -> str:
     value = input(f'{prompt} [{default_value}]: ')
     return value if value else default_value

@@ -19,6 +19,7 @@ from os.path import isfile, dirname
 from typing import Dict, Any
 from utils.load_yaml import load_yaml
 from utils.prompt_for_values import prompt_for_values
+from utils.setup_logging import logger
 
 import utils.helpers as helpers
 import yaml
@@ -34,8 +35,11 @@ class Config:
                 config['api_keys'] = config.get('api_keys', {})
                 for i in range(1, 21):
                     key = f'api_key_{i}'
-                    current_key = config['api_keys'].get(key, '')
-                    config['api_keys'][key] = prompt_for_values(f'Enter API key {i}', current_key)
+                    config['api_keys'][key] = config['api_keys'].get(key, {})
+                    config['api_keys'][key]['api_key'] = prompt_for_values(f'Enter API key {i}', config['api_keys'][key].get('api_key', ''))
+                    config['api_keys'][key]['client_id'] = prompt_for_values(f'Enter client ID for API key {i}', config['api_keys'][key].get('client_id', ''))
+                    config['api_keys'][key]['client_secret'] = prompt_for_values(f'Enter client secret for API key {i}', config['api_keys'][key].get('client_secret', ''))
+                    config['api_keys'][key]['redirect_uri'] = prompt_for_values(f'Enter redirect URI for API key {i}', config['api_keys'][key].get('redirect_uri', ''))
                 config['database_url'] = prompt_for_values('Enter the database URL', config.get('database_url', helpers.DATABASE_URL))
                 config['discord_character_limit'] = prompt_for_values('Enter the character limit', config.get('discord_character_limit', helpers.DISCORD_CHARACTER_LIMIT))
                 config['discord_cogs'] = prompt_for_values('Enter the cogs.', config.get('discord_cogs', helpers.DISCORD_COGS))
@@ -71,7 +75,14 @@ class Config:
             else:
                 makedirs(dirname(helpers.PATH_CONFIG_YAML), exist_ok=True)
                 config = {
-                    'api_keys': {f'api_key_{i}': prompt_for_values(f'Enter API key {i}', '') for i in range(1, 21)},
+                    'api_keys': {
+                        f'api_key_{i}': {
+                            'api_key': prompt_for_values(f'Enter API key {i}', ''),
+                            'client_id': prompt_for_values(f'Enter client ID for API key {i}', ''),
+                            'client_secret': prompt_for_values(f'Enter client secret for API key {i}', ''),
+                            'redirect_uri': prompt_for_values(f'Enter redirect URI for API key {i}', '')
+                        } for i in range(1, 21)
+                    },
                     'database_url': prompt_for_values('Enter the database URL', helpers.DATABASE_URL),
                     'discord_character_limit': prompt_for_values('Enter the character limit', helpers.DISCORD_CHARACTER_LIMIT),
                     'discord_cogs': prompt_for_values('Enter the cogs.', helpers.DISCORD_COGS),

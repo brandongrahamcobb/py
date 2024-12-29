@@ -15,14 +15,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from utils.add_watermark import add_watermark
+from utils.setup_logging import logger
 from webdriver_manager.chrome import ChromeDriverManager
 
+import math
 import os
 import requests
 
@@ -48,7 +50,26 @@ def gsrs(arg):
                 response = requests.get(link)
                 image_bytes = response.content
                 image = Image.open(BytesIO(image_bytes))
-                return add_watermark(image, arg)
+                image = image.convert('RGBA')
+                draw = ImageDraw.Draw(image)
+                width, height = image.size
+                diagonal = math.sqrt(width**2 + height**2)
+                font_size = int(diagonal / 15)
+                try:
+                    font = ImageFont.truetype('Roboto-Regular.ttf', font_size)
+                except IOError:
+                    font = ImageFont.load_default()
+                bbox = draw.textbbox((0, 0), arg, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                text_x = (width - text_width) / 2
+                text_y = (height - text_height) / 2
+                watermark_image = Image.new('RGBA', image.size, (0, 0, 0, 0))
+                watermark_draw = ImageDraw.Draw(watermark_image)
+                watermark_draw.text((text_x, text_y), arg, font=font, fill=(255, 255, 255, 64))
+                mask = watermark_image.split()[3]
+                image.paste(watermark_image, (0, 0), mask)
+                return image
             else:
                 return 'No src attribute found in the <img> element'
         else:

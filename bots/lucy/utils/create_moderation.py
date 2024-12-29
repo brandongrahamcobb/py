@@ -1,5 +1,6 @@
 from openai import AsyncOpenAI
 from utils.load_yaml import load_yaml
+from utils.setup_logging import logger
 
 import openai
 import traceback
