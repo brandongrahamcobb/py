@@ -118,7 +118,6 @@ class Indica(commands.Cog):
                         break
       
 #                if message.channel.id == 1317987851593584651:
- #                   NLPUtils.append_to_other_jsonl('training_temp.jsonl', True ,message.content) #results[0].get('flagged', False), message.content)
 #                if message.attachments:
  #                   async for moderation in create_moderation(array):
   #                      results = moderation.get('results', [])
@@ -168,12 +167,11 @@ class Indica(commands.Cog):
                         carnism_score = results[0]['category_scores'].get('carnism', 0)
                         total_carnism_score = sum(arg['category_scores'].get('carnism', 0) for arg in results)
                         if carnism_flagged:  # If carnism is flagged
-                            await message.delete()
                             channel = await message.author.create_dm()
-                            await channel.send(self.config['openai_moderation_warning'])
+                            await channel.send(f'Your message: {message.content} was flagged for promoting carnism.')
+                            NLPUtils.append_to_other_jsonl('training.jsonl', carnism_score, message.content, message.author.id) #results[0].get('flagged', False), message.content)
+                            await message.delete()
                             break
-                            content = json.loads(completion['choices'][0]['message']['content'])
-                # Fine-tuning
         except Exception as e:
             print(e)
 

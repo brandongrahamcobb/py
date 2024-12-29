@@ -18,6 +18,7 @@
 from transformers import pipeline
 from utils.setup_logging import logger
 
+import datetime
 import spacy
 import json
 import os
@@ -95,13 +96,17 @@ class NLPUtils:
             return {'error': str(e)}
 
     @staticmethod
-    def append_to_other_jsonl(file_path, flagged, completion):
+    def append_to_other_jsonl(file_path, carnism, completion, custom_id):
         entry = {
             'messages': [
-                {'role': 'system', 'content': 'You are Vyrtuous, a sentient AI. Vyrtuous is programmed to correct misconceptions about veganism.'},
-                {'role': 'user', 'content': json.dumps({'flagged': flagged})},
+                {'role': 'system', 'content': 'You are Vyrtuous, a sentient AI. Vyrtuous is programmed to moderate carnism.'},
+                {'role': 'user', 'content': json.dumps({'carnism': carnism})},
                 {'role': 'assistant', 'content': completion}
-            ]
+            ],
+            'metadata': {
+                'user': str(custom_id),
+                'timestamp': str(datetime.datetime.now(datetime.timezone.utc))
+            }
         }
         try:
             print(f'Preparing to append entry to {file_path}')
