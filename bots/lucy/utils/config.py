@@ -46,6 +46,7 @@ class Config:
                 config['discord_command_prefix'] = prompt_for_values('Enter the command prefix', config.get('discord_command_prefix', helpers.DISCORD_COMMAND_PREFIX))
                 config['discord_intents'] = prompt_for_values('Enter the intents', config.get('discord_intents', helpers.DISCORD_INTENTS))
                 config['discord_owner_id'] = prompt_for_values('Enter the owner ID', config.get('discord_owner_id', helpers.DISCORD_OWNER_ID))
+                config['discord_role_pass'] = prompt_for_values('Vegan pass?', config.get('discord_role_pass', helpers.DISCORD_ROLE_PASS))
                 config['discord_testing_guild_id'] = prompt_for_values('Enter the testing guild ID', config.get('discord_testing_guild_id', helpers.DISCORD_TESTING_GUILD_ID))
                 config['discord_token'] = prompt_for_values('Enter the bot token', config.get('discord_token', ''))
                 config['logging_level'] = prompt_for_values('Enter the logging level', config.get('logging_level', helpers.LOGGING_LEVEL))
@@ -90,6 +91,7 @@ class Config:
                     'discord_command_prefix': prompt_for_values('Enter the command prefix', helpers.DISCORD_COMMAND_PREFIX),
                     'discord_intents': prompt_for_values('Enter the intents', helpers.DISCORD_INTENTS),
                     'discord_owner_id': prompt_for_values('Enter the owner ID', helpers.DISCORD_OWNER_ID),
+                    'discord_role_pass': prompt_for_values('Vegan pass?', helpers.DISCORD_ROLE_PASS),
                     'discord_testing_guild_id': prompt_for_values('Enter the testing guild ID', helpers.DISCORD_TESTING_GUILD_ID),
                     'discord_token': prompt_for_values('Enter the bot token', ''),
                     'logging_level': prompt_for_values('Enter the logging level', helpers.LOGGING_LEVEL),

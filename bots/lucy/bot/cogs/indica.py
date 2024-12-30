@@ -151,9 +151,9 @@ class Indica(commands.Cog):
                     ):
                         await message.reply(response)
 #                # Chat Moderation
-                role = message.guild.get_role(1308689505158565918)
-                if self.config['openai_chat_moderation'] and role not in message.author.roles:
-                    async for moderation in self.create_https_completion(
+                if self.config['openai_chat_moderation']:
+                    role = message.guild.get_role(1308689505158565918)
+                    async for moderation in self.bot.conversations.create_https_completion(
                         completions=helpers.OPENAI_CHAT_MODERATION_N,
                         custom_id=message.author.id,
                         input_array=array,
@@ -167,7 +167,7 @@ class Indica(commands.Cog):
                         temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
                         top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P,
                         use_history=helpers.OPENAI_CHAT_MODERATION_USE_HISTORY,
-                        add_completion_to_history=helpers.OPENAI_CHAT_MODERATION_ADD_COMPLETION_TO_HISTORY,
+                        add_completion_to_history=helpers.OPENAI_CHAT_MODERATION_ADD_COMPLETION_TO_HISTORY
                     ):
                         full_response = json.loads(moderation)
                         results = full_response.get('results', [])
@@ -176,11 +176,15 @@ class Indica(commands.Cog):
                         carnism_score = results[0]['category_scores'].get('carnism', 0)
                         total_carnism_score = sum(arg['category_scores'].get('carnism', 0) for arg in results)
                         if carnism_flagged or flagged:  # If carnism is flagged
-                            channel = await message.author.create_dm()
-                            await channel.send(f'Your message: {message.content} was flagged for promoting carnism.')
+                            if role not in message.author.roles:
+                                if not self.config['discord_role_pass']:
+                                    channel = await message.author.create_dm()
+                                    await channel.send(f'Your message: {message.content} was flagged for promoting carnism.')
+                                await message.delete()
                             NLPUtils.append_to_other_jsonl('training.jsonl', carnism_score, message.content, message.author.id) #results[0].get('flagged', False), message.content)
-                            await message.delete()
                             break
+#                except Exception as e:
+ #                   print(e)
         except Exception as e:
             print(e)
 
