@@ -15,11 +15,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
+from multiprocessing import Process
 from utils.config import Config
 from utils.create_https_completion import Conversations
-from utils.discord import Vyrtuous
+from utils.discord import Lucy
 from utils.increment_version import increment_version
 from utils.setup_logging import setup_logging
+from utils.twitch import app, Vyrtuous
 
 import asyncio
 import asyncpg
@@ -28,11 +30,14 @@ import utils.helpers as helpers
 
 async def main():
     config = Config().get_config()
-
+    setup_logging(config, helpers.PATH_LOG)
     conversations = Conversations()
-
-    async with asyncpg.create_pool(database='lucy', user='postgres', command_timeout=30) as pool:
-        async with Vyrtuous(
+    async with asyncpg.create_pool(
+        database='lucy',
+        user='postgres',
+        command_timeout=30
+    ) as pool:
+        async with Lucy(
             command_prefix=config['discord_command_prefix'],
             db_pool=pool,
             initial_extensions=config['discord_cogs'],
@@ -42,8 +47,14 @@ async def main():
         ) as bot:
             bot.config = config
             increment_version(config, helpers.PATH_CONFIG_YAML)
-            setup_logging(config, helpers.PATH_LOG)
-            await bot.start(config['discord_token'])
+            tasks = []
+            with open('token.txt') as f:
+                user_access_token = f.read().strip()
+                twitch = Vyrtuous(user_access_token)
+                tasks.append(asyncio.create_task(twitch.start()))
+            tasks.append(asyncio.create_task(app.run_task(port=5000)))
+            tasks.append(asyncio.create_task(bot.start(config['discord_token'])))
+            await asyncio.gather(*tasks)
 
 if __name__ == '__main__':
     asyncio.run(main())

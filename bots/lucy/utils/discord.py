@@ -19,13 +19,14 @@ from discord.ext import commands
 from typing import List, Optional
 from utils.setup_logging import logger
 from utils.create_https_completion import Conversations
+from utils.twitch import Vyrtuous
 
 import asyncpg
 import discord
 
 conversations = Conversations()
 
-class Vyrtuous(commands.Bot):
+class Lucy(commands.Bot):
 
     def __init__(
         self,
