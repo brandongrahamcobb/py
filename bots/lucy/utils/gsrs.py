@@ -102,7 +102,7 @@ def gsrs(arg):
                 logger.info('Watermark successfully added to the image.')
                 return image
             else:
-                logger.warning('No 'src' attribute found in the <img> element.')
+                logger.warning('No `src` attribute found in the <img> element.')
                 return 'No src attribute found in the <img> element'
         else:
             logger.warning('No <img> element found with the specified CSS path.')

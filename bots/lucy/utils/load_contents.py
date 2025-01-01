@@ -25,7 +25,7 @@ def load_contents(path_to_file):
     # Check if the file exists
     if not exists(path_to_file):
         logger.error(f'File not found: {path_to_file}')
-        raise FileNotFoundError(f'The file at '{path_to_file}' does not exist.')
+        raise FileNotFoundError(f'The file at `{path_to_file}` does not exist.')
 
     try:
         # Open and read the file
