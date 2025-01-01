@@ -14,9 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
 from utils.setup_logging import logger
 
 def prompt_for_values(prompt: str, default_value: str) -> str:
     value = input(f'{prompt} [{default_value}]: ')
+    logger.info(f'Prompting for {prompt} and defaulting to {default_value}')
     return value if value else default_value

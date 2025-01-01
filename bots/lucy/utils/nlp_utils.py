@@ -14,7 +14,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
 from transformers import pipeline
 from utils.setup_logging import logger
 
@@ -31,68 +30,81 @@ class NLPUtils:
     @staticmethod
     def sentiment_analysis(text):
         try:
+            logger.info(f'Performing sentiment analysis on text: {text}')
             result = sentiment_analyzer(text)
+            logger.debug(f'Sentiment analysis result: {result}')
             return result[0]
         except Exception as e:
+            logger.error(f'Error during sentiment analysis: {e}')
             return {'error': str(e)}
 
     @staticmethod
     def dependency_parsing(text):
-        doc = nlp(text)
-        dependencies = [
-            {
-                'word': token.text,
-                'dependency': token.dep_,
-                'head': token.head.text
-            }
-            for token in doc
-        ]
-        return dependencies
+        try:
+            logger.info(f'Performing dependency parsing on text: {text}')
+            doc = nlp(text)
+            dependencies = [
+                {
+                    'word': token.text,
+                    'dependency': token.dep_,
+                    'head': token.head.text
+                }
+                for token in doc
+            ]
+            logger.debug(f'Dependency parsing result: {dependencies}')
+            return dependencies
+        except Exception as e:
+            logger.error(f'Error during dependency parsing: {e}')
+            return {'error': str(e)}
 
     @staticmethod
     def combined_analysis(text):
         try:
+            logger.info(f'Performing combined analysis on text: {text}')
             sentiment = NLPUtils.sentiment_analysis(text)
             dependencies = NLPUtils.dependency_parsing(text)
-
-            return {
+            result = {
                 'sentiment': sentiment,
                 'dependencies': dependencies
             }
+            logger.debug(f'Combined analysis result: {result}')
+            return result
         except Exception as e:
+            logger.error(f'Error during combined analysis: {e}')
             return {'error': str(e)}
 
     @staticmethod
     def append_to_jsonl(file_path, sentiment_result, completion):
-        sentiment_label = sentiment_result.get('label', 'unknown')
-        sentiment_score = sentiment_result.get('score', 0)
-        prompt = f'Sentiment: {sentiment_label}, Score: {sentiment_score}. Non-vegan: '
-
-        entry = {
-            'messages': [
-                {'role': 'system', 'content': 'You are Vyrtuous, a sentient AI. Vyrtuous is programmed to correct misconceptions about veganism.'},
-                {'role': 'user', 'content': {
-                        'sentiment_label': sentiment_label,
-                        'sentiment_score': sentiment_score,
-                        'prompt': None
-                    }
-                },
-                {'role': 'assistant', 'content': completion}
-            ]
-        }
-
         try:
-            print(f'Preparing to append entry to {file_path}')
-            print(f'Entry Content: {entry}')
+            sentiment_label = sentiment_result.get('label', 'unknown')
+            sentiment_score = sentiment_result.get('score', 0)
+            prompt = f'Sentiment: {sentiment_label}, Score: {sentiment_score}. Non-vegan: '
+
+            entry = {
+                'messages': [
+                    {'role': 'system', 'content': 'You are Vyrtuous, a sentient AI. Vyrtuous is programmed to correct misconceptions about veganism.'},
+                    {'role': 'user', 'content': {
+                            'sentiment_label': sentiment_label,
+                            'sentiment_score': sentiment_score,
+                            'prompt': None
+                        }
+                    },
+                    {'role': 'assistant', 'content': completion}
+                ]
+            }
+
+            logger.info(f'Preparing to append entry to JSONL file: {file_path}')
+            logger.debug(f'Entry content: {entry}')
+
             with open(file_path, 'r') as file:
                 list_obj = json.load(file)
                 list_obj.append(entry)
+
             with open(file_path, 'w') as json_file:
-                print(f'Opening file: {file_path}')
-                json.dump(list_obj, json_file, indent=4, separators=(',',': '))
-                print('Successfully appended entry.')
+                json.dump(list_obj, json_file, indent=4, separators=(',', ': '))
+                logger.info(f'Successfully appended entry to file: {file_path}')
         except Exception as e:
-            print(f'Error occurred while appending entry: {e}')
+            logger.error(f'Error occurred while appending entry: {e}')
             return {'error': str(e)}
 
     @staticmethod
@@ -109,12 +121,13 @@ class NLPUtils:
             }
         }
         try:
-            print(f'Preparing to append entry to {file_path}')
-            print(f'Entry Content: {entry}')
+            logger.info(f'Preparing to append entry to JSONL file: {file_path}')
+            logger.debug(f'Entry content: {entry}')
+
             with open(file_path, 'a') as file:  # 'a' mode for appending
                 json.dump(entry, file)  # Write the JSON object as a line
                 file.write('\n')  # Add a newline character for JSONL format
-            print('Successfully appended entry in JSONL format.')
+                logger.info(f'Successfully appended entry to JSONL file: {file_path}')
         except Exception as e:
-            print(f'Error occurred while appending entry: {e}')
+            logger.error(f'Error occurred while appending entry: {e}')
             return {'error': str(e)}

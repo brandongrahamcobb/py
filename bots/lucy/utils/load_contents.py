@@ -20,12 +20,20 @@ from utils.setup_logging import logger
 import os
 
 def load_contents(path_to_file):
+    logger.info(f'Attempting to load contents from file: {path_to_file}')
+
+    # Check if the file exists
     if not exists(path_to_file):
-        raise FileNotFoundError(f'The file at \'{path_to_file}\' does not exist.')
+        logger.error(f'File not found: {path_to_file}')
+        raise FileNotFoundError(f'The file at '{path_to_file}' does not exist.')
+
     try:
+        # Open and read the file
+        logger.debug(f'Opening file: {path_to_file}')
         with open(path_to_file, 'r', encoding='utf-8') as file:
             content = file.read()
+        logger.info(f'File read successfully: {path_to_file}')
         return content
     except Exception as e:
+        logger.error(f'An error occurred while reading the file: {e}')
         raise IOError(f'An error occurred while reading the file: {e}')
-

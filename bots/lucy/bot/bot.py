@@ -50,7 +50,7 @@ async def main():
             tasks = []
             with open('token.txt') as f:
                 user_access_token = f.read().strip()
-                twitch = Vyrtuous(user_access_token)
+                twitch = Vyrtuous(bot, user_access_token)
                 tasks.append(asyncio.create_task(twitch.start()))
             tasks.append(asyncio.create_task(app.run_task(port=5000)))
             tasks.append(asyncio.create_task(bot.start(config['discord_token'])))

@@ -21,14 +21,35 @@ import pubchempy as pcp
 
 def get_mol(arg):
     try:
+        logger.info(f"Attempting to retrieve molecule for argument: {arg}")
+
+        # Query PubChem for compounds by name
         compounds = pcp.get_compounds(arg, 'name')
+        if not compounds:
+            logger.warning(f"No compounds found for argument: {arg}")
+            raise ValueError("Compound not found in PubChem")
+
         compound_data = compounds[0].to_dict(properties=['isomeric_smiles'])
+        logger.debug(f"Compound data retrieved: {compound_data}")
+
+        # Convert SMILES string to RDKit molecule
         mol = Chem.MolFromSmiles(compound_data['isomeric_smiles'])
         if mol is None:
+            logger.error("Failed to generate molecule from SMILES string")
             raise ValueError('Invalid SMILES string')
+
+        logger.info("Molecule successfully generated from PubChem data")
         return mol
-    except:
+
+    except Exception as e:
+        logger.warning(f"PubChem retrieval failed for argument: {arg}, attempting direct SMILES conversion. Error: {e}")
+
+        # Attempt to directly convert the argument into an RDKit molecule
         mol = Chem.MolFromSmiles(arg)
         if mol is None:
+            logger.error(f"Failed to generate molecule from direct SMILES conversion for argument: {arg}")
             raise ValueError('Invalid SMILES string')
+
+        logger.info("Molecule successfully generated from direct SMILES conversion")
         return mol
+

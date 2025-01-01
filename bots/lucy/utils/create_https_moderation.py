@@ -31,41 +31,52 @@ import utils.helpers as helpers
 
 async def create_https_moderation(custom_id, input_array, model):
     try:
-        logger.info("Loading configuration file.")
+        logger.info('Loading configuration file.')
+        # Load the configuration file
         config = load_yaml(helpers.PATH_CONFIG_YAML)
         api_key = config['api_keys']['api_key_1']['api_key']
-        logger.info("API key loaded successfully.")
+        logger.info('API key loaded successfully.')
 
+        # Set up the OpenAI client
         ai_client = AsyncOpenAI(api_key=api_key)
         headers = {'Authorization': f'Bearer {api_key}'}
-        logger.info("Headers set for the request.")
+        logger.info('Headers set for the request.')
 
+        # Prepare the request data
         request_data = {
             'input': input_array,
             'model': model,
         }
-        logger.info("Request data prepared.")
+        logger.info('Request data prepared.')
 
+        # Send the request to the moderation endpoint
         async with aiohttp.ClientSession() as session:
             try:
-                logger.info("Sending request to OpenAI moderation endpoint.")
+                logger.info('Sending request to OpenAI moderation endpoint.')
                 async with session.post(url=helpers.OPENAI_ENDPOINT_URLS['moderations'], headers=headers, json=request_data) as moderation_object:
-                    logger.info(f"Received response with status: {moderation_object.status}")
+                    logger.info(f'Received response with status: {moderation_object.status}')
 
                     if moderation_object.status == 200:
+                        # If the response is successful, parse and return the response data
                         response_data = await moderation_object.json()
-                        logger.info("Request successful. Returning response data.")
+                        logger.info('Request successful. Returning response data.')
                         yield response_data
                     else:
+                        # If the response is not successful, log the error message
                         error_message = await moderation_object.text()
-                        logger.error(f"Error in response: {error_message}")
+                        logger.error(f'Error in response: {error_message}')
                         yield {'error': error_message}
 
             except Exception as e:
-                logger.error("An error occurred while making the HTTP request.")
+                # If there is an exception during the request, log the exception
+                logger.error('An error occurred while making the HTTP request.')
                 logger.error(traceback.format_exc())
                 yield traceback.format_exc()
+
     except Exception as e:
-        logger.error("An error occurred in create_https_moderation.")
+        # Log any error that happens in the main function
+        logger.error('An error occurred in create_https_moderation.')
         logger.error(traceback.format_exc())
         yield traceback.format_exc()
+
+

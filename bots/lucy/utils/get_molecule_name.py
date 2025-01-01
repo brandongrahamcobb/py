@@ -20,12 +20,35 @@ from utils.setup_logging import logger
 import pubchempy as pcp
 
 def get_molecule_name(molecule) -> str:
-    smiles = Chem.MolToSmiles(molecule)
-    if smiles:
-        compounds = pcp.get_compounds(smiles, 'smiles') #, record_type='3d')
-        compound_data = compounds[0].to_dict(properties=['synonyms'])
-        if not compounds:
-            raise ValueError('No compound found for the given SMILES string')
-        return compound_data['synonyms'][0]
-    return 'Unknown'
+    try:
+        logger.info("Starting to retrieve molecule name from the given molecule.")
 
+        # Convert the RDKit molecule to a SMILES string
+        smiles = Chem.MolToSmiles(molecule)
+        if not smiles:
+            logger.warning("Failed to convert the molecule to a SMILES string.")
+            return 'Unknown'
+
+        logger.debug(f"Generated SMILES string: {smiles}")
+
+        # Query PubChem for compound data using the SMILES string
+        compounds = pcp.get_compounds(smiles, 'smiles')
+        if not compounds:
+            logger.warning("No compounds found for the given SMILES string.")
+            raise ValueError('No compound found for the given SMILES string')
+
+        compound_data = compounds[0].to_dict(properties=['synonyms'])
+        logger.debug(f"Retrieved compound data: {compound_data}")
+
+        # Return the first synonym as the molecule name
+        if 'synonyms' in compound_data and compound_data['synonyms']:
+            molecule_name = compound_data['synonyms'][0]
+            logger.info(f"Molecule name retrieved: {molecule_name}")
+            return molecule_name
+        else:
+            logger.warning("No synonyms found in compound data.")
+            return 'Unknown'
+
+    except Exception as e:
+        logger.error(f"An error occurred while retrieving the molecule name: {e}")
+        return 'Unknown'

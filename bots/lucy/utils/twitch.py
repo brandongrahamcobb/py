@@ -1,6 +1,4 @@
-''' twitch.py  OpenAI's v1/chat/completions endpoint using their python SDK is
-                                much more efficient than this program. This is a complicated
-                                way to get a completion from OpenAI from cd ../.
+''' twitch.py The purpose of this program is to handle all twitch bot related functions.
     Copyright (C) 2024  github.com/brandongrahamcobb
 
     This program is free software: you can redistribute it and/or modify
@@ -16,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-# oauth_bot.py
+# twitch.py
 
 import aiohttp
 from quart import Quart, request, session, redirect
@@ -30,9 +28,10 @@ import yaml
 # logger = setup_logging(__name__)
 
 # If your utils.setup_logging directly provides a logger, you might do:
+from utils.create_https_moderation import create_https_moderation
+from utils.create_https_moderation import create_https_moderation
 from utils.load_yaml import load_yaml
 from utils.setup_logging import logger
-
 import utils.helpers as helpers
 
 # Load your configuration YAML or however you handle config
@@ -175,11 +174,13 @@ async def oauth_callback():
 # ---------------------------------------------------------
 # BOT CODE
 # ---------------------------------------------------------
-from twitchio.ext import commands
+from discord.ext import commands as discord_commands
+from twitchio.ext import commands as twitch_commands
 from utils.create_https_completion import Conversations
+import json
 
-class Vyrtuous(commands.Bot):
-    def __init__(self, access_token: str):
+class Vyrtuous(twitch_commands.Bot):
+    def __init__(self, bot: discord_commands.Bot, access_token: str):
         super().__init__(
             token=access_token,
             client_id=CLIENT_ID,
@@ -187,6 +188,7 @@ class Vyrtuous(commands.Bot):
             prefix="!",
             initial_channels=['spawdspawd']
         )
+        self.bot = bot
         self.conversations = Conversations()
         self.config = CONFIG
 
@@ -233,4 +235,38 @@ class Vyrtuous(commands.Bot):
         ):
             await message.channel.send(response)
             logger.debug(f"Sent message: {response}")
+#        channel = await self.bot.fetch_channel(1315735859848544378)
+ #       await channel.send(message.content)
 
+        async for moderation in create_https_moderation(message.author.id, array, model=helpers.OPENAI_MODERATION_MODEL):
+            results = moderation.get('results', [])
+            if results and results[0].get('flagged', False):
+                await message.delete()
+
+        if self.config['openai_chat_moderation']:
+            async for moderation in self.conversations.create_https_completion(
+                completions=helpers.OPENAI_CHAT_MODERATION_N,
+                custom_id=message.author.id,
+                input_array=array,
+                max_tokens=helpers.OPENAI_CHAT_MODERATION_MAX_TOKENS,
+                model=helpers.OPENAI_CHAT_MODERATION_MODEL,
+                response_format=helpers.OPENAI_CHAT_MODERATION_RESPONSE_FORMAT,
+                stop=helpers.OPENAI_CHAT_MODERATION_STOP,
+                store=helpers.OPENAI_CHAT_MODERATION_STORE,
+                stream=helpers.OPENAI_CHAT_MODERATION_STREAM,
+                sys_input=helpers.OPENAI_CHAT_MODERATION_SYS_INPUT,
+                temperature=helpers.OPENAI_CHAT_MODERATION_TEMPERATURE,
+                top_p=helpers.OPENAI_CHAT_MODERATION_TOP_P,
+                use_history=helpers.OPENAI_CHAT_MODERATION_USE_HISTORY,
+                add_completion_to_history=helpers.OPENAI_CHAT_MODERATION_ADD_COMPLETION_TO_HISTORY
+             ):
+                full_response = json.loads(moderation)
+                results = full_response.get('results', [])
+                flagged = results[0].get('flagged', False)
+                carnism_flagged = results[0]['categories'].get('carnism', False)
+                carnism_score = results[0]['category_scores'].get('carnism', 0)
+                total_carnism_score = sum(arg['category_scores'].get('carnism', 0) for arg in results)
+                if carnism_flagged or flagged:  # If carnism is flagged
+                    if not self.config['discord_role_pass']:
+                        await message.delete()
+                    NLPUtils.append_to_other_jsonl('training.jsonl', carnism_score, message.content, message.author.id) #results[0].get('flagged', False), message.content)

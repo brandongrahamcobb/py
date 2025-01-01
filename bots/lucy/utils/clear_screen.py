@@ -21,6 +21,7 @@ import os
 import sys
 
 def clear_screen():
+    logger.info('Clearing screen.')
     if sys.platform == 'win32':
         os.system('cls')
     else:

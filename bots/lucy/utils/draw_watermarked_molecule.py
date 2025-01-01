@@ -24,18 +24,39 @@ from utils.get_molecule_name import get_molecule_name
 from utils.setup_logging import logger
 
 def draw_watermarked_molecule(molecule) -> BytesIO:
-    resolved_name = get_molecule_name(molecule)
-    d2d = rdMolDraw2D.MolDraw2DCairo(1024, 1024)
-    Options = d2d.drawOptions()
-    Options.prepareMolsBeforeDrawing = False
-    Options.includeMetadata = False
-    Options.bondLineWidth = 4.0
-    d2d.SetDrawOptions(Options)
-    rdMolDraw2D.SetDarkMode(Options)
-    mol = rdMolDraw2D.PrepareMolForDrawing(molecule, kekulize=True)
-    mol.UpdatePropertyCache(False)
-    d2d.DrawMolecule(mol)
-    d2d.FinishDrawing()
-    drawing = d2d.GetDrawingText()
-    output = add_watermark(BytesIO(drawing), watermark_text=resolved_name)
-    return output
+    try:
+        logger.info('Starting to draw watermarked molecule.')
+
+        # Resolve molecule name
+        resolved_name = get_molecule_name(molecule)
+        logger.debug(f'Resolved molecule name: {resolved_name}')
+
+        # Set up molecule drawing
+        d2d = rdMolDraw2D.MolDraw2DCairo(1024, 1024)
+        Options = d2d.drawOptions()
+        Options.prepareMolsBeforeDrawing = False
+        Options.includeMetadata = False
+        Options.bondLineWidth = 4.0
+        d2d.SetDrawOptions(Options)
+        logger.debug('Drawing options configured.')
+
+        # Prepare molecule for drawing
+        rdMolDraw2D.SetDarkMode(Options)
+        mol = rdMolDraw2D.PrepareMolForDrawing(molecule, kekulize=True)
+        mol.UpdatePropertyCache(False)
+        logger.debug('Molecule prepared for drawing.')
+
+        # Draw molecule
+        d2d.DrawMolecule(mol)
+        d2d.FinishDrawing()
+        logger.info('Molecule drawing completed.')
+
+        # Add watermark
+        drawing = d2d.GetDrawingText()
+        output = add_watermark(BytesIO(drawing), watermark_text=resolved_name)
+        logger.info('Watermark added successfully.')
+
+        return output
+    except Exception as e:
+        logger.error(f'An error occurred while drawing the watermarked molecule: {e}')
+        raise

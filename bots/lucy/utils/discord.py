@@ -14,7 +14,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
 from discord.ext import commands
 from typing import List, Optional
 from utils.setup_logging import logger
@@ -37,16 +36,32 @@ class Lucy(commands.Bot):
         conversations: Conversations = None,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
-        self.db_pool = db_pool
-        self.testing_guild_id = testing_guild_id
-        self.initial_extensions = initial_extensions
-        self.conversations = conversations
+        logger.info('Initializing Lucy bot...')
+        try:
+            super().__init__(*args, **kwargs)
+            self.db_pool = db_pool
+            self.testing_guild_id = testing_guild_id
+            self.initial_extensions = initial_extensions
+            self.conversations = conversations
+            logger.info('Lucy bot initialized successfully.')
+        except Exception as e:
+            logger.error(f'Error during initialization: {e}')
 
     async def setup_hook(self) -> None:
-        for cog in self.initial_extensions:
-            await self.load_extension(cog)
-        if self.testing_guild_id:
-            guild = discord.Object(self.testing_guild_id)
-            self.tree.copy_global_to(guild=guild)
-            await self.tree.sync(guild=guild)
+        try:
+            logger.info('Starting setup_hook...')
+            for cog in self.initial_extensions:
+                logger.debug(f'Loading extension: {cog}')
+                await self.load_extension(cog)
+                logger.info(f'Extension {cog} loaded successfully.')
+
+            if self.testing_guild_id:
+                logger.debug(f'Setting up testing guild with ID: {self.testing_guild_id}')
+                guild = discord.Object(self.testing_guild_id)
+                self.tree.copy_global_to(guild=guild)
+                await self.tree.sync(guild=guild)
+                logger.info(f'Commands synced with testing guild ID: {self.testing_guild_id}')
+            else:
+                logger.info('No testing guild ID provided; skipping guild sync.')
+        except Exception as e:
+            logger.error(f'Error during setup_hook: {e}')

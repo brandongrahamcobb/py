@@ -20,16 +20,34 @@ from utils.setup_logging import logger
 import yaml
 
 def increment_version(config: Dict[str, Any], path_config_yaml):
-    current_version = config['version']
-    major, minor, patch = map(int, current_version.split('.'))
-    patch += 1
-    if patch >= 10:
-        patch = 0
-        minor += 1
-    if minor >= 10:
-        minor = 0
-        major += 1
-    new_version = f'{major}.{minor}.{patch}'
-    config['version'] = new_version
-    with open(path_config_yaml, 'w') as file:
-        yaml.dump(config, file)
+    try:
+        logger.info('Starting version increment process.')
+
+        # Retrieve the current version
+        current_version = config.get('version', '0.0.0')
+        logger.debug(f'Current version: {current_version}')
+
+        # Parse and increment the version
+        major, minor, patch = map(int, current_version.split('.'))
+        patch += 1
+        if patch >= 10:
+            patch = 0
+            minor += 1
+        if minor >= 10:
+            minor = 0
+            major += 1
+
+        new_version = f'{major}.{minor}.{patch}'
+        logger.info(f'New version generated: {new_version}')
+
+        # Update the version in the config
+        config['version'] = new_version
+
+        # Write the updated config back to the YAML file
+        with open(path_config_yaml, 'w') as file:
+            yaml.dump(config, file)
+        logger.info(f'Version updated successfully in the YAML file: {path_config_yaml}')
+
+    except Exception as e:
+        logger.error(f'An error occurred during version increment: {e}')
+        raise

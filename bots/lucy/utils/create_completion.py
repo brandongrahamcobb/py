@@ -14,7 +14,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
 from openai import AsyncOpenAI
 from utils.load_yaml import load_yaml
 from utils.setup_logging import logger
