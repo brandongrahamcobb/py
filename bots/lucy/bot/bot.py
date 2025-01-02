@@ -14,8 +14,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-from multiprocessing import Process
 from utils.config import Config
 from utils.create_https_completion import Conversations
 from utils.discord import Lucy

@@ -73,7 +73,7 @@ class Hybrid(commands.Cog):
                 g = color_values['g']
                 b = color_values['b']
         guildroles = await ctx.guild.fetch_roles()
-        position = len(guildroles) - 1
+        position = len(guildroles) - 12
         for arg in ctx.author.roles:
             if arg.name.isnumeric():
                 await ctx.author.remove_roles(arg)

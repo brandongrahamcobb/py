@@ -18,10 +18,12 @@ bs4
 discord
 openai
 opencv-python
+PyQt5
 pubchempy
 pyyaml
 rdkit
 requests
 selenium
 torch
+twitchio
 webdriver_manager
