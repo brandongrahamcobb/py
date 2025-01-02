@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: lucy
+Version: 4.8.6
+Requires-Python: <3.13
+Requires-Dist: asyncpg
+Requires-Dist: bs4
+Requires-Dist: discord.py
+Requires-Dist: emoji
+Requires-Dist: openai
+Requires-Dist: opencv-python
+Requires-Dist: pip
+Requires-Dist: pubchempy
+Requires-Dist: PyQt5
+Requires-Dist: requests
+Requires-Dist: rdkit
+Requires-Dist: selenium
+Requires-Dist: webdriver_manager
