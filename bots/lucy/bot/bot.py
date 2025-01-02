@@ -14,6 +14,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from datetime import datetime, timedelta
+from quart import Quart, Response, redirect, request, session
 from utils.config import Config
 from utils.create_https_completion import Conversations
 from utils.discord import Lucy
@@ -21,36 +23,45 @@ from utils.increment_version import increment_version
 from utils.setup_logging import setup_logging
 from utils.twitch import app, Vyrtuous
 
+import aiohttp
 import asyncio
 import asyncpg
 import discord
+import os
 import utils.helpers as helpers
+import yaml
 
 async def main():
+    app = quart.Quart(__name__)
     config = Config().get_config()
-    setup_logging(config, helpers.PATH_LOG)
     conversations = Conversations()
-    async with asyncpg.create_pool(
+    pool = await asyncpg.create_pool(
         database='lucy',
         user='postgres',
         command_timeout=30
-    ) as pool:
-        async with Lucy(
+    )
+    setup_logging(config, helpers.PATH_LOG)
+    tasks = []
+    twitch_token = await Response(
+    twitch = Vyrtuous(bot, twitch_token)
+
+    bot = await Lucy(
             command_prefix=config['discord_command_prefix'],
             db_pool=pool,
-            initial_extensions=config['discord_cogs'],
-            intents=eval(config['discord_intents']),
+            initial_extensions=['bot.cogs.hybrid', 'bot.cogs.indica', 'bot.cogs.sativa'],
+            intents=discord.Intents.all(),
             testing_guild_id=config['discord_testing_guild_id'],
             conversations=conversations
-        ) as bot:
-            bot.config = config
-            increment_version(config, helpers.PATH_CONFIG_YAML)
-            tasks = []
-            with open('token.txt') as f:
-                user_access_token = f.read().strip()
-                twitch = Vyrtuous(bot, user_access_token)
-                tasks.append(asyncio.create_task(twitch.start()))
-            tasks.append(asyncio.create_task(app.run_task(port=5000)))
+    )
+    bot.config = config
+    increment_version(config, helpers.PATH_CONFIG_YAML)
+
+
+    with open('token.txt') as f:
+        user_access_token = f.read().strip()
+        twitch = Vyrtuous(bot, user_access_token)
+        tasks.append(asyncio.create_task(twitch.start()))
+    tasks.append(asyncio.create_task(app.run_task(port=5000)))
             tasks.append(asyncio.create_task(bot.start(config['discord_token'])))
             await asyncio.gather(*tasks)
 

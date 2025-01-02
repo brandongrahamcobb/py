@@ -85,7 +85,7 @@ async def authorize():
     return redirect(url)
 
 
-@app.route("/callback")
+@app.route("/callback", methods=['GET'])
 async def oauth_callback():
     """
     Handles the redirect from Twitch, with 'code' in query parameters.
